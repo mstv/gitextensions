@@ -64,6 +64,8 @@ namespace GitUI
         private readonly BuildServerWatcher _buildServerWatcher;
         private readonly Timer _selectionTimer;
         private readonly GraphColumnProvider _graphColumnProvider;
+        private readonly DataGridViewColumn _messageColumn;
+        private readonly List<DataGridViewColumn> _resizableColumns;
 
         private RefFilterOptions _refFilterOptions = RefFilterOptions.All | RefFilterOptions.Boundary;
 
@@ -187,6 +189,8 @@ namespace GitUI
             _gridView.AddColumn(new DateColumnProvider(this));
             _gridView.AddColumn(new CommitIdColumnProvider(this));
             _gridView.AddColumn(_buildServerWatcher.ColumnProvider);
+            _messageColumn = _gridView.Columns[1];
+            _resizableColumns = _gridView.Columns.Cast<DataGridViewColumn>().Where(column => column.Resizable == DataGridViewTriState.True).ToList();
         }
 
         protected override void Dispose(bool disposing)
@@ -449,6 +453,8 @@ namespace GitUI
             base.Refresh();
 
             _toolTipProvider.Clear();
+
+            ReloadSettings();
         }
 
         protected override void OnCreateControl()
@@ -622,6 +628,24 @@ namespace GitUI
         public void ReloadTranslation()
         {
             Translator.Translate(this, AppSettings.CurrentTranslation);
+        }
+
+        public void ReloadSettings()
+        {
+            _messageColumn.AutoSizeMode = AppSettings.MaximizeCommitMessageColumn.ValueOrDefault
+                                          ? DataGridViewAutoSizeColumnMode.Fill
+                                          : DataGridViewAutoSizeColumnMode.None;
+
+            foreach (var column in _resizableColumns)
+            {
+                column.Resizable = DataGridViewTriState.True;
+            }
+
+            if (_messageColumn.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill)
+            {
+                _gridView.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None)
+                    .Resizable = DataGridViewTriState.False;
+            }
         }
 
         internal static bool ShowRemoteRef(IGitRef r)
@@ -1221,13 +1245,24 @@ namespace GitUI
 
         private void OnGridViewMouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.XButton1)
+            switch (e.Button)
             {
-                NavigateBackward();
+                case MouseButtons.XButton1: NavigateBackward(); break;
+                case MouseButtons.XButton2: NavigateForward();  break;
+                case MouseButtons.Left when _messageColumn.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill:
+                    _gridView.MouseCaptureChanged += OnGridViewMouseCaptureChanged;
+                    _messageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    _gridView.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None)
+                        .AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    break;
             }
-            else if (e.Button == MouseButtons.XButton2)
+
+            void OnGridViewMouseCaptureChanged(object sender_, EventArgs e_)
             {
-                NavigateForward();
+                _gridView.MouseCaptureChanged -= OnGridViewMouseCaptureChanged;
+                _gridView.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None)
+                    .AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                _messageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
         }
 
