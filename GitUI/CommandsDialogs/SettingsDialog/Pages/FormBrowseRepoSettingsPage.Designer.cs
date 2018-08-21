@@ -30,6 +30,7 @@
         {
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.chkShowGpgInformation = new System.Windows.Forms.CheckBox();
+            this.chkMaximizeCommitMessageColumn = new System.Windows.Forms.CheckBox();
             this.ConEmuGB = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBoxConsoleSettings = new System.Windows.Forms.GroupBox();
@@ -53,6 +54,7 @@
             this.tableLayoutPanel2.ColumnCount = 1;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel2.Controls.Add(this.chkShowGpgInformation, 0, 1);
+            this.tableLayoutPanel2.Controls.Add(this.chkMaximizeCommitMessageColumn, 0, 2);
             this.tableLayoutPanel2.Controls.Add(this.ConEmuGB, 0, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
@@ -72,6 +74,16 @@
             this.chkShowGpgInformation.TabIndex = 7;
             this.chkShowGpgInformation.Text = "Show GPG information";
             this.chkShowGpgInformation.UseVisualStyleBackColor = true;
+            // 
+            // chkMaximizeCommitMessageColumn
+            // 
+            this.chkMaximizeCommitMessageColumn.AutoSize = true;
+            this.chkMaximizeCommitMessageColumn.Location = new System.Drawing.Point(3, 198);
+            this.chkMaximizeCommitMessageColumn.Name = "chkMaximizeCommitMessageColumn";
+            this.chkMaximizeCommitMessageColumn.Size = new System.Drawing.Size(132, 17);
+            this.chkMaximizeCommitMessageColumn.TabIndex = 8;
+            this.chkMaximizeCommitMessageColumn.Text = "Maximize the column showing the commit message";
+            this.chkMaximizeCommitMessageColumn.UseVisualStyleBackColor = true;
             // 
             // ConEmuGB
             // 
@@ -270,5 +282,6 @@
         private System.Windows.Forms.ComboBox _NO_TRANSLATE_cboStyle;
         private System.Windows.Forms.CheckBox chkChowConsoleTab;
         private System.Windows.Forms.CheckBox chkShowGpgInformation;
+        private System.Windows.Forms.CheckBox chkMaximizeCommitMessageColumn;
     }
 }

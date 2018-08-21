@@ -365,6 +365,7 @@ namespace GitCommands
         public static readonly StringSetting ConEmuTerminal = new StringSetting("ConEmuTerminal", DetailedSettingsPath, "bash");
         public static readonly StringSetting ConEmuFontSize = new StringSetting("ConEmuFontSize", DetailedSettingsPath, "12");
         public static readonly BoolNullableSetting ShowGpgInformation = new BoolNullableSetting("ShowGpgInformation", DetailedSettingsPath, false);
+        public static readonly BoolNullableSetting MaximizeCommitMessageColumn = new BoolNullableSetting("MaximizeCommitMessageColumn", DetailedSettingsPath, false);
 
         public static CommitInfoPosition CommitInfoPosition
         {
