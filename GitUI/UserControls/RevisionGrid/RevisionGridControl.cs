@@ -64,8 +64,9 @@ namespace GitUI
         private readonly BuildServerWatcher _buildServerWatcher;
         private readonly Timer _selectionTimer;
         private readonly GraphColumnProvider _graphColumnProvider;
-        private readonly DataGridViewColumn _messageColumn;
         private readonly List<DataGridViewColumn> _resizableColumns;
+        private readonly DataGridViewColumn _maximizedColumn;
+        private DataGridViewColumn _lastVisibleResizableColumn = null;
 
         private RefFilterOptions _refFilterOptions = RefFilterOptions.All | RefFilterOptions.Boundary;
 
@@ -189,8 +190,8 @@ namespace GitUI
             _gridView.AddColumn(new DateColumnProvider(this));
             _gridView.AddColumn(new CommitIdColumnProvider(this));
             _gridView.AddColumn(_buildServerWatcher.ColumnProvider);
-            _messageColumn = _gridView.Columns[1];
             _resizableColumns = _gridView.Columns.Cast<DataGridViewColumn>().Where(column => column.Resizable == DataGridViewTriState.True).ToList();
+            _maximizedColumn = _resizableColumns.FirstOrDefault(column => column.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill);
         }
 
         protected override void Dispose(bool disposing)
@@ -454,7 +455,15 @@ namespace GitUI
 
             _toolTipProvider.Clear();
 
-            ReloadSettings();
+            if (_maximizedColumn != null)
+            {
+                // restore the resizable state
+                _resizableColumns.ForEach(column => column.Resizable = DataGridViewTriState.True);
+
+                // suppress the manual resizing of the last visible column because it will be resized when the maximized column is resized
+                _lastVisibleResizableColumn = _gridView.Columns.GetLastColumn(DataGridViewElementStates.Visible | DataGridViewElementStates.Resizable, DataGridViewElementStates.None);
+                _lastVisibleResizableColumn.Resizable = DataGridViewTriState.False;
+            }
         }
 
         protected override void OnCreateControl()
@@ -628,24 +637,6 @@ namespace GitUI
         public void ReloadTranslation()
         {
             Translator.Translate(this, AppSettings.CurrentTranslation);
-        }
-
-        public void ReloadSettings()
-        {
-            _messageColumn.AutoSizeMode = AppSettings.MaximizeCommitMessageColumn.ValueOrDefault
-                                          ? DataGridViewAutoSizeColumnMode.Fill
-                                          : DataGridViewAutoSizeColumnMode.None;
-
-            foreach (var column in _resizableColumns)
-            {
-                column.Resizable = DataGridViewTriState.True;
-            }
-
-            if (_messageColumn.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill)
-            {
-                _gridView.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None)
-                    .Resizable = DataGridViewTriState.False;
-            }
         }
 
         internal static bool ShowRemoteRef(IGitRef r)
@@ -1249,20 +1240,19 @@ namespace GitUI
             {
                 case MouseButtons.XButton1: NavigateBackward(); break;
                 case MouseButtons.XButton2: NavigateForward();  break;
-                case MouseButtons.Left when _messageColumn.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill:
-                    _gridView.MouseCaptureChanged += OnGridViewMouseCaptureChanged;
-                    _messageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                    _gridView.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None)
-                        .AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                    break;
-            }
+                case MouseButtons.Left when _maximizedColumn != null && _lastVisibleResizableColumn != null:
+                    // make resizing of the maximized column work and restore the settings afterwards
+                    void OnGridViewMouseCaptureChanged(object ignoredSender, EventArgs ignoredArgs)
+                    {
+                        _gridView.MouseCaptureChanged -= OnGridViewMouseCaptureChanged;
+                        _lastVisibleResizableColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                        _maximizedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
 
-            void OnGridViewMouseCaptureChanged(object sender_, EventArgs e_)
-            {
-                _gridView.MouseCaptureChanged -= OnGridViewMouseCaptureChanged;
-                _gridView.Columns.GetLastColumn(DataGridViewElementStates.Visible, DataGridViewElementStates.None)
-                    .AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                _messageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    _gridView.MouseCaptureChanged += OnGridViewMouseCaptureChanged;
+                    _maximizedColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    _lastVisibleResizableColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    break;
             }
         }
 

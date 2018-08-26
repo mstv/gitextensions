@@ -1366,7 +1366,6 @@ namespace GitUI.CommandsDialogs
             Hotkeys = HotkeySettingsManager.LoadHotkeys(HotkeySettingsName);
             RevisionGrid.ReloadHotkeys();
             RevisionGrid.ReloadTranslation();
-            RevisionGrid.ReloadSettings();
             fileTree.ReloadHotkeys();
             revisionDiff.ReloadHotkeys();
 
