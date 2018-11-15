@@ -275,6 +275,11 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                                     centerLane = GetLaneForRow(currentRow, revisionGraphSegment);
                                     endLane = GetLaneForRow(nextRow, revisionGraphSegment);
                                 }
+
+                                if (nextRow is not null)
+                                {
+                                    StraightenSegment(index, revisionGraphSegment, centerLane, ref endLane, nextRow);
+                                }
                             }
 
                             int startX = g.RenderingOrigin.X + (int)((startLane + 0.5) * LaneWidth);
@@ -336,6 +341,39 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                             }
                         }
                     }
+                }
+            }
+        }
+
+        private void StraightenSegment(int index, RevisionGraphSegment revisionGraphSegment, int centerLane, ref int endLane, IRevisionGraphRow nextRow)
+        {
+            // Try to detect this:
+            // | | |<-- centerLane (currentRow)
+            // |/ /
+            // * |<---- endLane (nextRow)
+            // |\ \
+            // | | |<-- nextNextLane (nextNextRow)
+            //
+            // And change it into this:
+            // | | |
+            // |/  |
+            // *   |
+            // |\  |
+            // | | |
+            //
+            // also if the distance is > 1 but only if the other distance is exactly 1
+            if (centerLane > endLane)
+            {
+                int straightenedEndLane = endLane + 1;
+
+                var nextNextRow = _revisionGraph.GetSegmentsForRow(index + 2);
+
+                int nextNextLane = GetLaneForRow(nextNextRow, revisionGraphSegment);
+
+                if ((nextNextLane == straightenedEndLane) || (nextNextLane > straightenedEndLane && centerLane == straightenedEndLane))
+                {
+                    nextRow.MoveLanesRight(endLane);
+                    endLane = straightenedEndLane;
                 }
             }
         }
