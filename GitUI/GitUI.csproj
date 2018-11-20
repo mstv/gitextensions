@@ -398,6 +398,7 @@
     <Compile Include="UserControls\HslColor.cs" />
     <Compile Include="UserControls\RevisionGrid\Graph\RevisionGraph.cs" />
     <Compile Include="UserControls\RevisionGrid\Graph\RevisionGraphLaneColor.cs" />
+    <Compile Include="UserControls\RevisionGrid\Graph\LaneInfo.cs" />
     <Compile Include="UserControls\RevisionGrid\Graph\RevisionGraphRevision.cs" />
     <Compile Include="UserControls\RevisionGrid\Graph\RevisionGraphRow.cs" />
     <Compile Include="UserControls\RevisionGrid\Graph\RevisionGraphSegment.cs" />

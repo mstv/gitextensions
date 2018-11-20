@@ -165,7 +165,6 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 // This revision is added from the log, but not seen before. This is probably a root node (new branch) OR the revisions
                 // are not in topo order. If this the case, we deal with it later.
                 revisionGraphRevision = new RevisionGraphRevision(revision.ObjectId, ++_maxScore);
-                revisionGraphRevision.LaneColor = revisionGraphRevision.IsCheckedOut ? 0 : _maxScore;
 
                 _nodeByObjectId.TryAdd(revision.ObjectId, revisionGraphRevision);
             }
@@ -258,6 +257,11 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 {
                     // This is the first row. Start with only the startsegments of this row
                     segments = new List<RevisionGraphSegment>(revision.StartSegments);
+
+                    foreach (var startSegment in revision.StartSegments)
+                    {
+                        startSegment.LaneInfo = new LaneInfo(revision);
+                    }
                 }
                 else
                 {
@@ -278,6 +282,18 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         {
                             startSegmentsAdded = true;
                             segments.AddRange(revision.StartSegments);
+
+                            foreach (var startSegment in revision.StartSegments)
+                            {
+                                if (startSegment == revision.StartSegments.First())
+                                {
+                                    startSegment.LaneInfo = segment.LaneInfo;
+                                }
+                                else
+                                {
+                                    startSegment.LaneInfo = new LaneInfo(revision);
+                                }
+                            }
                         }
                     }
 
@@ -286,6 +302,11 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     {
                         // Add new segments started by this revision to the end
                         segments.AddRange(revision.StartSegments);
+
+                        foreach (var startSegment in revision.StartSegments)
+                        {
+                            startSegment.LaneInfo = new LaneInfo(revision);
+                        }
                     }
                 }
 
