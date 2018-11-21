@@ -261,6 +261,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     foreach (var startSegment in revision.StartSegments)
                     {
                         startSegment.LaneInfo = new LaneInfo(revision);
+                        startSegment.LaneInfo.IsMergeLane = startSegment.Parent.Children.Count > 1 && startSegment.Child.Parents.Count > 1;
                     }
                 }
                 else
@@ -278,20 +279,30 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
                         // This segment that is copied from the previous row, connects to the node in this row.
                         // Copy all new segments that start from this node (revision) to this lane.
-                        if (revision == segment.Parent && !startSegmentsAdded)
+                        if (revision == segment.Parent)
                         {
-                            startSegmentsAdded = true;
-                            segments.AddRange(revision.StartSegments);
+                            if (!startSegmentsAdded)
+                            {
+                                startSegmentsAdded = true;
+                                segments.AddRange(revision.StartSegments);
+                            }
 
                             foreach (var startSegment in revision.StartSegments)
                             {
                                 if (startSegment == revision.StartSegments.First())
                                 {
-                                    startSegment.LaneInfo = segment.LaneInfo;
+                                    if (startSegment.LaneInfo == null || startSegment.LaneInfo.StartScore > segment.LaneInfo.StartScore)
+                                    {
+                                        startSegment.LaneInfo = segment.LaneInfo;
+                                    }
                                 }
                                 else
                                 {
-                                    startSegment.LaneInfo = new LaneInfo(revision);
+                                    if (startSegment.LaneInfo == null)
+                                    {
+                                        startSegment.LaneInfo = new LaneInfo(revision);
+                                        startSegment.LaneInfo.IsMergeLane = startSegment.Parent.Children.Count > 1 && startSegment.Child.Parents.Count > 1;
+                                    }
                                 }
                             }
                         }
@@ -306,6 +317,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         foreach (var startSegment in revision.StartSegments)
                         {
                             startSegment.LaneInfo = new LaneInfo(revision);
+                            startSegment.LaneInfo.IsMergeLane = startSegment.Parent.Children.Count > 1 && startSegment.Child.Parents.Count > 1;
                         }
                     }
                 }

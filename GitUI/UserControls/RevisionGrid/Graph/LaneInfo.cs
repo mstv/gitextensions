@@ -19,6 +19,8 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
         public RevisionGraphRevision StartRevision { get; set; }
 
+        public bool IsMergeLane { get; set; }
+
         public int StartScore
         {
             get
