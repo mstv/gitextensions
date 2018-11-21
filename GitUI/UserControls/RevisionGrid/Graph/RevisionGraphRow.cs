@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GitUI.UserControls.RevisionGrid.Graph
 {
@@ -62,7 +63,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
                 int currentRevisionLane = -1;
                 int laneIndex = 0;
-                foreach (var segment in Segments)
+                foreach (var segment in Segments.OrderBy(s => s.LaneInfo.StartScore))
                 {
                     if (segment.Child == Revision || segment.Parent == Revision)
                     {
@@ -98,15 +99,19 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         // |
                         // *
                         bool added = false;
-                        foreach (var searchParent in newSegmentLanes)
+
+                        if (segment.LaneInfo.IsMergeLane)
                         {
-                            // If there is another segment with the same parent, and its not this row's revision, merge into 1 lane.
-                            if (searchParent.Value != currentRevisionLane && searchParent.Key.Parent == segment.Parent)
+                            foreach (var searchParent in newSegmentLanes)
                             {
-                                // Use indexer to overwrite if segments was already added. This shouldn't happen, but it does.
-                                newSegmentLanes[segment] = searchParent.Value;
-                                added = true;
-                                break;
+                                // If there is another segment with the same parent, and its not this row's revision, merge into 1 lane.
+                                if (searchParent.Value != currentRevisionLane && searchParent.Key.Parent == segment.Parent)
+                                {
+                                    // Use indexer to overwrite if segments was already added. This shouldn't happen, but it does.
+                                    newSegmentLanes[segment] = searchParent.Value;
+                                    added = true;
+                                    break;
+                                }
                             }
                         }
 

@@ -386,28 +386,37 @@ namespace GitUI.UserControls.RevisionGrid.Columns
 
         private void DrawSegment(Graphics g, Brush laneBrush, int x0, int y0, int x1, int y1)
         {
-            var p0 = new Point(x0, y0);
-            var p1 = new Point(x1, y1);
-
             using (var lanePen = new Pen(laneBrush, LaneLineWidth))
             {
                 if (x0 == x1)
                 {
+                    var p0 = new Point(x0, y0);
+                    var p1 = new Point(x1, y1);
+
                     g.SmoothingMode = SmoothingMode.None;
                     g.DrawLine(lanePen, p0, p1);
                 }
                 else
                 {
+                    int straightLine = 3;
+
+                    g.SmoothingMode = SmoothingMode.None;
+                    g.DrawLine(lanePen, x0, y0, x0, y0 + straightLine);
+                    g.DrawLine(lanePen, x1, y1 - straightLine, x1, y1);
+
+                    y0 += straightLine;
+                    y1 -= straightLine;
+
                     // Anti-aliasing with bezier & PixelOffsetMode.HighQuality
                     // introduces an offset of ~1/8 px - compensate it.
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                     const float offset = -1f / 8f;
 
                     var yMid = (y0 + y1) / 2f;
-                    var c0 = new PointF(offset + p0.X, offset + yMid);
-                    var c1 = new PointF(offset + p1.X, offset + yMid);
-                    var e0 = new PointF(offset + p0.X, offset + p0.Y);
-                    var e1 = new PointF(offset + p1.X, offset + p1.Y);
+                    var c0 = new PointF(offset + x0, offset + yMid);
+                    var c1 = new PointF(offset + x1, offset + yMid);
+                    var e0 = new PointF(offset + x0, offset + y0);
+                    var e1 = new PointF(offset + x1, offset + y1);
                     g.DrawBezier(lanePen, e0, c0, c1, e1);
                 }
             }
