@@ -112,15 +112,19 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         // |
                         // *
                         bool added = false;
-                        foreach (var searchParent in newSegmentLanes)
+
+                        if (segment.LaneInfo?.IsMergeLane == true)
                         {
-                            // If there is another segment with the same parent, and its not this row's revision, merge into 1 lane.
-                            if (searchParent.Value != currentRevisionLane && searchParent.Key.Parent == segment.Parent)
+                            foreach (var searchParent in newSegmentLanes)
                             {
-                                // Use indexer to overwrite if segments was already added. This shouldn't happen, but it does.
-                                newSegmentLanes[segment] = searchParent.Value;
-                                added = true;
-                                break;
+                                // If there is another segment with the same parent, and its not this row's revision, merge into 1 lane.
+                                if (searchParent.Value != currentRevisionLane && searchParent.Key.Parent == segment.Parent)
+                                {
+                                    // Use indexer to overwrite if segments was already added. This shouldn't happen, but it does.
+                                    newSegmentLanes[segment] = searchParent.Value;
+                                    added = true;
+                                    break;
+                                }
                             }
                         }
 

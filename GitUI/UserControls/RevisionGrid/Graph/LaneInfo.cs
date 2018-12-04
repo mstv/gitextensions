@@ -20,9 +20,13 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 ++colorSeed;
             }
             while (Color == derivedFrom?.Color);
+
+            IsMergeLane = startSegment.Parent.Children.Count() > 1 && startSegment.Child.Parents.Count() > 1;
         }
 
         public int Color { get; private set; }
+
+        public bool IsMergeLane { get; private set; }
 
         public RevisionGraphRevision StartRevision { get; private set; }
 
