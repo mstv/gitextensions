@@ -15,14 +15,11 @@ namespace GitUI.CommitInfo
 
         private static readonly ILinkFactory LinkFactory = new LinkFactory();
 
-        public static string FormatBranches(IReadOnlyList<string> branches, bool showAsLinks, bool limit)
-            => ToString(branches, l => FormatBranches(l, showAsLinks), Strings.ContainedInBranches, Strings.ContainedInNoBranch, "branches", limit);
-
-        public static string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
-            => ToString(tags, l => FormatTags(l, showAsLinks), Strings.ContainedInTags, Strings.ContainedInNoTag, "tags", limit);
-
-        private static IEnumerable<string> FormatBranches(IEnumerable<string> branches, bool showAsLinks)
+        public static string FormatBranches(IEnumerable<string> branches, bool showAsLinks, bool limit)
         {
+            var links = new List<string>();
+            bool truncated = false;
+
             const string remotesPrefix = "remotes/";
 
             // Include local branches if explicitly requested or when needed to decide whether to show remotes
@@ -32,7 +29,6 @@ namespace GitUI.CommitInfo
             // Include remote branches if requested
             bool getRemote = AppSettings.CommitInfoShowContainedInBranchesRemote ||
                              AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal;
-            var links = new List<string>();
             bool allowLocal = AppSettings.CommitInfoShowContainedInBranchesLocal;
             bool allowRemote = getRemote;
 
@@ -64,6 +60,12 @@ namespace GitUI.CommitInfo
                         ? LinkFactory.CreateBranchLink(noPrefixBranch)
                         : WebUtility.HtmlEncode(noPrefixBranch);
 
+                    if (limit && links.Count == MaximumDisplayedRefs)
+                    {
+                        truncated = true;
+                        break; // from foreach
+                    }
+
                     links.Add(branchText);
                 }
 
@@ -73,23 +75,27 @@ namespace GitUI.CommitInfo
                 }
             }
 
-            return links;
+            return ToString(links, Strings.ContainedInBranches, Strings.ContainedInNoBranch, "branches", truncated);
         }
 
-        public static IEnumerable<string> FormatTags(IEnumerable<string> tags, bool showAsLinks)
+        public static string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
         {
-            return tags.Select(s => showAsLinks ? LinkFactory.CreateTagLink(s) : WebUtility.HtmlEncode(s));
+            bool truncate = limit && tags.Count > MaximumDisplayedRefs;
+            var links = FormatTags(truncate ? tags.Take(MaximumDisplayedRefs) : tags);
+            return ToString(links, Strings.ContainedInTags, Strings.ContainedInNoTag, "tags", truncate);
+
+            IEnumerable<string> FormatTags(IEnumerable<string> tags_)
+            {
+                return tags_.Select(s => showAsLinks ? LinkFactory.CreateTagLink(s) : WebUtility.HtmlEncode(s));
+            }
         }
 
-        private static string ToString(IReadOnlyList<string> refs, Func<IEnumerable<string>, IEnumerable<string>> formatRefs,
-                                       string prefix, string textIfEmpty, string refsType, bool limit)
+        private static string ToString(IEnumerable<string> links, string prefix, string textIfEmpty, string refsType, bool truncated)
         {
-            bool truncate = limit && refs.Count > MaximumDisplayedRefs;
-            var links = formatRefs(truncate ? refs.Take(MaximumDisplayedRefs) : refs);
             if (links.Any())
             {
                 var sb = new StringBuilder().AppendLine(WebUtility.HtmlEncode(prefix)).Append(links.Join(Environment.NewLine));
-                if (truncate)
+                if (truncated)
                 {
                     sb.AppendLine().AppendLine(LinkFactory.CreateShowAllLink(refsType));
                 }
