@@ -80,6 +80,8 @@ namespace GitUI.CommitInfo
         [CanBeNull] private IDictionary<string, int> _refsOrderDict;
         private int _revisionInfoHeight;
         private int _commitMessageHeight;
+        private bool _showAllBranches;
+        private bool _showAllTags;
 
         [DefaultValue(false)]
         public bool ShowBranchesAsLinks { get; set; }
@@ -199,6 +201,26 @@ namespace GitUI.CommitInfo
             ReloadCommitInfo();
         }
 
+        public void ShowAll(string what)
+        {
+            switch (what)
+            {
+                case "branches":
+                    _showAllBranches = true;
+                    _branchInfo = null; // forces update
+                    break;
+                case "tags":
+                    _showAllTags = true;
+                    _tagInfo = null; // forces update
+                    break;
+                default:
+                    Debug.Fail("unsupported type in ShowAll(\"" + what + "\")");
+                    return;
+            }
+
+            UpdateRevisionInfo();
+        }
+
         private IDictionary<string, int> GetSortedRefs()
         {
             var args = new GitArgumentBuilder("for-each-ref")
@@ -259,9 +281,11 @@ namespace GitUI.CommitInfo
             showMessagesOfAnnotatedTagsToolStripMenuItem.Checked = AppSettings.ShowAnnotatedTagsMessages;
             showTagThisCommitDerivesFromMenuItem.Checked = AppSettings.CommitInfoShowTagThisCommitDerivesFrom;
 
+            _showAllBranches = false;
+            _showAllTags = false;
             _branches = null;
-            _annotatedTagsMessages = null;
             _tags = null;
+            _annotatedTagsMessages = null;
             _linkFactory.Clear();
 
             UpdateCommitMessage();
@@ -529,13 +553,13 @@ namespace GitUI.CommitInfo
                 if (_tags != null && string.IsNullOrEmpty(_tagInfo))
                 {
                     _tags.Sort(new ItemTpComparer(_refsOrderDict, "refs/tags/"));
-                    _tagInfo = RefsFormatter.FormatTags(_tags, ShowBranchesAsLinks, limit: true);
+                    _tagInfo = RefsFormatter.FormatTags(_tags, ShowBranchesAsLinks, limit: !_showAllTags);
                 }
 
                 if (_branches != null && string.IsNullOrEmpty(_branchInfo))
                 {
                     _branches.Sort(new ItemTpComparer(_refsOrderDict, "refs/heads/"));
-                    _branchInfo = RefsFormatter.FormatBranches(_branches, ShowBranchesAsLinks, limit: true);
+                    _branchInfo = RefsFormatter.FormatBranches(_branches, ShowBranchesAsLinks, limit: !_showAllBranches);
                 }
             }
 

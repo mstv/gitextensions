@@ -11,15 +11,15 @@ namespace GitUI.CommitInfo
 {
     public static class RefsFormatter
     {
-        private const int MaximumDisplayedRefs = 20;
+        private const int MaximumDisplayedRefs = 10;
 
         private static readonly ILinkFactory LinkFactory = new LinkFactory();
 
-        public static string FormatBranches(List<string> branches, bool showAsLinks, bool limit)
-            => ToString(branches, l => FormatBranches(l, showAsLinks), Strings.ContainedInBranches, Strings.ContainedInNoBranch, limit);
+        public static string FormatBranches(IReadOnlyList<string> branches, bool showAsLinks, bool limit)
+            => ToString(branches, l => FormatBranches(l, showAsLinks), Strings.ContainedInBranches, Strings.ContainedInNoBranch, "branches", limit);
 
-        public static string FormatTags(List<string> tags, bool showAsLinks, bool limit)
-            => ToString(tags, l => FormatTags(l, showAsLinks), Strings.ContainedInTags, Strings.ContainedInNoTag, limit);
+        public static string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
+            => ToString(tags, l => FormatTags(l, showAsLinks), Strings.ContainedInTags, Strings.ContainedInNoTag, "tags", limit);
 
         private static IEnumerable<string> FormatBranches(IEnumerable<string> branches, bool showAsLinks)
         {
@@ -81,23 +81,20 @@ namespace GitUI.CommitInfo
             return tags.Select(s => showAsLinks ? LinkFactory.CreateTagLink(s) : WebUtility.HtmlEncode(s));
         }
 
-        private static void Limit(List<string> refs, bool limit = true)
+        private static string ToString(IReadOnlyList<string> refs, Func<IEnumerable<string>, IEnumerable<string>> formatRefs,
+                                       string prefix, string textIfEmpty, string refsType, bool limit)
         {
-            if (limit && refs.Count > MaximumDisplayedRefs)
-            {
-                refs[MaximumDisplayedRefs - 2] = "…";
-                refs[MaximumDisplayedRefs - 1] = refs[refs.Count - 1];
-                refs.RemoveRange(MaximumDisplayedRefs, refs.Count - MaximumDisplayedRefs);
-            }
-        }
-
-        private static string ToString(List<string> refs, Func<IEnumerable<string>, IEnumerable<string>> formatRefs, string prefix, string textIfEmpty, bool limit)
-        {
-            Limit(refs, limit);
-            var links = formatRefs(refs);
+            bool truncate = limit && refs.Count > MaximumDisplayedRefs;
+            var links = formatRefs(truncate ? refs.Take(MaximumDisplayedRefs) : refs);
             if (links.Any())
             {
-                return WebUtility.HtmlEncode(prefix) + " " + links.Join(", ");
+                var sb = new StringBuilder().AppendLine(WebUtility.HtmlEncode(prefix)).Append(links.Join(Environment.NewLine));
+                if (truncate)
+                {
+                    sb.AppendLine().AppendLine(LinkFactory.CreateShowAllLink(refsType));
+                }
+
+                return sb.ToString();
             }
 
             return WebUtility.HtmlEncode(textIfEmpty);
