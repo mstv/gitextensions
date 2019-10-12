@@ -11,7 +11,13 @@ namespace GitUI.CommitInfo
 {
     public static class RefsFormatter
     {
-        private const int MaximumDisplayedRefs = 10;
+        /// <summary>
+        /// The number of displayed refs if the list is limited.
+        ///
+        /// If limited, the line "[Show all]" and an empty line are added.
+        /// Hence the list needs to be limited only if it exceeds MaximumDisplayedRefsIfLimited + 2.
+        /// </summary>
+        private const int MaximumDisplayedRefsIfLimited = 10;
 
         private static readonly ILinkFactory LinkFactory = new LinkFactory();
 
@@ -60,8 +66,9 @@ namespace GitUI.CommitInfo
                         ? LinkFactory.CreateBranchLink(noPrefixBranch)
                         : WebUtility.HtmlEncode(noPrefixBranch);
 
-                    if (limit && links.Count == MaximumDisplayedRefs)
+                    if (limit && links.Count == MaximumDisplayedRefsIfLimited + 2)
                     {
+                        links.RemoveRange(MaximumDisplayedRefsIfLimited, 2);
                         truncated = true;
                         break; // from foreach
                     }
@@ -80,8 +87,8 @@ namespace GitUI.CommitInfo
 
         public static string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
         {
-            bool truncate = limit && tags.Count > MaximumDisplayedRefs;
-            var links = FormatTags(truncate ? tags.Take(MaximumDisplayedRefs) : tags);
+            bool truncate = limit && tags.Count > MaximumDisplayedRefsIfLimited + 2;
+            var links = FormatTags(truncate ? tags.Take(MaximumDisplayedRefsIfLimited) : tags);
             return ToString(links, Strings.ContainedInTags, Strings.ContainedInNoTag, "tags", truncate);
 
             IEnumerable<string> FormatTags(IEnumerable<string> tags_)
