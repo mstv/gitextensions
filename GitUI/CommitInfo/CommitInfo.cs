@@ -558,7 +558,7 @@ namespace GitUI.CommitInfo
 
                 if (_branches != null && string.IsNullOrEmpty(_branchInfo))
                 {
-                    _branches.Sort(new ItemTpComparer(_refsOrderDict, "refs/heads/"));
+                    _branches.Sort(new ItemTpComparer(_refsOrderDict, "refs/heads/", Module.GetSelectedBranch()));
                     _branchInfo = RefsFormatter.FormatBranches(_branches, ShowBranchesAsLinks, limit: !_showAllBranches);
                 }
             }
@@ -761,17 +761,55 @@ namespace GitUI.CommitInfo
 
         private sealed class ItemTpComparer : IComparer<string>
         {
+            private readonly string _currentBranch;
             private readonly IDictionary<string, int> _orderDict;
             private readonly string _prefix;
 
-            public ItemTpComparer(IDictionary<string, int> orderDict, string prefix)
+            public ItemTpComparer(IDictionary<string, int> orderDict, string prefix, string currentBranch = null)
             {
                 _orderDict = orderDict;
                 _prefix = prefix;
+                _currentBranch = currentBranch;
             }
 
             public int Compare(string a, string b)
             {
+                if (_currentBranch != null)
+                {
+                    if (a == _currentBranch)
+                    {
+                        return -1;
+                    }
+
+                    if (b == _currentBranch)
+                    {
+                        return 1;
+                    }
+
+                    if (IsLocalMaster(a))
+                    {
+                        return -1;
+                    }
+
+                    if (IsLocalMaster(b))
+                    {
+                        return 1;
+                    }
+
+                    if (IsRemoteMaster(a))
+                    {
+                        return IsRemoteMaster(b) ? Comparer<string>.Default.Compare(a, b) : -1;
+                    }
+
+                    if (IsRemoteMaster(b))
+                    {
+                        return 1;
+                    }
+
+                    // As long as GetSortedRefs() doesn't return the branches sorted by date, sort other branches alphabetically.
+                    return Comparer<string>.Default.Compare(a, b);
+                }
+
                 return IndexOf(a) - IndexOf(b);
 
                 int IndexOf(string s)
@@ -792,6 +830,10 @@ namespace GitUI.CommitInfo
 
                     return -1;
                 }
+
+                // Note: This assumes that "master" is the important branch, this is not configurable.
+                bool IsLocalMaster(string branch) => branch == "master";
+                bool IsRemoteMaster(string branch) => branch.EndsWith("/master") && branch.Count(c => c == '/') == 2;
             }
         }
 
