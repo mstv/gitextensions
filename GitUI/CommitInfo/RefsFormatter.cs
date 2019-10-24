@@ -12,12 +12,17 @@ namespace GitUI.CommitInfo
     public static class RefsFormatter
     {
         /// <summary>
+        /// The number of displayed lines if the list is limited.
+        /// </summary>
+        private const int MaximumDisplayedLinesIfLimited = 12;
+
+        /// <summary>
         /// The number of displayed refs if the list is limited.
         ///
         /// If limited, the line "[Show all]" and an empty line are added.
         /// Hence the list needs to be limited only if it exceeds MaximumDisplayedRefsIfLimited + 2.
         /// </summary>
-        private const int MaximumDisplayedRefsIfLimited = 10;
+        private const int MaximumDisplayedRefsIfLimited = MaximumDisplayedLinesIfLimited - 2;
 
         private static readonly ILinkFactory LinkFactory = new LinkFactory();
 
@@ -66,9 +71,9 @@ namespace GitUI.CommitInfo
                         ? LinkFactory.CreateBranchLink(noPrefixBranch)
                         : WebUtility.HtmlEncode(noPrefixBranch);
 
-                    if (limit && links.Count == MaximumDisplayedRefsIfLimited + 2)
+                    if (limit && links.Count == MaximumDisplayedLinesIfLimited)
                     {
-                        links.RemoveRange(MaximumDisplayedRefsIfLimited, 2);
+                        links.RemoveRange(MaximumDisplayedRefsIfLimited, MaximumDisplayedLinesIfLimited - MaximumDisplayedRefsIfLimited);
                         truncated = true;
                         break; // from foreach
                     }
@@ -87,30 +92,34 @@ namespace GitUI.CommitInfo
 
         public static string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
         {
-            bool truncate = limit && tags.Count > MaximumDisplayedRefsIfLimited + 2;
-            var links = FormatTags(truncate ? tags.Take(MaximumDisplayedRefsIfLimited) : tags);
-            return ToString(links, Strings.ContainedInTags, Strings.ContainedInNoTag, "tags", truncate);
+            bool truncate = limit && tags.Count > MaximumDisplayedLinesIfLimited;
+            var formattedTags = FormatTags(truncate ? tags.Take(MaximumDisplayedRefsIfLimited) : tags);
+            return ToString(formattedTags, Strings.ContainedInTags, Strings.ContainedInNoTag, "tags", truncate);
 
-            IEnumerable<string> FormatTags(IEnumerable<string> tags_)
+            IEnumerable<string> FormatTags(IEnumerable<string> selectedTags)
             {
-                return tags_.Select(s => showAsLinks ? LinkFactory.CreateTagLink(s) : WebUtility.HtmlEncode(s));
+                return selectedTags.Select(s => showAsLinks ? LinkFactory.CreateTagLink(s) : WebUtility.HtmlEncode(s));
             }
         }
 
         private static string ToString(IEnumerable<string> links, string prefix, string textIfEmpty, string refsType, bool truncated)
         {
-            if (links.Any())
+            string linksJoined = links?.Join(Environment.NewLine);
+            if (linksJoined.IsNullOrEmpty())
             {
-                var sb = new StringBuilder().AppendLine(WebUtility.HtmlEncode(prefix)).Append(links.Join(Environment.NewLine));
-                if (truncated)
-                {
-                    sb.AppendLine().AppendLine(LinkFactory.CreateShowAllLink(refsType));
-                }
-
-                return sb.ToString();
+                return WebUtility.HtmlEncode(textIfEmpty);
             }
 
-            return WebUtility.HtmlEncode(textIfEmpty);
+            var sb = new StringBuilder()
+                .AppendLine(WebUtility.HtmlEncode(prefix))
+                .Append(linksJoined);
+            if (truncated)
+            {
+                sb.AppendLine()
+                  .AppendLine(LinkFactory.CreateShowAllLink(refsType));
+            }
+
+            return sb.ToString();
         }
     }
 }
