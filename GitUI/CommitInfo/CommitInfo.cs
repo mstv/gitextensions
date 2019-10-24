@@ -63,6 +63,7 @@ namespace GitUI.CommitInfo
         private readonly IConfigFileRemoteSettingsManager _remotesManager;
         private readonly GitDescribeProvider _gitDescribeProvider;
         private readonly CancellationTokenSequence _asyncLoadCancellation = new CancellationTokenSequence();
+        private readonly RefsFormatter _refsFormatter;
 
         private readonly IDisposable _revisionInfoResizedSubscription;
         private readonly IDisposable _commitMessageResizedSubscription;
@@ -111,6 +112,7 @@ namespace GitUI.CommitInfo
             _externalLinkRevisionParser = new ExternalLinkRevisionParser(_remotesManager);
             _gitRevisionExternalLinksParser = new GitRevisionExternalLinksParser(_effectiveLinkDefinitionsProvider, _externalLinkRevisionParser);
             _gitDescribeProvider = new GitDescribeProvider(() => Module);
+            _refsFormatter = new RefsFormatter(_linkFactory);
 
             var color = SystemColors.Window.MakeColorDarker(0.04);
             pnlCommitMessage.BackColor = color;
@@ -553,13 +555,13 @@ namespace GitUI.CommitInfo
                 if (_tags != null && string.IsNullOrEmpty(_tagInfo))
                 {
                     _tags.Sort(new ItemTpComparer(_refsOrderDict, "refs/tags/"));
-                    _tagInfo = RefsFormatter.FormatTags(_tags, ShowBranchesAsLinks, limit: !_showAllTags);
+                    _tagInfo = _refsFormatter.FormatTags(_tags, ShowBranchesAsLinks, limit: !_showAllTags);
                 }
 
                 if (_branches != null && string.IsNullOrEmpty(_branchInfo))
                 {
                     _branches.Sort(new ItemTpComparer(_refsOrderDict, "refs/heads/", Module.GetSelectedBranch()));
-                    _branchInfo = RefsFormatter.FormatBranches(_branches, ShowBranchesAsLinks, limit: !_showAllBranches);
+                    _branchInfo = _refsFormatter.FormatBranches(_branches, ShowBranchesAsLinks, limit: !_showAllBranches);
                 }
             }
 

@@ -9,7 +9,7 @@ using ResourceManager;
 
 namespace GitUI.CommitInfo
 {
-    public static class RefsFormatter
+    public sealed class RefsFormatter
     {
         /// <summary>
         /// The number of displayed lines if the list is limited.
@@ -24,9 +24,14 @@ namespace GitUI.CommitInfo
         /// </summary>
         private const int MaximumDisplayedRefsIfLimited = MaximumDisplayedLinesIfLimited - 2;
 
-        private static readonly ILinkFactory LinkFactory = new LinkFactory();
+        private readonly ILinkFactory _linkFactory;
 
-        public static string FormatBranches(IEnumerable<string> branches, bool showAsLinks, bool limit)
+        public RefsFormatter(ILinkFactory linkFactory)
+        {
+            _linkFactory = linkFactory;
+        }
+
+        public string FormatBranches(IEnumerable<string> branches, bool showAsLinks, bool limit)
         {
             var links = new List<string>();
             bool truncated = false;
@@ -68,7 +73,7 @@ namespace GitUI.CommitInfo
                 if ((branchIsLocal && allowLocal) || (!branchIsLocal && allowRemote))
                 {
                     var branchText = showAsLinks
-                        ? LinkFactory.CreateBranchLink(noPrefixBranch)
+                        ? _linkFactory.CreateBranchLink(noPrefixBranch)
                         : WebUtility.HtmlEncode(noPrefixBranch);
 
                     if (limit && links.Count == MaximumDisplayedLinesIfLimited)
@@ -90,7 +95,7 @@ namespace GitUI.CommitInfo
             return ToString(links, Strings.ContainedInBranches, Strings.ContainedInNoBranch, "branches", truncated);
         }
 
-        public static string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
+        public string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
         {
             bool truncate = limit && tags.Count > MaximumDisplayedLinesIfLimited;
             var formattedTags = FormatTags(truncate ? tags.Take(MaximumDisplayedRefsIfLimited) : tags);
@@ -98,11 +103,11 @@ namespace GitUI.CommitInfo
 
             IEnumerable<string> FormatTags(IEnumerable<string> selectedTags)
             {
-                return selectedTags.Select(s => showAsLinks ? LinkFactory.CreateTagLink(s) : WebUtility.HtmlEncode(s));
+                return selectedTags.Select(s => showAsLinks ? _linkFactory.CreateTagLink(s) : WebUtility.HtmlEncode(s));
             }
         }
 
-        private static string ToString(IEnumerable<string> links, string prefix, string textIfEmpty, string refsType, bool truncated)
+        private string ToString(IEnumerable<string> links, string prefix, string textIfEmpty, string refsType, bool truncated)
         {
             string linksJoined = links?.Join(Environment.NewLine);
             if (linksJoined.IsNullOrEmpty())
@@ -116,7 +121,7 @@ namespace GitUI.CommitInfo
             if (truncated)
             {
                 sb.AppendLine()
-                  .AppendLine(LinkFactory.CreateShowAllLink(refsType));
+                  .AppendLine(_linkFactory.CreateShowAllLink(refsType));
             }
 
             return sb.ToString();
