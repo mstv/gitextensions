@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using GitCommands;
+using JetBrains.Annotations;
 using ResourceManager;
 
 namespace GitUI.CommitInfo
@@ -26,12 +27,12 @@ namespace GitUI.CommitInfo
 
         private readonly ILinkFactory _linkFactory;
 
-        public RefsFormatter(ILinkFactory linkFactory)
+        public RefsFormatter([NotNull] ILinkFactory linkFactory)
         {
-            _linkFactory = linkFactory;
+            _linkFactory = linkFactory ?? throw new ArgumentNullException("RefsFormatter requires an ILinkFactory instance");
         }
 
-        public string FormatBranches(IEnumerable<string> branches, bool showAsLinks, bool limit)
+        public string FormatBranches([NotNull] IEnumerable<string> branches, bool showAsLinks, bool limit)
         {
             var links = new List<string>();
             bool truncated = false;
@@ -95,7 +96,7 @@ namespace GitUI.CommitInfo
             return ToString(links, Strings.ContainedInBranches, Strings.ContainedInNoBranch, "branches", truncated);
         }
 
-        public string FormatTags(IReadOnlyList<string> tags, bool showAsLinks, bool limit)
+        public string FormatTags([NotNull] IReadOnlyList<string> tags, bool showAsLinks, bool limit)
         {
             bool truncate = limit && tags.Count > MaximumDisplayedLinesIfLimited;
             var formattedTags = FormatTags(truncate ? tags.Take(MaximumDisplayedRefsIfLimited) : tags);

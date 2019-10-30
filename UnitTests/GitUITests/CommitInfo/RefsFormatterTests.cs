@@ -26,6 +26,14 @@ namespace GitUITests.CommitInfo
         }
 
         [Test]
+        public void Null()
+        {
+            ((Action)(() => new RefsFormatter(null))).Should().Throw<ArgumentNullException>();
+            ((Action)(() => _refsFormatter.FormatBranches(null, false, false))).Should().Throw<NullReferenceException>();
+            ((Action)(() => _refsFormatter.FormatTags(null, false, false))).Should().Throw<NullReferenceException>();
+        }
+
+        [Test]
         public void Empty([Values(true, false)] bool showAsLinks, [Values(true, false)] bool limit)
         {
             IReadOnlyList<string> refs = new List<string>();
