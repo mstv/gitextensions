@@ -29,7 +29,12 @@ namespace CommonTestUtils
         {
             try
             {
-                ThreadHelper.JoinableTaskContext?.Factory.Run(() => ThreadHelper.JoinPendingOperationsAsync());
+                if (ThreadHelper.JoinableTaskContext == null)
+                {
+                    throw new InvalidOperationException("Wait is pointless without JoinableTaskContext.");
+                }
+
+                ThreadHelper.JoinableTaskContext.Factory.Run(ThreadHelper.JoinPendingOperationsAsync);
             }
             catch (OperationCanceledException)
             {

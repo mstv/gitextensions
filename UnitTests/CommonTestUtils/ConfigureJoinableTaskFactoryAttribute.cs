@@ -56,13 +56,28 @@ namespace CommonTestUtils
         {
             try
             {
-                ThreadHelper.JoinableTaskContext?.Factory.Run(() => ThreadHelper.JoinPendingOperationsAsync());
-                ThreadHelper.JoinableTaskContext = null;
-                if (_denyExecutionSynchronizationContext != null)
+                try
                 {
-                    SynchronizationContext.SetSynchronizationContext(_denyExecutionSynchronizationContext.UnderlyingContext);
-                    _denyExecutionSynchronizationContext.ThrowIfSwitchOccurred();
+                    if (ThreadHelper.JoinableTaskContext == null)
+                    {
+                        throw new InvalidOperationException("A JoinableTaskContext must have been created by BeforeTest.");
+                    }
+
+                    ThreadHelper.JoinableTaskContext.Factory.Run(ThreadHelper.JoinPendingOperationsAsync);
                 }
+                finally
+                {
+                    ThreadHelper.JoinableTaskContext = null;
+                    if (_denyExecutionSynchronizationContext != null)
+                    {
+                        SynchronizationContext.SetSynchronizationContext(_denyExecutionSynchronizationContext.UnderlyingContext);
+                        _denyExecutionSynchronizationContext.ThrowIfSwitchOccurred();
+                    }
+                }
+            }
+            catch (Exception) when (_threadException != null)
+            {
+                // ignore the follow-up exception
             }
             finally
             {
