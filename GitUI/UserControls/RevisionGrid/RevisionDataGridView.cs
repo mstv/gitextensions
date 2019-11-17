@@ -49,12 +49,7 @@ namespace GitUI.UserControls.RevisionGrid
 
         public RevisionDataGridView()
         {
-            _backgroundThread = new Thread(BackgroundThreadEntry)
-            {
-                IsBackground = true,
-                Name = "RevisionDataGridView.backgroundThread"
-            };
-            _backgroundThread.Start();
+            StartBackgroundThread();
 
             NormalFont = AppSettings.Font;
             _monospaceFont = AppSettings.MonospaceFont;
@@ -156,10 +151,10 @@ namespace GitUI.UserControls.RevisionGrid
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2002:DoNotLockOnObjectsWithWeakIdentity", Justification = "It looks like such lock was made intentionally but it is better to rewrite this")]
         protected override void Dispose(bool disposing)
         {
-            _shouldRun = false;
-
             if (disposing)
             {
+                _shouldRun = false;
+                JoinBackgroundThreadAndPendingAsyncOperations();
                 _backgroundEvent?.Dispose();
             }
 
@@ -319,8 +314,8 @@ namespace GitUI.UserControls.RevisionGrid
         {
             _backgroundScrollTo = 0;
 
-            // Force the background thread to be killed, we need to be sure no background processes are running. Not the best practice, but safe.
-            _backgroundThread.Abort();
+            // Let the background thread terminate, we need to be sure no background processes are running.
+            JoinBackgroundThreadAndPendingAsyncOperations();
 
             // Set rowcount to 0 first, to ensure it is not possible to select or redraw, since we are about te delete the data
             SetRowCount(0);
@@ -337,12 +332,7 @@ namespace GitUI.UserControls.RevisionGrid
             UpdateVisibleRowRange();
             Invalidate(invalidateChildren: true);
 
-            _backgroundThread = new Thread(BackgroundThreadEntry)
-            {
-                IsBackground = true,
-                Name = "RevisionDataGridView.backgroundThread"
-            };
-            _backgroundThread.Start();
+            StartBackgroundThread();
         }
 
         public bool RowIsRelative(int rowIndex)
@@ -674,6 +664,48 @@ namespace GitUI.UserControls.RevisionGrid
             else
             {
                 base.OnMouseWheel(e);
+            }
+        }
+
+        private void StartBackgroundThread()
+        {
+            if (_backgroundThread != null)
+            {
+                throw new InvalidOperationException("There shall run only one background thread.");
+            }
+
+            _backgroundThread = new Thread(BackgroundThreadEntry)
+            {
+                IsBackground = true,
+                Name = "RevisionDataGridView.backgroundThread"
+            };
+            _backgroundThread.Start();
+        }
+
+        private void JoinBackgroundThreadAndPendingAsyncOperations()
+        {
+            var shouldRun = _shouldRun;
+            try
+            {
+                _shouldRun = false;
+                _backgroundEvent.Set();
+                _backgroundThread.Join();
+                _backgroundThread = null;
+            }
+            finally
+            {
+                _shouldRun = shouldRun;
+            }
+
+            try
+            {
+                // Note that ThreadHelper.JoinableTaskContext.Factory must be used to bypass the default behavior of
+                // ThreadHelper.JoinableTaskFactory since the latter adds new tasks to the collection and would therefore
+                // never complete.
+                ThreadHelper.JoinableTaskContext.Factory.Run(ThreadHelper.JoinPendingOperationsAsync);
+            }
+            catch (OperationCanceledException)
+            {
             }
         }
     }
