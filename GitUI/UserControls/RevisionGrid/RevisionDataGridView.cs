@@ -439,11 +439,6 @@ namespace GitUI.UserControls.RevisionGrid
             bool keepRunning = false;
             while (_shouldRun)
             {
-                if (!_shouldRun)
-                {
-                    return;
-                }
-
                 if (keepRunning || _backgroundEvent.WaitOne(200))
                 {
                     keepRunning = false;
@@ -474,6 +469,11 @@ namespace GitUI.UserControls.RevisionGrid
                 }
                 else
                 {
+                    if (!_shouldRun)
+                    {
+                        return;
+                    }
+
                     if (RowCount < _revisionGraph.Count)
                     {
                         this.InvokeAsync(() => { SetRowCountAndSelectRowsIfReady(_revisionGraph.Count); }).FileAndForget();
