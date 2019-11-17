@@ -68,14 +68,13 @@ namespace GitUITests.CommandsDialogs
         public void RepoObjectTree_should_load_active_remotes()
         {
             RunFormTest(
-                form =>
+                remotesNode =>
                 {
                     // act
                     // no-op: by the virtue of loading the form, the left panel has loaded its content
 
                     // assert
-                    var remotesNode = GetRemoteNode(form);
-                    remotesNode.Nodes.Count.Should().Be(5);
+                    remotesNode.Nodes.Count.Should().Be(RemoteNames.Length);
                 });
         }
 
@@ -83,13 +82,12 @@ namespace GitUITests.CommandsDialogs
         public void RepoObjectTree_should_order_active_remotes_alphabetically()
         {
             RunFormTest(
-                form =>
+                remotesNode =>
                 {
                     // act
                     // no-op: by the virtue of loading the form, the left panel has loaded its content
 
                     // assert
-                    var remotesNode = GetRemoteNode(form);
                     var names = remotesNode.Nodes.OfType<TreeNode>().Select(x => x.Text).ToList();
                     names.Should().BeEquivalentTo(RemoteNames);
                     names.Should().BeInAscendingOrder();
@@ -100,13 +98,12 @@ namespace GitUITests.CommandsDialogs
         public void RepoObjectTree_should_order_should_not_display_inactive_if_none()
         {
             RunFormTest(
-                form =>
+                remotesNode =>
                 {
                     // act
                     // no-op: by the virtue of loading the form, the left panel has loaded its content
 
                     // assert
-                    var remotesNode = GetRemoteNode(form);
                     remotesNode.Nodes.OfType<TreeNode>().Any(n => n.Text == InactiveLabel).Should().BeFalse();
                 });
         }
@@ -118,13 +115,12 @@ namespace GitUITests.CommandsDialogs
             DeactivateTreeNode(RemoteNames[1]);
 
             RunFormTest(
-                form =>
+                remotesNode =>
                 {
                     // act
                     // no-op: by the virtue of loading the form, the left panel has loaded its content
 
                     // assert
-                    var remotesNode = GetRemoteNode(form);
                     remotesNode.Nodes.OfType<TreeNode>().Count(n => n.Text == InactiveLabel).Should().Be(1);
                 });
         }
@@ -136,13 +132,12 @@ namespace GitUITests.CommandsDialogs
             DeactivateTreeNode(RemoteNames[1]);
 
             RunFormTest(
-                form =>
+                remotesNode =>
                 {
                     // act
                     // no-op: by the virtue of loading the form, the left panel has loaded its content
 
                     // assert
-                    var remotesNode = GetRemoteNode(form);
                     remotesNode.Nodes.OfType<TreeNode>().Last().Text.Should().Be(InactiveLabel);
                 });
         }
@@ -156,13 +151,12 @@ namespace GitUITests.CommandsDialogs
             DeactivateTreeNode(RemoteNames[1]);
 
             RunFormTest(
-                form =>
+                remotesNode =>
                 {
                     // act
                     // no-op: by the virtue of loading the form, the left panel has loaded its content
 
                     // assert
-                    var remotesNode = GetRemoteNode(form);
                     var inactiveNodes = remotesNode.Nodes.OfType<TreeNode>().Last().Nodes.OfType<TreeNode>().Select(n => n.Text).ToList();
                     inactiveNodes.Count.Should().Be(3);
                     inactiveNodes.Should().BeEquivalentTo(RemoteNames[3], RemoteNames[0], RemoteNames[1]);
@@ -183,12 +177,23 @@ namespace GitUITests.CommandsDialogs
             return remotesNode;
         }
 
-        private void RunFormTest(Action<FormBrowse> testDriver)
+        private void RunFormTest(Action<TreeNode> testDriver)
         {
             RunFormTest(
                 form =>
                 {
-                    testDriver(form);
+                    var remotesNode = GetRemoteNode(form);
+
+                    // The async tasks which load and display the nodes are started by the RevisionDataGridView._backgroundThread.
+                    // Hence the WaitForPendingOperations in UITest.RunForm does not suffice occasionally.
+                    // So wait up to 5 seconds until the remotes nodes will have been loaded.
+                    for (int i = 0; i < 50 && remotesNode.Nodes.Count != RemoteNames.Length; ++i)
+                    {
+                        Thread.Sleep(100);
+                        Application.DoEvents();
+                    }
+
+                    testDriver(remotesNode);
                     return Task.CompletedTask;
                 });
         }

@@ -186,9 +186,12 @@ namespace GitUITests.Script
 
             RunFormTest(formBrowse =>
             {
-                // wait until the revisions are loaded
-                while (formBrowse.RevisionGridControl.LatestSelectedRevision == null)
+                // The async tasks which load and display the revisions are started by the RevisionDataGridView._backgroundThread.
+                // Hence the WaitForPendingOperations in UITest.RunForm does not suffice occasionally.
+                // So wait up to 5 seconds until the revisions will have been loaded.
+                for (int i = 0; i < 50 && formBrowse.RevisionGridControl.LatestSelectedRevision == null; ++i)
                 {
+                    Thread.Sleep(100);
                     Application.DoEvents();
                 }
 
