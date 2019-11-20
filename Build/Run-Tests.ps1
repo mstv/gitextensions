@@ -3,7 +3,7 @@ $packageConfig = [xml](Get-Content .nuget\packages.config)
 $opencover_version = $packageConfig.SelectSingleNode('/packages/package[@id="OpenCover"]').version
 $opencover_console = "packages\OpenCover.$opencover_version\tools\OpenCover.Console.exe"
 
-$testRunCount = 1
+$testRunCount = 6
 for ($i=1; $i -le $testRunCount; $i++)
 {
     Write-Host "[INFO]: Test Run ${i}/${testRunCount}"
