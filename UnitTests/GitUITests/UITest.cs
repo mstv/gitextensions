@@ -55,11 +55,27 @@ namespace GitUITests
 
                 try
                 {
-                    await runAsync(form);
+                    try
+                    {
+                        await runAsync(form);
+                    }
+                    finally
+                    {
+                        // Wait for potential pending asynchronous tasks triggered by the test.
+                        AsyncTestHelper.WaitForPendingOperations();
+                    }
                 }
                 finally
                 {
-                    form.Close(); // also calls form.Dispose()
+                    try
+                    {
+                        form.Close(); // also calls form.Dispose()
+                    }
+                    finally
+                    {
+                        // Wait for potential pending asynchronous tasks triggered by form.Close.
+                        AsyncTestHelper.WaitForPendingOperations();
+                    }
                 }
             });
 
