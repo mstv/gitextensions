@@ -2,8 +2,10 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Threading;
@@ -115,6 +117,21 @@ namespace GitUI
         public static async Task JoinPendingOperationsAsync()
         {
             await _joinableTaskCollection.JoinTillEmptyAsync();
+        }
+
+        public static void WaitForPendingOperationsAndDoApplicationEvents()
+        {
+            ThrowIfNotOnUIThread(nameof(WaitForPendingOperationsAndDoApplicationEvents));
+            if (_joinableTaskCollection == null)
+            {
+                throw new InvalidOperationException("Wait is pointless without JoinableTaskCollection.");
+            }
+
+            while (_joinableTaskCollection.Any())
+            {
+                Thread.Sleep(0);
+                Application.DoEvents();
+            }
         }
 
         public static T CompletedResult<T>(this Task<T> task)

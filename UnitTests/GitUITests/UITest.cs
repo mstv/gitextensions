@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonTestUtils;
@@ -50,7 +51,7 @@ namespace GitUITests
                 while (form == null || !form.Visible);
 
                 // Wait for potential pending asynchronous tasks triggered by the form.
-                AsyncTestHelper.WaitForPendingOperations();
+                ThreadHelper.WaitForPendingOperationsAndDoApplicationEvents();
 
                 try
                 {
