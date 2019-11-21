@@ -74,9 +74,15 @@ namespace GitUITests.CommandsDialogs
         {
             _commands = null;
 
-            _repo1.Dispose();
-            _repo2.Dispose();
-            _repo3.Dispose();
+            _provider?.Dispose();
+            _provider = null;
+
+            _repo1?.Dispose();
+            _repo1 = null;
+            _repo2?.Dispose();
+            _repo2 = null;
+            _repo3?.Dispose();
+            _repo3 = null;
         }
 
         [Test]

@@ -25,6 +25,12 @@ namespace GitUITests.UserControls.RevisionGrid
             }
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _revisionGraph = null;
+        }
+
         [Test]
         public void ShouldBeAbleToCacheGraphTo()
         {

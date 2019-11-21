@@ -16,6 +16,12 @@ namespace ReleaseNotesGeneratorTests
             _parser = new GitLogLineParser();
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _parser = null;
+        }
+
         [TestCase(null)]
         [TestCase("")]
         [TestCase("    ")]

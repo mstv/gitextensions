@@ -46,6 +46,12 @@ namespace GitUITests.Avatars
             _cache = new AvatarPersistentCache(_inner, _avatarGenerator, _fileSystem);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _cache = null;
+        }
+
         [Test]
         public async Task GetAvatarAsync_should_create_if_folder_absent()
         {

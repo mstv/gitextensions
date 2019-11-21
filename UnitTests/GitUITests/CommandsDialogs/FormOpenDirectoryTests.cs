@@ -34,6 +34,11 @@ namespace GitUITests.CommandsDialogs
         public void TearDown()
         {
             _localRepositoryManager = null;
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
             _referenceRepository?.Dispose();
             _referenceRepository = null;
         }

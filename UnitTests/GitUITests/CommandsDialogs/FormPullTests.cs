@@ -52,7 +52,8 @@ namespace GitUITests.CommandsDialogs
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _referenceRepository.Dispose();
+            _referenceRepository?.Dispose();
+            _referenceRepository = null;
         }
 
         [Test]

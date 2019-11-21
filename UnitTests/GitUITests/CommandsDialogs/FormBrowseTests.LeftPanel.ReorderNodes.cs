@@ -52,6 +52,7 @@ namespace GitUITests.CommandsDialogs
             AppSettings.RepoObjectsTreeShowRemotes = _originalRepoObjectsTreeShow[1];
             AppSettings.RepoObjectsTreeShowTags = _originalRepoObjectsTreeShow[2];
             AppSettings.RepoObjectsTreeShowSubmodules = _originalRepoObjectsTreeShow[3];
+            _originalRepoObjectsTreeShow = null;
         }
 
         [SetUp]
@@ -65,7 +66,8 @@ namespace GitUITests.CommandsDialogs
         public void TearDown()
         {
             _commands = null;
-            _repo1.Dispose();
+            _repo1?.Dispose();
+            _repo1 = null;
         }
 
         [Test]

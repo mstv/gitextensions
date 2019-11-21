@@ -25,6 +25,13 @@ namespace GitUITests.CommitInfo
             _refsFormatter = new RefsFormatter(_linkFactory);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _refsFormatter = null;
+            _linkFactory = null;
+        }
+
         [Test]
         public void LinkFactoryNull()
         {

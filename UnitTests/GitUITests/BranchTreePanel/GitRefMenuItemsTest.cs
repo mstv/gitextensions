@@ -22,6 +22,7 @@ namespace GitUITests.BranchTreePanel
         private Queue<ToolStripMenuItem> _factoryQueue = new Queue<ToolStripMenuItem>();
         private IMenuItemFactory _factory = null;
         private TestBranchNode _testNode = new TestBranchNode();
+
         [SetUp]
         public void Setup()
         {
@@ -34,6 +35,14 @@ namespace GitUITests.BranchTreePanel
                 .Returns(_ => _factoryQueue.Dequeue());
 
             Enumerable.Range(0, expectedMenuItems).ForEach(_ => _factoryQueue.Enqueue(new ToolStripMenuItem()));
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _testNode = null;
+            _factory = null;
+            _factoryQueue = null;
         }
 
         [Test]

@@ -39,6 +39,11 @@ namespace GitUITests.CommandsDialogs
         {
             _imageList?.Dispose();
             _imageList = null;
+
+            _rootNode = null;
+            _controller = null;
+            _iconProvider = null;
+            _revisionInfoProvider = null;
         }
 
         [Test]

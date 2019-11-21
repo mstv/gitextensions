@@ -55,13 +55,16 @@ namespace GitUITests.Script
         [TearDown]
         public void TearDown()
         {
+            _exampleScript = null;
+            _module = null;
             _uiCommands = null;
         }
 
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _referenceRepository.Dispose();
+            _referenceRepository?.Dispose();
+            _referenceRepository = null;
         }
 
         [Test]

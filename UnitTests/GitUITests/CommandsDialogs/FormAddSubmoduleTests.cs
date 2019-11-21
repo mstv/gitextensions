@@ -34,6 +34,12 @@ namespace GitUITests.CommandsDialogs
             _gitExecutable = Substitute.For<IExecutable>();
         }
 
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            _gitExecutable = null;
+        }
+
         [Test]
         public void LoadRemoteRepoBranches_NoUrl([Values(null, "", " ")] string url)
         {

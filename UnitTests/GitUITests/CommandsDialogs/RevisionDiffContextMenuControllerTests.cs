@@ -17,6 +17,12 @@ namespace GitUITests.CommandsDialogs
             _revisionDiffContextMenuController = new FileStatusListContextMenuController();
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _revisionDiffContextMenuController = null;
+        }
+
         [Test]
         public void BrowseDiff_SuppressDiffToLocalWhenNoSelectedRevision()
         {

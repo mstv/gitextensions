@@ -22,6 +22,13 @@ namespace GitUITests.CommandsDialogs
             _controller = new RevisionDiffController(_tester);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _controller = null;
+            _tester = null;
+        }
+
         #region difftool menu
 
         [Test]

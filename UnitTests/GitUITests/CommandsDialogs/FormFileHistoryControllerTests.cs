@@ -17,6 +17,12 @@ namespace GitUITests.CommandsDialogs
             _controller = new FormFileHistoryController();
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _controller = null;
+        }
+
         [TestCase(@"Does not exist")]
         [TestCase("")]
         [TestCase(" ")]

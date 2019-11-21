@@ -46,10 +46,13 @@ namespace GitUITests.Avatars
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _img1.Dispose();
-            _img2.Dispose();
-            _img3.Dispose();
-            _img4.Dispose();
+            _cache = null;
+            _inner = null;
+            _img1?.Dispose();
+            _img2?.Dispose();
+            _img3?.Dispose();
+            _img4?.Dispose();
+            _imgGenerated?.Dispose();
         }
 
         [SetUp]
