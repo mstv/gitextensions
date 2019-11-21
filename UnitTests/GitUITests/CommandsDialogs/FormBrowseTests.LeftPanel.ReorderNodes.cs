@@ -181,8 +181,8 @@ namespace GitUITests.CommandsDialogs
 
                     // The async tasks which load and display the nodes are started by the RevisionDataGridView._backgroundThread.
                     // Hence the WaitForPendingOperations in UITest.RunForm does not suffice occasionally.
-                    // So wait up to 5 seconds until the nodes will have been loaded.
-                    for (int i = 0; i < 50 && currNodes.Count != 4; ++i)
+                    // So wait up to 60 seconds until the nodes will have been loaded.
+                    for (int i = 0; i < 60 * 10 && currNodes.Count != 4; ++i)
                     {
                         Thread.Sleep(100);
                         Application.DoEvents();
