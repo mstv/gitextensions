@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CommonTestUtils;
 using GitUI;
+using NUnit.Framework;
 
 namespace GitUITests
 {
@@ -27,29 +29,39 @@ namespace GitUITests
         }
 
         public static void RunForm<T>(
-            Action showDialog,
+            Action showForm,
             Func<T, Task> runAsync)
             where T : Form
         {
+            // Start runAsync before calling showForm.
+            // The latter might block until the form is closed, especially if using Application.Run(form).
+
             // Avoid using ThreadHelper.JoinableTaskFactory for the outermost operation because we don't want the task
             // tracked by its collection. Otherwise, test code would not be able to wait for pending operations to
             // complete.
             var test = ThreadHelper.JoinableTaskContext.Factory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // Wait for the form to be opened by the test thread.
                 await WaitForIdleAsync();
-                var dialog = Application.OpenForms.OfType<T>().Single();
+                var form = Application.OpenForms.OfType<T>().Single();
+                Assert.IsTrue(form.Visible);
+
+                // Wait for potential pending asynchronous tasks triggered by the form.
+                AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
+
                 try
                 {
-                    await runAsync(dialog);
+                    await runAsync(form);
                 }
                 finally
                 {
-                    dialog.Close();
+                    form.Close(); // also calls form.Dispose()
                 }
             });
 
-            showDialog();
+            showForm();
 
             // Join the asynchronous test operation so any exceptions are rethrown on this thread
             test.Join();
