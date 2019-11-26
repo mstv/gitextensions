@@ -16,7 +16,7 @@ for ($i=1; $i -le $testRunCount; $i++)
         -excludebyfile:*\*Designer.cs `
         -output:"OpenCover.GitExtensions.xml" `
         -target:"nunit3-console.exe" `
-        -targetargs:"$testAssemblies --workers=1 --timeout=90000"
+        -targetargs:"$testAssemblies --workers=1 --timeout=900000"
     $testExitCode += $LastExitCode
     if ($LastExitCode -ne 0) { Write-Host "[ERROR]: Test run ${i} failed!" }
     $artifact_name = "TestResult" + $i+ ".xml"
