@@ -41,8 +41,6 @@ namespace GitUITests
             // complete.
             var test = ThreadHelper.JoinableTaskContext.Factory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 // Wait for the form to be opened by the test thread.
                 await WaitForIdleAsync();
                 var form = Application.OpenForms.OfType<T>().Single();
@@ -50,6 +48,8 @@ namespace GitUITests
 
                 // Wait for potential pending asynchronous tasks triggered by the form.
                 AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 try
                 {
