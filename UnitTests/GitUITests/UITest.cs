@@ -45,7 +45,17 @@ namespace GitUITests
                 try
                 {
                     // Wait for potential pending asynchronous tasks triggered by the form.
+#if false
                     AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
+#else
+                    try
+                    {
+                        ThreadHelper.JoinableTaskContext.Factory.Run(ThreadHelper.JoinPendingOperationsAsync);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+#endif
                     Console.WriteLine($"{nameof(RunForm)}.test form loaded");
 
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
