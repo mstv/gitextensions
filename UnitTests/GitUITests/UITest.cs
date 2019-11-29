@@ -45,7 +45,7 @@ namespace GitUITests
                 try
                 {
                     // Wait for potential pending asynchronous tasks triggered by the form.
-#if false
+#if true
                     AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
 #else
                     try
