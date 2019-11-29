@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -68,7 +69,17 @@ namespace CommonTestUtils
 
                     using (var cts = new CancellationTokenSource(AsyncTestHelper.UnexpectedTimeout))
                     {
-                        ThreadHelper.JoinableTaskContext.Factory.Run(() => ThreadHelper.JoinPendingOperationsAsync(cts.Token));
+                        try
+                        {
+                            Console.WriteLine($"{nameof(AfterTest)} entry");
+                            ThreadHelper.JoinableTaskContext.Factory.Run(() => ThreadHelper.JoinPendingOperationsAsync(cts.Token));
+                            Console.WriteLine($"{nameof(AfterTest)} pending operations finished");
+                        }
+                        catch (OperationCanceledException ex)
+                        {
+                            var ctsCancelled = cts.IsCancellationRequested ? string.Empty : "not ";
+                            Console.WriteLine($"{nameof(AfterTest)} {nameof(OperationCanceledException)} cts {ctsCancelled}cancelled, ex {ex.Demystify()}");
+                        }
                     }
 
                     Assert.IsTrue(GitExtensionsFormBase.InstanceRegistry.Count == 0,
