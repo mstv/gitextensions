@@ -178,11 +178,14 @@ namespace GitUITests.Script
             _exampleScript.Arguments = "/c echo {sHash}";
             _referenceRepository.CheckoutRevision();
 
+            string errorMessage = null;
+
             RunFormTest(formBrowse =>
             {
-                var result = ScriptRunner.RunScript(null, _referenceRepository.Module, _keyOfExampleScript, _uiCommands, formBrowse.RevisionGridControl);
+                var result = ScriptRunner.RunScript(formBrowse, _referenceRepository.Module, _keyOfExampleScript, _uiCommands, formBrowse.RevisionGridControl, error => errorMessage = error);
 
                 result.Should().BeEquivalentTo(new CommandStatus(executed: true, needsGridRefresh: false));
+                errorMessage.Should().BeNull();
             });
         }
 
