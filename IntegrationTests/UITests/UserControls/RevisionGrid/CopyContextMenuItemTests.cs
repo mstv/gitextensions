@@ -8,7 +8,7 @@ using GitUI.UserControls.RevisionGrid;
 using GitUIPluginInterfaces;
 using NUnit.Framework;
 
-namespace GitUITests.UserControls.RevisionGrid
+namespace GitExtensions.UITests.UserControls.RevisionGrid
 {
     [TestFixture]
     public class CopyContextMenuItemTests
@@ -34,6 +34,13 @@ namespace GitUITests.UserControls.RevisionGrid
         {
             _copyContextMenuItem = new CopyContextMenuItem();
             _copyContextMenuItem.Owner = new ToolStrip();
+        }
+
+        [TearDown]
+        public void Dispose()
+        {
+            _copyContextMenuItem.Owner.Dispose();
+            _copyContextMenuItem.Dispose();
         }
 
         [Test]
