@@ -110,6 +110,45 @@ namespace GitUITests
             }
         }
 
+        public static void RunDialog<T>(
+            Action<Form> showDialog,
+            Func<T, Task> runTestAsync)
+            where T : Form
+        {
+            using (var mainForm = new Form())
+            {
+                UITest.RunForm<T>(
+                    () =>
+                    {
+                        mainForm.Shown += (s, e) =>
+                        {
+                            showDialog(mainForm);
+                        };
+
+                        if (Application.MessageLoop)
+                        {
+                            mainForm.Show(owner: null);
+                        }
+                        else
+                        {
+                            Application.Run(mainForm);
+                        }
+                    },
+                    async (dialogForm) =>
+                    {
+                        try
+                        {
+                            await runTestAsync(dialogForm);
+                        }
+                        finally
+                        {
+                            dialogForm.Close();
+                            mainForm.Close();
+                        }
+                    });
+            }
+        }
+
         private readonly struct VoidResult
         {
         }
