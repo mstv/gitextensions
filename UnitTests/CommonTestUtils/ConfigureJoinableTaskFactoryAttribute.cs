@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
+using GitCommands;
 using GitUI;
 using Microsoft.VisualStudio.Threading;
 using NUnit.Framework;
@@ -16,6 +17,8 @@ namespace CommonTestUtils
     [AttributeUsage(AttributeTargets.Assembly)]
     public sealed class ConfigureJoinableTaskFactoryAttribute : Attribute, ITestAction
     {
+        private readonly bool _checkForUpdatesOriginalValue = AppSettings.CheckForUpdates;
+
         private DenyExecutionSynchronizationContext _denyExecutionSynchronizationContext;
         private ExceptionDispatchInfo _threadException;
 
@@ -23,6 +26,8 @@ namespace CommonTestUtils
 
         public void BeforeTest(ITest test)
         {
+            AppSettings.CheckForUpdates = false;
+
             // Ignore instances from previous failed tests.
             GitExtensionsFormBase.InstanceRegistry.Clear();
 
@@ -106,6 +111,7 @@ namespace CommonTestUtils
             }
             finally
             {
+                AppSettings.CheckForUpdates = _checkForUpdatesOriginalValue;
                 Application.ThreadException -= HandleApplicationThreadException;
                 _threadException?.Throw();
             }
