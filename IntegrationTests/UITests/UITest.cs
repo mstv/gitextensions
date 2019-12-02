@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonTestUtils;
@@ -90,8 +91,11 @@ namespace GitExtensions.UITests
                 }
 
                 // Join the asynchronous test operation so any exceptions are rethrown on this thread.
-                test.Join();
-                Console.WriteLine($"{nameof(RunForm)} test joined");
+                using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3)))
+                {
+                    test.Join(cts.Token);
+                    Console.WriteLine($"{nameof(RunForm)} test joined");
+                }
             }
             finally
             {
@@ -140,8 +144,14 @@ namespace GitExtensions.UITests
                         }
                         finally
                         {
-                            dialogForm.Close();
-                            mainForm.Close();
+                            try
+                            {
+                                dialogForm.Close();
+                            }
+                            finally
+                            {
+                                mainForm.Close();
+                            }
                         }
                     });
             }
