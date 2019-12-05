@@ -30,6 +30,9 @@ namespace GitExtensions.UITests
             {
                 Console.WriteLine($"{nameof(RunForm)}.test entry");
 
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                Console.WriteLine($"{nameof(RunForm)}.test on main thread");
+
                 // Wait for the form to be opened by the test thread.
                 await idleCompletionSource.Task;
                 Console.WriteLine($"{nameof(RunForm)}.test idle");
@@ -46,9 +49,6 @@ namespace GitExtensions.UITests
                     // Wait for potential pending asynchronous tasks triggered by the form.
                     AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
                     Console.WriteLine($"{nameof(RunForm)}.test form loaded");
-
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    Console.WriteLine($"{nameof(RunForm)}.test on main thread");
 
                     await runTestAsync(form);
                     Console.WriteLine($"{nameof(RunForm)}.test passed");

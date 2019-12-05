@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using GitUI;
 
 namespace CommonTestUtils
@@ -53,6 +54,13 @@ namespace CommonTestUtils
                 catch (OperationCanceledException ex) when (cts.IsCancellationRequested)
                 {
                     Console.WriteLine($"{nameof(WaitForPendingOperations)} cts canceled, ex {ex.Demystify()}");
+
+                    // workaround for operations canceled immediately: wait one second and process the message loop
+                    for (int i = 0; i < 100; ++i)
+                    {
+                        Thread.Sleep(10);
+                        Application.DoEvents();
+                    }
                 }
             }
         }
