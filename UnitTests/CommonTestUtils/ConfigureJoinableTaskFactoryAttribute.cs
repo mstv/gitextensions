@@ -93,6 +93,8 @@ namespace CommonTestUtils
                     Assert.IsTrue(GitExtensionsFormBase.InstanceRegistry.Count == 0,
                         $"{GitExtensionsFormBase.InstanceRegistry.Count} undisposed form(s):{Environment.NewLine}"
                         + $"{GitExtensionsFormBase.InstanceRegistry}");
+
+                    Console.WriteLine($"{nameof(AfterTest)} instances checked");
                 }
                 finally
                 {
@@ -101,20 +103,27 @@ namespace CommonTestUtils
                     {
                         SynchronizationContext.SetSynchronizationContext(_denyExecutionSynchronizationContext.UnderlyingContext);
                     }
+
+                    Console.WriteLine($"{nameof(AfterTest)} JoinableTaskContext = null");
                 }
 
                 _denyExecutionSynchronizationContext?.ThrowIfSwitchOccurred();
             }
-            catch (Exception) when (_threadException != null)
+            catch (Exception ex) when (_threadException != null)
             {
                 // ignore the follow-up exception
+                Console.WriteLine($"{nameof(AfterTest)} ignored {ex.Demystify()}");
             }
             finally
             {
                 AppSettings.CheckForUpdates = _checkForUpdatesOriginalValue;
                 Application.ThreadException -= HandleApplicationThreadException;
+                string threadException = _threadException?.SourceException.Demystify().ToString() ?? "none";
+                Console.WriteLine($"{nameof(AfterTest)} rethrow {threadException}");
                 _threadException?.Throw();
             }
+
+            Console.WriteLine($"{nameof(AfterTest)} exit");
         }
 
         private void HandleApplicationThreadException(object sender, ThreadExceptionEventArgs e)
