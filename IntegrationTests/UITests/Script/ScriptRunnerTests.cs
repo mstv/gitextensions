@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using CommonTestUtils;
 using FluentAssertions;
 using GitCommands;
@@ -181,13 +180,21 @@ namespace GitExtensions.UITests.Script
             RunFormTest(formBrowse =>
             {
                 // wait until the revisions are loaded
-                while (formBrowse.RevisionGridControl.LatestSelectedRevision == null)
+                AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
+
+                // For a yet unknown cause randomly, the above wait does not suffice.
+                if (formBrowse.RevisionGridControl.GetSelectedRevisions().Count == 0)
                 {
-                    Application.DoEvents();
+                    Console.WriteLine($"{nameof(RunScript_with_arguments_with_s_option_with_RevisionGrid_with_selection_shall_succeed)} waits again");
+                    AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
                 }
 
-                var result = ScriptRunner.RunScript(null, _referenceRepository.Module, _keyOfExampleScript, _uiCommands, formBrowse.RevisionGridControl);
+                Assert.AreEqual(1, formBrowse.RevisionGridControl.GetSelectedRevisions().Count);
 
+                string errorMessage = null;
+                var result = ScriptRunner.RunScript(formBrowse, _referenceRepository.Module, _keyOfExampleScript, _uiCommands, formBrowse.RevisionGridControl, error => errorMessage = error);
+
+                errorMessage.Should().BeNull();
                 result.Should().BeEquivalentTo(new CommandStatus(executed: true, needsGridRefresh: false));
             });
         }
