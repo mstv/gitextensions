@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using GitUI;
 
 namespace CommonTestUtils
@@ -44,6 +45,9 @@ namespace CommonTestUtils
 
         public static void WaitForPendingOperations(TimeSpan timeout)
         {
+            // Workaround for tests hanging in conjunction with canceled operations:
+            // Process the message loop before and after the wait.
+            Application.DoEvents();
             using (var cts = new CancellationTokenSource(timeout))
             {
                 try
@@ -60,6 +64,7 @@ namespace CommonTestUtils
                     throw;
                 }
             }
+            Application.DoEvents();
         }
 
         public static void WaitForPendingOperations(CancellationToken cancellationToken)
