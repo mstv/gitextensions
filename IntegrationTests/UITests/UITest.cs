@@ -57,6 +57,43 @@ namespace GitExtensions.UITests
             test.Join();
         }
 
+        public static void RunDialog<T>(
+            Action<Form> showDialog,
+            Func<T, Task> runTestAsync)
+            where T : Form
+        {
+            using var mainForm = new Form { Text = $"Test {typeof(T).Name}" };
+            RunForm<T>(
+                showForm: () =>
+                {
+                    mainForm.Shown += (s, e) =>
+                    {
+                        showDialog(mainForm);
+                    };
+
+                    if (Application.MessageLoop)
+                    {
+                        mainForm.Show(owner: null);
+                    }
+                    else
+                    {
+                        Application.Run(mainForm);
+                    }
+                },
+                runTestAsync: async (dialog) =>
+                {
+                    try
+                    {
+                        await runTestAsync(dialog);
+                    }
+                    finally
+                    {
+                        // Explicitely close the mainForm here, in order to let Application.Run(mainForm) finish.
+                        mainForm.Close();
+                    }
+                });
+        }
+
         private readonly struct VoidResult
         {
         }
