@@ -204,6 +204,7 @@ namespace GitExtensions.UITests.Script
             RunFormTest(form =>
             {
                 testDriver(form);
+                AsyncTestHelper.WaitForPendingOperations(AsyncTestHelper.UnexpectedTimeout);
                 return Task.CompletedTask;
             });
         }
