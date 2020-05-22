@@ -570,11 +570,19 @@ namespace GitUI
             ForceRefreshRevisions();
         }
 
-        private void SetSelectedIndex(int index, bool toggleSelection = false)
+        /// <summary>
+        /// Returns whether the given index has been selected.
+        /// </summary>
+        private bool SetSelectedIndex(int index, bool toggleSelection = false)
         {
             try
             {
                 _gridView.Select();
+
+                if (index < 0 || _gridView.Rows.Count <= index)
+                {
+                    return false;
+                }
 
                 bool shallSelect;
                 bool wasSelected = _gridView.Rows[index].Selected;
@@ -597,7 +605,7 @@ namespace GitUI
                 if (wasSelected && shallSelect)
                 {
                     EnsureRowVisible(_gridView, index);
-                    return;
+                    return true;
                 }
 
                 _gridView.Rows[index].Selected = shallSelect;
@@ -613,13 +621,15 @@ namespace GitUI
                 }
 
                 EnsureRowVisible(_gridView, firstSelectedRow.Index);
+
+                return shallSelect;
             }
             catch (ArgumentException)
             {
                 // Ignore if selection failed. Datagridview is not threadsafe
             }
 
-            return;
+            return false;
 
             static void EnsureRowVisible(DataGridView gridView, int row)
             {
@@ -655,9 +665,7 @@ namespace GitUI
 
             if (index >= 0 && index < _gridView.RowCount)
             {
-                SetSelectedIndex(index, toggleSelection);
-                _navigationHistory.Push(objectId);
-                return true;
+                return SetSelectedIndex(index, toggleSelection);
             }
 
             _gridView.ClearSelection();
@@ -722,13 +730,13 @@ namespace GitUI
                 .ToList();
         }
 
-        private (ObjectId firstId, GitRevision selectedRev) getFirstAndSelected()
+        private (ObjectId firstId, GitRevision selectedRevision, IReadOnlyList<GitRevision> selectedRevisions) getFirstAndSelected()
         {
             var revisions = GetSelectedRevisions();
-            var selectedRev = revisions?.FirstOrDefault();
-            var firstId = revisions != null && revisions.Count > 1 ? revisions.LastOrDefault().ObjectId : selectedRev?.FirstParentId;
+            var selectedRevision = revisions?.FirstOrDefault();
+            var firstId = revisions != null && revisions.Count > 1 ? revisions.LastOrDefault().ObjectId : selectedRevision?.FirstParentId;
 
-            return (firstId, selectedRev);
+            return (firstId, selectedRevision, revisions);
         }
 
         public bool IsFirstParentValid()
@@ -1263,16 +1271,18 @@ namespace GitUI
         {
             _parentChildNavigationHistory.RevisionsSelectionChanged();
 
-            if (_gridView.SelectedRows.Count > 0)
+            if (_gridView.SelectedRows.Count == 0)
             {
-                _latestSelectedRowIndex = _gridView.SelectedRows[0].Index;
+                return;
+            }
 
-                // if there was selected a new revision while data is being loaded
-                // then don't change the new selection when restoring selected revisions after data is loaded
-                if (_isRefreshingRevisions && !_gridView.UpdatingVisibleRows)
-                {
-                    _selectedObjectIds = _gridView.SelectedObjectIds;
-                }
+            _latestSelectedRowIndex = _gridView.SelectedRows[0].Index;
+
+            // if there was selected a new revision while data is being loaded
+            // then don't change the new selection when restoring selected revisions after data is loaded
+            if (_isRefreshingRevisions && !_gridView.UpdatingVisibleRows)
+            {
+                _selectedObjectIds = _gridView.SelectedObjectIds;
             }
 
             _selectionTimer.Enabled = false;
@@ -1280,17 +1290,16 @@ namespace GitUI
             _selectionTimer.Enabled = true;
             _selectionTimer.Start();
 
-            var (first, selected) = getFirstAndSelected();
+            var (first, selected, selectedRevisions) = getFirstAndSelected();
 
             compareToWorkingDirectoryMenuItem.Enabled = selected != null && selected.ObjectId != ObjectId.WorkTreeId;
             compareWithCurrentBranchToolStripMenuItem.Enabled = !string.IsNullOrWhiteSpace(Module.GetSelectedBranch(setDefaultIfEmpty: false));
             compareSelectedCommitsMenuItem.Enabled = first != null && selected != null;
             openCommitsWithDiffToolMenuItem.Enabled = first != null && selected != null;
 
-            var selectedRevisions = GetSelectedRevisions();
             HighlightRevisionsByAuthor(selectedRevisions);
 
-            if (selectedRevisions.Count == 1 && selected != null)
+            if (selected != null)
             {
                 _navigationHistory.Push(selected.ObjectId);
             }
@@ -2506,7 +2515,7 @@ namespace GitUI
 
         private void compareSelectedCommitsMenuItem_Click(object sender, EventArgs e)
         {
-            var (first, selected) = getFirstAndSelected();
+            var (first, selected, _) = getFirstAndSelected();
             var firstRev = GetRevision(first);
             if (selected == null || first == null || firstRev == null)
             {
@@ -2524,7 +2533,7 @@ namespace GitUI
 
         public void DiffSelectedCommitsWithDifftool()
         {
-            var (first, selected) = getFirstAndSelected();
+            var (first, selected, _) = getFirstAndSelected();
             Module.OpenWithDifftoolDirDiff(first?.ToString(), selected.ObjectId.ToString());
         }
 
