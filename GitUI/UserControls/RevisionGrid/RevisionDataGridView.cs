@@ -188,21 +188,9 @@ namespace GitUI.UserControls.RevisionGrid
         // The object Id's are in the order in which they were originally selected.
         public IReadOnlyList<ObjectId> ToBeSelectedObjectIds { get; set; } = new List<ObjectId>();
 
-        // The ToBeSelectedObjectIds's should be converted to indexes.
-        // Since revisions are read in order, this list stores those indexes along with information on the order in which they were selected.
-        private List<RowIndexToBeSelectedWithOrderInfo> ToBeSelectedRowIndexes { get; set; } = new List<RowIndexToBeSelectedWithOrderInfo>();
-
-        private class RowIndexToBeSelectedWithOrderInfo
-        {
-            public int RowIndex { get; set; }
-
-            // Order in which the row should be selected.
-            public int SelectionOrder { get; set; }
-        }
-
         public bool HasSelection()
         {
-            return ToBeSelectedObjectIds.Any() || ToBeSelectedRowIndexes.Any() || SelectedRows.Count > 0;
+            return ToBeSelectedObjectIds.Any() || SelectedRows.Count > 0;
         }
 
         [CanBeNull]
@@ -305,18 +293,6 @@ namespace GitUI.UserControls.RevisionGrid
         public void Add(GitRevision revision, RevisionNodeFlags types = RevisionNodeFlags.None)
         {
             _revisionGraph.Add(revision, types);
-
-            if (ToBeSelectedObjectIds.Contains(revision.ObjectId))
-            {
-                var rowIndexToBeSelectedWithOrderInfo = new RowIndexToBeSelectedWithOrderInfo
-                {
-                    RowIndex = _revisionGraph.Count - 1,
-                    SelectionOrder = ToBeSelectedObjectIds.IndexOf(o => o == revision.ObjectId)
-                };
-
-                ToBeSelectedRowIndexes.Add(rowIndexToBeSelectedWithOrderInfo);
-            }
-
             UpdateVisibleRowRange();
         }
 
@@ -332,7 +308,6 @@ namespace GitUI.UserControls.RevisionGrid
             // Set rowcount to 0 first, to ensure it is not possible to select or redraw, since we are about te delete the data
             SetRowCount(0);
             _revisionGraph.Clear();
-            ToBeSelectedRowIndexes = new List<RowIndexToBeSelectedWithOrderInfo>();
 
             // The graphdata is stored in one of the columnproviders, clear this last
             foreach (var columnProvider in _columnProviders)
@@ -402,44 +377,36 @@ namespace GitUI.UserControls.RevisionGrid
             }
         }
 
-        private void SelectRowsIfReady(int rowCount)
+        public bool RestoreSelection()
         {
-            // Wait till we have all the row indexes to be selected.
-            if (!ToBeSelectedRowIndexes.Any() || ToBeSelectedRowIndexes.Count < ToBeSelectedObjectIds.Count)
+            if (!ToBeSelectedObjectIds.Any())
             {
-                return;
+                return false;
             }
 
-            if (rowCount > ToBeSelectedRowIndexes.Max(ri => ri.RowIndex))
+            foreach (var objectId in ToBeSelectedObjectIds)
             {
                 try
                 {
-                    var rowIndicesToBeSelectedInOriginalOrder = ToBeSelectedRowIndexes.OrderBy(ri => ri.SelectionOrder).Select(ri => ri.RowIndex);
-
-                    foreach (var rowIndexToBeSelected in rowIndicesToBeSelectedInOriginalOrder)
+                    if (!_revisionGraph.TryGetRowIndex(objectId, out var rowIndexToBeSelected))
                     {
-                        Rows[rowIndexToBeSelected].Selected = true;
-
-                        if (CurrentCell == null)
-                        {
-                            CurrentCell = Rows[rowIndexToBeSelected].Cells[1];
-                        }
+                        continue;
                     }
 
-                    // The rows to be selected have just been selected. Prevent from selecting them again.
-                    ToBeSelectedRowIndexes.Clear();
+                    Rows[rowIndexToBeSelected].Selected = true;
+
+                    if (CurrentCell == null)
+                    {
+                        CurrentCell = Rows[rowIndexToBeSelected].Cells[1];
+                    }
                 }
                 catch (ArgumentOutOfRangeException)
                 {
                     // Not worth crashing for. Ignore exception.
                 }
             }
-        }
 
-        private void SetRowCountAndSelectRowsIfReady(int rowCount)
-        {
-            SetRowCount(rowCount);
-            SelectRowsIfReady(rowCount);
+            return true;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2002:DoNotLockOnObjectsWithWeakIdentity", Justification = "It looks like such lock was made intentionally but it is better to rewrite this")]
@@ -484,7 +451,7 @@ namespace GitUI.UserControls.RevisionGrid
                         // No work was received from the queue within the timeout.
                         if (RowCount < _revisionGraph.Count)
                         {
-                            this.InvokeAsync(() => { SetRowCountAndSelectRowsIfReady(_revisionGraph.Count); }).FileAndForget();
+                            this.InvokeAsync(() => { SetRowCount(_revisionGraph.Count); }).FileAndForget();
                         }
 
                         continue;
@@ -580,7 +547,7 @@ namespace GitUI.UserControls.RevisionGrid
                 {
                     if (RowCount < _revisionGraph.Count)
                     {
-                        SetRowCountAndSelectRowsIfReady(_revisionGraph.Count);
+                        SetRowCount(_revisionGraph.Count);
                     }
                 }
             }

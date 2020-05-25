@@ -1071,7 +1071,11 @@ namespace GitUI
 
                         SetPage(_gridView);
                         _isRefreshingRevisions = false;
-                        CheckAndRepairInitialRevision();
+                        if (!_gridView.RestoreSelection())
+                        {
+                            CheckAndRepairInitialRevision();
+                        }
+
                         HighlightRevisionsByAuthor(GetSelectedRevisions());
 
                         if (ShowBuildServerInfo)
@@ -1173,12 +1177,6 @@ namespace GitUI
 
         private void CheckAndRepairInitialRevision()
         {
-            // Check if there is any commit that couldn't be selected.
-            if (!_gridView.ToBeSelectedObjectIds.Any())
-            {
-                return;
-            }
-
             // Search for the commitid that was not selected in the grid. If not found, select the first parent.
             int index = SearchRevision(_gridView.ToBeSelectedObjectIds.First());
             if (index >= 0)
