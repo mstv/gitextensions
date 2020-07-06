@@ -5,6 +5,7 @@ using System.IO;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
+using GitCommands.Git;
 using GitCommands.Logging;
 using GitUI;
 using GitUIPluginInterfaces;
@@ -15,37 +16,73 @@ namespace GitCommands
     /// <inheritdoc />
     public sealed class Executable : IExecutable
     {
-        private readonly string _workingDir;
         private readonly Func<string> _fileNameProvider;
+        private readonly bool _notifyOnException;
+        private readonly string _workingDir;
 
         public Executable([NotNull] string fileName, [NotNull] string workingDir = "")
             : this(() => fileName, workingDir)
         {
         }
 
-        public Executable([NotNull] Func<string> fileNameProvider, [NotNull] string workingDir = "")
+        public Executable([NotNull] Func<string> fileNameProvider, [NotNull] string workingDir = "", bool notifyOnException = true)
         {
+            if (string.IsNullOrWhiteSpace(workingDir))
+            {
+                workingDir = Directory.GetCurrentDirectory();
+            }
+
             _workingDir = workingDir;
             _fileNameProvider = fileNameProvider;
+            _notifyOnException = notifyOnException;
         }
 
         /// <inheritdoc />
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
-        public IProcess Start(ArgumentString arguments = default, bool createWindow = false, bool redirectInput = false, bool redirectOutput = false, Encoding outputEncoding = null)
+        public IProcess Start(ArgumentString arguments = default, bool createWindow = false, bool redirectInput = false, bool redirectOutput = false, Encoding outputEncoding = null, bool useShellExecute = false)
         {
-            // TODO should we set these on the child process only?
-            EnvironmentConfiguration.SetEnvironmentVariables();
+            string fileName = "<unknown executable>";
+            string args = null;
 
-            var args = (arguments.Arguments ?? "").Replace("$QUOTE$", "\\\"");
+            return HandleExceptions(
+                () =>
+                {
+                    fileName = _fileNameProvider();
 
-            var fileName = _fileNameProvider();
+                    args = (arguments.Arguments ?? "").Replace("$QUOTE$", "\\\"");
 
-            return new ProcessWrapper(fileName, args, _workingDir, createWindow, redirectInput, redirectOutput, outputEncoding);
+                    // TODO should we set these on the child process only?
+                    EnvironmentConfiguration.SetEnvironmentVariables();
+
+                    return new ProcessWrapper(fileName, args, _workingDir, createWindow, redirectInput, redirectOutput, outputEncoding, useShellExecute, _notifyOnException);
+                },
+                () => new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = args,
+                    WorkingDirectory = _workingDir
+                });
         }
 
         public string GetOutput(ArgumentString arguments)
+            => HandleExceptions(() => this.GetOutput(arguments, input: null),
+                                () => new ProcessStartInfo
+                                {
+                                    FileName = _fileNameProvider(),
+                                    Arguments = arguments,
+                                    WorkingDirectory = _workingDir
+                                });
+
+        private T HandleExceptions<T>(Func<T> code, Func<ProcessStartInfo> processStartInfoProvider)
         {
-            return this.GetOutput(arguments, null);
+            try
+            {
+                return code();
+            }
+            catch (Exception ex) when (!(ex is ExecutableException))
+            {
+                throw ExternalOperationExceptionFactory.Default.Create(processStartInfoProvider(), ex, invokeEvent: _notifyOnException);
+            }
         }
 
         #region ProcessWrapper
@@ -69,38 +106,57 @@ namespace GitCommands
             private bool _disposed;
 
             [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
-            public ProcessWrapper(string fileName, string arguments, string workDir, bool createWindow, bool redirectInput, bool redirectOutput, [CanBeNull] Encoding outputEncoding)
+            public ProcessWrapper(string fileName,
+                                  string arguments,
+                                  string workDir,
+                                  bool createWindow,
+                                  bool redirectInput,
+                                  bool redirectOutput,
+                                  [CanBeNull] Encoding outputEncoding,
+                                  bool useShellExecute,
+                                  bool notifyOnException)
             {
-                Debug.Assert(redirectOutput == (outputEncoding != null), "redirectOutput == (outputEncoding != null)");
-                _redirectInput = redirectInput;
-                _redirectOutput = redirectOutput;
-
-                _process = new Process
+                try
                 {
-                    EnableRaisingEvents = true,
-                    StartInfo =
+                    Debug.Assert(redirectOutput == (outputEncoding != null), "redirectOutput == (outputEncoding != null)");
+                    _redirectInput = redirectInput;
+                    _redirectOutput = redirectOutput;
+
+                    _process = new Process
                     {
-                        UseShellExecute = false,
-                        ErrorDialog = false,
-                        CreateNoWindow = !createWindow,
-                        RedirectStandardInput = redirectInput,
-                        RedirectStandardOutput = redirectOutput,
-                        RedirectStandardError = redirectOutput,
-                        StandardOutputEncoding = outputEncoding,
-                        StandardErrorEncoding = outputEncoding,
-                        FileName = fileName,
-                        Arguments = arguments,
-                        WorkingDirectory = workDir
-                    }
-                };
+                        EnableRaisingEvents = true,
+                        StartInfo =
+                        {
+                            UseShellExecute = useShellExecute,
+                            ErrorDialog = false,
+                            CreateNoWindow = !createWindow,
+                            RedirectStandardInput = redirectInput,
+                            RedirectStandardOutput = redirectOutput,
+                            RedirectStandardError = redirectOutput,
+                            StandardOutputEncoding = outputEncoding,
+                            StandardErrorEncoding = outputEncoding,
+                            FileName = fileName,
+                            Arguments = arguments,
+                            WorkingDirectory = workDir
+                        }
+                    };
 
-                _logOperation = CommandLog.LogProcessStart(fileName, arguments, workDir);
+                    _logOperation = CommandLog.LogProcessStart(fileName, arguments, workDir);
 
-                _process.Exited += OnProcessExit;
+                    _process.Exited += OnProcessExit;
 
-                _process.Start();
+                    _process.Start();
 
-                _logOperation.SetProcessId(_process.Id);
+                    _logOperation.SetProcessId(_process.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logOperation.LogProcessEnd(ex);
+
+                    Dispose();
+
+                    throw ExternalOperationExceptionFactory.Default.Create(_process.StartInfo, ex, invokeEvent: notifyOnException);
+                }
             }
 
             private void OnProcessExit(object sender, EventArgs eventArgs)

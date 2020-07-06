@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using GitCommands;
+using GitCommands.Git;
 using GitUI.HelperDialogs;
 using GitUIPluginInterfaces;
 
@@ -39,7 +40,11 @@ namespace GitUI.Script
             }
             catch (Exception ex)
             {
-                MessageBoxes.FailedToExecuteScript(owner, scriptKey, ex);
+                if (!(ex as ExternalOperationException)?.AbortSilently ?? true)
+                {
+                    MessageBoxes.FailedToExecuteScript(owner, scriptKey, ex);
+                }
+
                 return new CommandStatus(false, false);
             }
         }
@@ -131,7 +136,7 @@ namespace GitUI.Script
                 command = command.Replace(NavigateToPrefix, string.Empty);
                 if (!string.IsNullOrEmpty(command))
                 {
-                    var revisionRef = new Executable(command, module.WorkingDir).GetOutputLines(argument).FirstOrDefault();
+                    var revisionRef = ExecutableFactory.Default.Create(command, module.WorkingDir).GetOutputLines(argument).FirstOrDefault();
 
                     if (revisionRef != null)
                     {
@@ -150,14 +155,14 @@ namespace GitUI.Script
             {
                 if (originalCommand.Equals("{openurl}", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    Process.Start(argument);
+                    OsShellUtil.OpenUrlInDefaultBrowser(argument);
                 }
                 else
                 {
                     // It is totally valid to have a command without an argument, e.g.:
                     //    Command  : myscript.cmd
                     //    Arguments: <blank>
-                    new Executable(command, module.WorkingDir).Start(argument ?? string.Empty);
+                    ExecutableFactory.Default.Create(command, module.WorkingDir).Start(argument ?? string.Empty);
                 }
             }
 

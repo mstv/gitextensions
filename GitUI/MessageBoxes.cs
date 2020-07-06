@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using GitCommands;
 using GitCommands.Config;
+using GitCommands.Git;
 using JetBrains.Annotations;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using ResourceManager;
@@ -11,6 +12,14 @@ namespace GitUI
     public class MessageBoxes : Translate
     {
         private readonly TranslationString _archiveRevisionCaption = new TranslationString("Archive revision");
+
+        private readonly TranslationString _externalOperationAbortQuestion
+            = new TranslationString("If you think this was really caused by Git Extensions, you can report a bug by clicking 'No'."
+                                    + Environment.NewLine + "Do you want to cancel the operation and ignore the error?");
+
+        private readonly TranslationString _externalOperationFailure = new TranslationString("External operation failure");
+
+        private readonly TranslationString _failedToExecute = new TranslationString("Failed to execute");
 
         private readonly TranslationString _failedToExecuteScript = new TranslationString("Failed to execute script");
 
@@ -46,6 +55,8 @@ namespace GitUI
         private readonly TranslationString _shellNotFound = new TranslationString("The selected shell is not installed, or is not on your path.");
         private readonly TranslationString _resetChangesCaption = new TranslationString("Reset changes");
 
+        private readonly TranslationString _workingDirectory = new TranslationString("Working directory");
+
         // internal for FormTranslate
         internal MessageBoxes()
         {
@@ -58,11 +69,11 @@ namespace GitUI
 
         public static void FailedToExecuteScript(IWin32Window owner, string scriptKey, Exception ex)
             => ShowError(owner, $"{Instance._failedToExecuteScript.Text} {scriptKey.Quote()}.{Environment.NewLine}"
-                                + $"{Instance._reason.Text}: {ex.Message}");
+                                + $"{Instance._reason.Text}: {Instance.GetText(ex)}");
 
         public static void FailedToRunShell(IWin32Window owner, string shell, Exception ex)
             => ShowError(owner, $"{Instance._failedToRunShell.Text} {shell.Quote()}.{Environment.NewLine}"
-                                + $"{Instance._reason.Text}: {ex.Message}");
+                                + $"{Instance._reason.Text}: {Instance.GetText(ex)}");
 
         public static void NotValidGitDirectory([CanBeNull] IWin32Window owner)
             => ShowError(owner, Instance._notValidGitDirectory.Text);
@@ -124,6 +135,14 @@ namespace GitUI
         public static void ShellNotFound([CanBeNull] IWin32Window owner)
             => ShowError(owner, Instance._shellNotFound.Text, Instance._shellNotFoundCaption.Text);
 
+        public static void Show([CanBeNull] IWin32Window owner, ExternalOperationException ex)
+        {
+            string question = $"{Instance.GetText(ex)}{Environment.NewLine}{Environment.NewLine}"
+                              + $"{Instance._externalOperationAbortQuestion.Text}";
+            ex.AbortSilently
+                = Show(owner, question, Instance._externalOperationFailure.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes;
+        }
+
         public static void ShowError([CanBeNull] IWin32Window owner, string text, string caption = null)
             => Show(owner, text, caption ?? Strings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -131,6 +150,27 @@ namespace GitUI
             => Show(owner, text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
 
         private static DialogResult Show([CanBeNull] IWin32Window owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
-            => MessageBox.Show(owner, text, caption, buttons, icon);
+            => ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                owner ??= Form.ActiveForm;
+
+                return MessageBox.Show(owner, text, caption, buttons, icon);
+            });
+
+        private string GetText(Exception ex)
+        {
+            switch (ex)
+            {
+                case ExecutableException executableException:
+                    return $"{_failedToExecute.Text} {executableException.ProcessStartInfo.FileName.Quote()}.{Environment.NewLine}"
+                           + $"{_workingDirectory.Text}: {executableException.ProcessStartInfo.WorkingDirectory.Quote()}{Environment.NewLine}"
+                           + $"{_reason.Text}: {ex.Message}";
+
+                default:
+                    return $"{ex.GetType().Name}: {ex.Message}";
+            }
+        }
     }
 }

@@ -4,7 +4,9 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using CommonTestUtils;
+using FluentAssertions;
 using GitCommands;
+using GitCommands.Git;
 using GitCommands.Settings;
 using GitExtUtils;
 using GitUIPluginInterfaces;
@@ -128,7 +130,8 @@ namespace GitCommandsTests.Git
                     GenerateStringByLength(Math.Max(1, arg2Len - _appPath.Length - 4))
                 }, _appPath.Length + 3, maxLength);
 
-            Assert.Throws(typeof(Win32Exception), () => _gitExecutable.RunBatchCommand(args));
+            ExecutableException ex = Assert.Throws<ExecutableException>(() => _gitExecutable.RunBatchCommand(args));
+            ex.InnerException.Should().BeOfType<Win32Exception>();
         }
 
         private string GenerateStringByLength(int length)

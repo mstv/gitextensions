@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using GitCommands;
+using GitCommands.Git;
 using GitCommands.Utils;
 using GitExtUtils.GitUI;
 using GitUI;
@@ -29,6 +30,8 @@ namespace GitExtensions
         [STAThread]
         private static void Main()
         {
+            ExternalOperationExceptionFactory.Default.OnException += ex => MessageBoxes.Show(owner: null, ex);
+
             if (Environment.OSVersion.Version.Major >= 6)
             {
                 SetProcessDPIAware();
@@ -359,6 +362,11 @@ namespace GitExtensions
 
         private static void ReportBug(Exception ex)
         {
+            if ((ex as ExternalOperationException)?.AbortSilently ?? false)
+            {
+                return;
+            }
+
             // if the error happens before we had a chance to init the environment information
             // the call to GetInformation() will fail. A double Initialise() call is safe.
             UserEnvironmentInformation.Initialise(ThisAssembly.Git.Sha, ThisAssembly.Git.IsDirty);

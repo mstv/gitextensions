@@ -6344,10 +6344,6 @@ Is the merge conflict solved?</source>
         <source>deleted</source>
         <target />
       </trans-unit>
-      <trans-unit id="_errorStartingMergetool.Text">
-        <source>Error starting mergetool: {0}</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_failureWhileOpenFile.Text">
         <source>Open temporary file failed.</source>
         <target />
@@ -7731,6 +7727,19 @@ help</source>
         <source>Archive revision</source>
         <target />
       </trans-unit>
+      <trans-unit id="_externalOperationAbortQuestion.Text">
+        <source>If you think this was really caused by Git Extensions, you can report a bug by clicking 'No'.
+Do you want to cancel the operation and ignore the error?</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_externalOperationFailure.Text">
+        <source>External operation failure</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_failedToExecute.Text">
+        <source>Failed to execute</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_failedToExecuteScript.Text">
         <source>Failed to execute script</source>
         <target />
@@ -7813,6 +7822,10 @@ Do you want to trust this host key and then try again?</source>
         <source>Since this repository has submodules, it's necessary to update them on every checkout.
 
 This will just checkout on the submodule the commit determined by the superproject.</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_workingDirectory.Text">
+        <source>Working directory</source>
         <target />
       </trans-unit>
     </body>
