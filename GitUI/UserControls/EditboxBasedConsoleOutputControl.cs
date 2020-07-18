@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using GitCommands;
+using GitCommands.Git;
 using GitCommands.Git.Extensions;
 using GitCommands.Logging;
 using JetBrains.Annotations;
@@ -174,10 +175,10 @@ namespace GitUI.UserControls
             }
             catch (Exception ex)
             {
-                operation.LogProcessEnd(ex);
                 ex.Data.Add("command", command);
                 ex.Data.Add("arguments", arguments);
-                throw;
+                operation.LogProcessEnd(ex);
+                throw ExternalOperationExceptionFactory.Default.Create(_process.StartInfo, ex);
             }
         }
 
