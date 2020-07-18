@@ -107,17 +107,7 @@ namespace GitUI.CommandsDialogs
                 return;
             }
 
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    FileName = AppSettings.GetGitExtensionsFullPath(),
-                    Arguments = "browse",
-                    WorkingDirectory = repoPath,
-                    UseShellExecute = false
-                }
-            };
-            process.Start();
+            ExecutableFactory.Default.Spawn("browse", repoPath);
         }
     }
 }

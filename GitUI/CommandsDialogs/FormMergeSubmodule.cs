@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using GitCommands.Git;
 using GitExtUtils;
 using GitUI.HelperDialogs;
 using GitUIPluginInterfaces;
@@ -71,19 +72,7 @@ namespace GitUI.CommandsDialogs
         }
 
         private void btOpenSubmodule_Click(object sender, EventArgs e)
-        {
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    FileName = Application.ExecutablePath,
-                    Arguments = "browse",
-                    WorkingDirectory = Module.GetSubmoduleFullPath(_filename)
-                }
-            };
-
-            process.Start();
-        }
+            => ExecutableFactory.Default.Spawn("browse", Module.GetSubmoduleFullPath(_filename));
 
         private void btCheckoutBranch_Click(object sender, EventArgs e)
         {

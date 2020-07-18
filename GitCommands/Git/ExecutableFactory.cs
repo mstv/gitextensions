@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 using GitUIPluginInterfaces;
 using JetBrains.Annotations;
 
@@ -16,5 +17,8 @@ namespace GitCommands.Git
 
         public IExecutable Create([NotNull] string fileName, [NotNull] string workingDir = "", bool notifyOnException = true)
             => Create(() => fileName, workingDir, notifyOnException);
+
+        public IProcess Spawn(string arguments, [NotNull] string workingDir = "", bool notifyOnException = true)
+            => Create(Application.ExecutablePath, workingDir, notifyOnException).Start(arguments);
     }
 }
