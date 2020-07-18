@@ -20,11 +20,6 @@ namespace GitCommands
         private readonly bool _notifyOnException;
         private readonly string _workingDir;
 
-        public Executable([NotNull] string fileName, [NotNull] string workingDir = "")
-            : this(() => fileName, workingDir)
-        {
-        }
-
         public Executable([NotNull] Func<string> fileNameProvider, [NotNull] string workingDir = "", bool notifyOnException = true)
         {
             if (string.IsNullOrWhiteSpace(workingDir))
