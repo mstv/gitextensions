@@ -1,29 +1,57 @@
 ﻿using System.Diagnostics;
 using System.Windows.Forms;
+using GitCommands.Git;
 using Microsoft.WindowsAPICodePack.Dialogs;
 namespace GitUI
 {
     public static class OsShellUtil
     {
-        public static void OpenAs(string file)
+        public static void Open(string filePath)
         {
-            Process.Start(new ProcessStartInfo
+            try
             {
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                FileName = "rundll32.exe",
-                Arguments = "shell32.dll,OpenAs_RunDLL " + file
-            });
+                Process.Start(filePath);
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                OpenAs(filePath);
+            }
+        }
+
+        public static void OpenAs(string filePath)
+        {
+            try
+            {
+                ExecutableFactory.Default.Create("rundll32.exe").Start("shell32.dll,OpenAs_RunDLL " + filePath);
+            }
+            catch (ExecutableException)
+            {
+                // ignore because already shown to the user
+            }
         }
 
         public static void SelectPathInFileExplorer(string filePath)
         {
-            Process.Start("explorer.exe", "/select, " + filePath);
+            try
+            {
+                ExecutableFactory.Default.Create("explorer.exe").Start("/select, " + filePath);
+            }
+            catch (ExecutableException)
+            {
+                // ignore because already shown to the user
+            }
         }
 
         public static void OpenWithFileExplorer(string filePath)
         {
-            Process.Start("explorer.exe", filePath);
+            try
+            {
+                ExecutableFactory.Default.Create("explorer.exe").Start(filePath);
+            }
+            catch (ExecutableException)
+            {
+                // ignore because already shown to the user
+            }
         }
 
         /// <summary>
@@ -33,7 +61,14 @@ namespace GitUI
         {
             if (!string.IsNullOrWhiteSpace(url))
             {
-                Process.Start(url);
+                try
+                {
+                    ExecutableFactory.Default.Create(url).Start(useShellExecute: true);
+                }
+                catch (ExecutableException)
+                {
+                    // ignore because already shown to the user
+                }
             }
         }
 

@@ -212,18 +212,18 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
 
         private static void TranslateItem_Click(object sender, EventArgs e)
         {
-            Process.Start("https://github.com/gitextensions/gitextensions/wiki/Translations");
+            OsShellUtil.OpenUrlInDefaultBrowser(@"https://github.com/gitextensions/gitextensions/wiki/Translations");
         }
 
         private static void GitHubItem_Click(object sender, EventArgs e)
         {
-            Process.Start(@"https://github.com/gitextensions/gitextensions");
+            OsShellUtil.OpenUrlInDefaultBrowser(@"https://github.com/gitextensions/gitextensions");
         }
 
         private static void IssuesItem_Click(object sender, EventArgs e)
         {
             UserEnvironmentInformation.CopyInformation();
-            Process.Start(@"https://github.com/gitextensions/gitextensions/issues");
+            OsShellUtil.OpenUrlInDefaultBrowser(@"https://github.com/gitextensions/gitextensions/issues");
         }
 
         private void openItem_Click(object sender, EventArgs e)
@@ -247,7 +247,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
 
         private static void DonateItem_Click(object sender, EventArgs e)
         {
-            Process.Start(FormDonate.DonationUrl);
+            OsShellUtil.OpenUrlInDefaultBrowser(FormDonate.DonationUrl);
         }
     }
 }
