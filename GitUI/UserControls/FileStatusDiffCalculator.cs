@@ -10,6 +10,8 @@ namespace GitUI
 {
     public class FileStatusDiffCalculator
     {
+        private const int HashLength = 4;
+
         private readonly Func<GitModule> _getModule;
 
         public FileStatusDiffCalculator(Func<GitModule> getModule)
@@ -52,7 +54,7 @@ namespace GitUI
                             new FileStatusWithDescription(
                                 firstRev: new GitRevision(parentId),
                                 secondRev: selectedRev,
-                                summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(describeRevision, parentId),
+                                summary: $"Diff b/{selectedRev.ObjectId.ToShortString(HashLength)} with a/{GetDescriptionForRevision(describeRevision, parentId)}",
                                 statuses: module.GetDiffFilesWithSubmodulesStatus(parentId, selectedRev.ObjectId, selectedRev.FirstParentId))));
                 }
 
@@ -85,7 +87,7 @@ namespace GitUI
             fileStatusDescs.Add(new FileStatusWithDescription(
                 firstRev: firstRev,
                 secondRev: selectedRev,
-                summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(describeRevision, firstRev.ObjectId),
+                summary: $"Diff b/{selectedRev.ObjectId.ToShortString(HashLength)} with a/{GetDescriptionForRevision(describeRevision, firstRev.ObjectId)}",
                 statuses: module.GetDiffFilesWithSubmodulesStatus(firstRev.ObjectId, selectedRev.ObjectId, selectedRev.FirstParentId)));
 
             if (!AppSettings.ShowDiffForAllParents || revisions.Count > maxMultiCompare)
@@ -146,7 +148,7 @@ namespace GitUI
                         .Select(rev => new FileStatusWithDescription(
                             firstRev: rev,
                             secondRev: selectedRev,
-                            summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(describeRevision, rev.ObjectId),
+                            summary: $"Diff b/{selectedRev.ObjectId.ToShortString(HashLength)} with a/{GetDescriptionForRevision(describeRevision, rev.ObjectId)}",
                             statuses: module.GetDiffFilesWithSubmodulesStatus(rev.ObjectId, selectedRev.ObjectId, selectedRev.FirstParentId))));
 
                 return fileStatusDescs;
@@ -166,12 +168,12 @@ namespace GitUI
             fileStatusDescs.Add(new FileStatusWithDescription(
                 firstRev: revBase,
                 secondRev: selectedRev,
-                summary: TranslatedStrings.DiffBaseToB + GetDescriptionForRevision(describeRevision, selectedRev.ObjectId),
+                summary: $"Unique diff BASE a/{baseRevGuid.ToShortString(HashLength)} with b/{GetDescriptionForRevision(describeRevision, selectedRev.ObjectId)}",
                 statuses: allBaseToB.Except(commonBaseToAandB, comparer).ToList()));
             fileStatusDescs.Add(new FileStatusWithDescription(
                 firstRev: revBase,
                 secondRev: firstRev,
-                summary: TranslatedStrings.DiffBaseToB + GetDescriptionForRevision(describeRevision, firstRev.ObjectId),
+                summary: $"Unique diff BASE a/{baseRevGuid.ToShortString(HashLength)} with b/{GetDescriptionForRevision(describeRevision, firstRev.ObjectId)}",
                 statuses: allBaseToA.Except(commonBaseToAandB, comparer).ToList()));
             fileStatusDescs.Add(new FileStatusWithDescription(
                 firstRev: revBase,
