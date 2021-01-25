@@ -2075,11 +2075,10 @@ namespace GitUI.CommandsDialogs
             {
                 Module.UnlockIndex(true);
             }
-            catch (FileDeleteException ex)
+            catch (ExternalOperationException ex)
             {
                 ThreadHelper.AssertOnUIThread();
-                throw new UserExternalOperationException(_indexLockCantDelete.Text,
-                    new ExternalOperationException(command: null, arguments: ex.FileName, Module.WorkingDir, ex));
+                throw new UserExternalOperationException(_indexLockCantDelete.Text, ex);
             }
         }
 
