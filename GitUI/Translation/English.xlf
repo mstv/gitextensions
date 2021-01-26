@@ -2178,16 +2178,16 @@ compare with first:</source>
         <source>Create pull requests...</source>
         <target />
       </trans-unit>
+      <trans-unit id="_deleteIndexLock.Text">
+        <source>Delete index.lock</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_forkCloneRepositoryToolStripMenuItem.Text">
         <source>Fork/Clone repository...</source>
         <target />
       </trans-unit>
       <trans-unit id="_goToSuperProject.Text">
         <source>Go to superproject</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_indexLockCantDelete.Text">
-        <source>Failed to delete index.lock</source>
         <target />
       </trans-unit>
       <trans-unit id="_loading.Text">
@@ -9473,7 +9473,7 @@ When OpenSSH is used, command line dialogs are shown!
   </file>
   <file datatype="plaintext" original="Strings" source-language="en">
     <body>
-      <trans-unit id="_argumentsText.Text">
+      <trans-unit id="_arguments.Text">
         <source>Arguments</source>
         <target />
       </trans-unit>
@@ -9536,10 +9536,6 @@ Select this commit to populate the full message.</source>
         <source>Cancel</source>
         <target />
       </trans-unit>
-      <trans-unit id="_captionFailedExecute.Text">
-        <source>Failed to execute</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_childrenText.Text">
         <source>{0:Child|Children}</source>
         <target />
@@ -9548,7 +9544,7 @@ Select this commit to populate the full message.</source>
         <source>Combined diff</source>
         <target />
       </trans-unit>
-      <trans-unit id="_commandText.Text">
+      <trans-unit id="_command.Text">
         <source>Command</source>
         <target />
       </trans-unit>
@@ -9648,6 +9644,10 @@ Select this commit to populate the full message.</source>
         <source>Not on a branch</source>
         <target />
       </trans-unit>
+      <trans-unit id="_externalOperationFailed.Text">
+        <source>External operation failed</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_findGitExecutable.Text">
         <source>Find git...</source>
         <target />
@@ -9678,10 +9678,6 @@ Select this commit to populate the full message.</source>
       </trans-unit>
       <trans-unit id="_installGitInstructions.Text">
         <source>Install git...</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_instructionOperationFailed.Text">
-        <source>Operation failed</source>
         <target />
       </trans-unit>
       <trans-unit id="_invisibleCommitText.Text">
@@ -9752,6 +9748,10 @@ Select this commit to populate the full message.</source>
         <source>Open with Git Extensions</source>
         <target />
       </trans-unit>
+      <trans-unit id="_operation.Text">
+        <source>Operation</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_parentsText.Text">
         <source>{0:Parent|Parents}</source>
         <target />
@@ -9772,7 +9772,7 @@ Select this commit to populate the full message.</source>
         <source>Remove the selected invalid repository</source>
         <target />
       </trans-unit>
-      <trans-unit id="_reportBugText.Text">
+      <trans-unit id="_reportBug.Text">
         <source>If you think this was caused by Git Extensions, you can report a bug for the team to investigate.</source>
         <target />
       </trans-unit>
@@ -9890,6 +9890,10 @@ Yes, I allow telemetry!</source>
         <source>Unstage selected line(s)</source>
         <target />
       </trans-unit>
+      <trans-unit id="_userExternalOperationFailed.Text">
+        <source>User-defined external operation failed</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_viewPullRequest.Text">
         <source>View pull requests</source>
         <target />
@@ -9902,7 +9906,7 @@ Yes, I allow telemetry!</source>
         <source>{0} {1:week|weeks} ago</source>
         <target />
       </trans-unit>
-      <trans-unit id="_workingDirectoryText.Text">
+      <trans-unit id="_workingDirectory.Text">
         <source>Working directory</source>
         <target />
       </trans-unit>

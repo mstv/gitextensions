@@ -54,7 +54,7 @@ namespace GitUI.CommandsDialogs
         private readonly TranslationString _superprojectModuleFormat = new("Superproject: {0}");
         private readonly TranslationString _goToSuperProject = new("Go to superproject");
 
-        private readonly TranslationString _indexLockCantDelete = new("Failed to delete index.lock");
+        private readonly TranslationString _deleteIndexLock = new("Delete index.lock");
 
         private readonly TranslationString _loading = new("Loading...");
 
@@ -2078,7 +2078,7 @@ namespace GitUI.CommandsDialogs
             catch (ExternalOperationException ex)
             {
                 ThreadHelper.AssertOnUIThread();
-                throw new UserExternalOperationException(_indexLockCantDelete.Text, ex);
+                throw new UserExternalOperationException(_deleteIndexLock.Text, ex);
             }
         }
 

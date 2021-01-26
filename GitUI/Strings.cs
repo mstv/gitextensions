@@ -20,9 +20,6 @@ namespace GitUI
         private readonly TranslationString _buttonIgnore = new("Ignore");
         private readonly TranslationString _buttonReportBug = new("Report bug!");
 
-        private readonly TranslationString _captionFailedExecute = new("Failed to execute");
-        private readonly TranslationString _instructionOperationFailed = new("Operation failed");
-
         private readonly TranslationString _containedInCurrentCommitText = new("'{0}' is contained in the currently selected commit");
         private readonly TranslationString _containedInBranchesText = new("Contained in branches:");
         private readonly TranslationString _containedInNoBranchText = new("Contained in no branch");
@@ -98,10 +95,13 @@ namespace GitUI
 
         private readonly TranslationString _rotInactive = new("[ Inactive ]");
 
-        private readonly TranslationString _argumentsText = new("Arguments");
-        private readonly TranslationString _commandText = new("Command");
-        private readonly TranslationString _workingDirectoryText = new("Working directory");
-        private readonly TranslationString _reportBugText = new("If you think this was caused by Git Extensions, you can report a bug for the team to investigate.");
+        private readonly TranslationString _userExternalOperationFailed = new("User-defined external operation failed");
+        private readonly TranslationString _externalOperationFailed = new("External operation failed");
+        private readonly TranslationString _operation = new("Operation");
+        private readonly TranslationString _command = new("Command");
+        private readonly TranslationString _arguments = new("Arguments");
+        private readonly TranslationString _workingDirectory = new("Working directory");
+        private readonly TranslationString _reportBug = new("If you think this was caused by Git Extensions, you can report a bug for the team to investigate.");
 
         // public only because of FormTranslate
         public Strings()
@@ -132,9 +132,6 @@ namespace GitUI
         public static string ButtonCreateBranch => _instance.Value._buttonCreateBranch.Text;
         public static string ButtonIgnore => _instance.Value._buttonIgnore.Text;
         public static string ButtonReportBug => _instance.Value._buttonReportBug.Text;
-
-        public static string CaptionFailedExecute => _instance.Value._captionFailedExecute.Text;
-        public static string InstructionOperationFailed => _instance.Value._instructionOperationFailed.Text;
 
         public static string ContainedInCurrentCommit => _instance.Value._containedInCurrentCommitText.Text;
         public static string ContainedInBranches => _instance.Value._containedInBranchesText.Text;
@@ -207,10 +204,13 @@ namespace GitUI
 
         public static string Inactive => _instance.Value._rotInactive.Text;
 
-        public static string Arguments => _instance.Value._argumentsText.Text;
-        public static string Command => _instance.Value._commandText.Text;
-        public static string WorkingDirectory => _instance.Value._workingDirectoryText.Text;
-        public static string ReportBug => _instance.Value._reportBugText.Text;
+        public static string UserExternalOperationFailed => _instance.Value._userExternalOperationFailed.Text;
+        public static string ExternalOperationFailed => _instance.Value._externalOperationFailed.Text;
+        public static string Operation => _instance.Value._operation.Text;
+        public static string Arguments => _instance.Value._arguments.Text;
+        public static string Command => _instance.Value._command.Text;
+        public static string WorkingDirectory => _instance.Value._workingDirectory.Text;
+        public static string ReportBug => _instance.Value._reportBug.Text;
 
         #region Scripts
 
