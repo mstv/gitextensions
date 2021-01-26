@@ -7868,10 +7868,6 @@ help</source>
         <source>Archive revision</source>
         <target />
       </trans-unit>
-      <trans-unit id="_failedToExecuteScript.Text">
-        <source>Failed to execute script</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_failedToRunShell.Text">
         <source>Failed to run shell</source>
         <target />
@@ -9800,16 +9796,16 @@ Select this commit to populate the full message.</source>
         <source>Unable to find script</source>
         <target />
       </trans-unit>
-      <trans-unit id="_scriptErrorFailedToExecuteText.Text">
-        <source>Failed to execute script</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_scriptErrorOptionWithoutRevisionGridText.Text">
         <source>option is only supported when invoked from the revision grid</source>
         <target />
       </trans-unit>
       <trans-unit id="_scriptErrorOptionWithoutRevisionText.Text">
         <source>A valid revision is required to substitute the argument options</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_scriptExecuteText.Text">
+        <source>Execute script</source>
         <target />
       </trans-unit>
       <trans-unit id="_scriptText.Text">

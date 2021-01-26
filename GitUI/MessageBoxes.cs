@@ -12,8 +12,6 @@ namespace GitUI
     {
         private readonly TranslationString _archiveRevisionCaption = new("Archive revision");
 
-        private readonly TranslationString _failedToExecuteScript = new("Failed to execute script");
-
         private readonly TranslationString _failedToRunShell = new("Failed to run shell");
 
         private readonly TranslationString _notValidGitDirectory = new("The current directory is not a valid git repository.");

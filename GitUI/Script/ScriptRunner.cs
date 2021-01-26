@@ -40,7 +40,7 @@ namespace GitUI.Script
             catch (ExternalOperationException ex) when (ex is not UserExternalOperationException)
             {
                 ThreadHelper.AssertOnUIThread();
-                throw new UserExternalOperationException($"{Strings.ScriptErrorFailedToExecute}: '{scriptKey}'", ex);
+                throw new UserExternalOperationException($"{Strings.ScriptExecute}: '{scriptKey}'", ex);
             }
         }
 

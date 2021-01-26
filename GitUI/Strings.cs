@@ -216,14 +216,14 @@ namespace GitUI
 
         private readonly TranslationString _scriptConfirmExecuteText = new("Do you want to execute script");
         private readonly TranslationString _scriptErrorCantFindText = new("Unable to find script");
-        private readonly TranslationString _scriptErrorFailedToExecuteText = new("Failed to execute script");
+        private readonly TranslationString _scriptExecuteText = new("Execute script");
         private readonly TranslationString _scriptErrorOptionWithoutRevisionGridText = new("option is only supported when invoked from the revision grid");
         private readonly TranslationString _scriptErrorOptionWithoutRevisionText = new("A valid revision is required to substitute the argument options");
         private readonly TranslationString _scriptText = new("Script");
 
         public static string ScriptConfirmExecute => _instance.Value._scriptConfirmExecuteText.Text;
         public static string ScriptErrorCantFind => _instance.Value._scriptErrorCantFindText.Text;
-        public static string ScriptErrorFailedToExecute => _instance.Value._scriptErrorFailedToExecuteText.Text;
+        public static string ScriptExecute => _instance.Value._scriptExecuteText.Text;
         public static string ScriptErrorOptionWithoutRevisionGridText => _instance.Value._scriptErrorOptionWithoutRevisionGridText.Text;
         public static string ScriptErrorOptionWithoutRevisionText => _instance.Value._scriptErrorOptionWithoutRevisionText.Text;
         public static string ScriptText => _instance.Value._scriptText.Text;
