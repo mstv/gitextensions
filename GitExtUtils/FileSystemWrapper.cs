@@ -8,7 +8,8 @@ namespace GitExtUtils
         private static readonly Lazy<FileSystem> _defaultFileSystem = new();
 
         public static void DeleteFile(string fileName, IFileSystem? fileSystem = null)
-            => WrapFileException(fileName, fileSystem, "Delete", fs => fs.File.Delete(fileName));
+            => WrapFileException(fileName, fileSystem, "Delete", fs => ////fs.File.Delete(fileName));
+                throw new Exception("Wrapping exception.", new Exception("Intermediate error.", new Exception("Root error, e.g. file locked."))));
 
         private static void WrapFileException(string fileName, IFileSystem? fileSystem, string operation, Action<IFileSystem> fileAction)
         {

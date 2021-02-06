@@ -83,10 +83,12 @@ namespace GitCommands.Git
 
         private void DeleteIndexLock(string fileName)
         {
+#if false
             if (!_fileSystem.File.Exists(fileName))
             {
                 return;
             }
+#endif
 
             FileSystemWrapper.DeleteFile(fileName, _fileSystem);
         }

@@ -2025,12 +2025,15 @@ namespace GitUI.CommandsDialogs
 
         private void FileExplorerToolStripMenuItemClick(object sender, EventArgs e)
         {
-            OsShellUtil.OpenWithFileExplorer(Module.WorkingDir);
+            throw new Exception("Wrapping exception.", new Exception("Intermediate error.", new Exception("Root error, e.g. file locked.")));
+            ////OsShellUtil.OpenWithFileExplorer(Module.WorkingDir);
         }
 
         private void CreateBranchToolStripMenuItemClick(object sender, EventArgs e)
         {
-            UICommands.StartCreateBranchDialog(this, RevisionGrid.LatestSelectedRevision?.ObjectId);
+            throw new ExternalOperationException("<command>", "<arguments>", "<workdir>",
+                new Exception("Wrapping exception.", new Exception("Intermediate error.", new Exception("Root error, e.g. file locked."))));
+            ////UICommands.StartCreateBranchDialog(this, RevisionGrid.LatestSelectedRevision?.ObjectId);
         }
 
         private void editGitAttributesToolStripMenuItem_Click(object sender, EventArgs e)
