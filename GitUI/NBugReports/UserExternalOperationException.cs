@@ -1,6 +1,6 @@
 ﻿#nullable enable
 
-using GitCommands;
+using GitExtUtils;
 
 namespace GitUI.NBugReports
 {

@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Text;
 using FluentAssertions;
-using GitCommands;
 using GitExtensions;
+using GitExtUtils;
 using GitUI.NBugReports;
 using NUnit.Framework;
 

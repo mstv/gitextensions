@@ -3,7 +3,7 @@
 using System;
 using System.Text;
 using System.Windows.Forms;
-using GitCommands;
+using GitExtUtils;
 using GitUI;
 using GitUI.NBugReports;
 using Microsoft.WindowsAPICodePack.Dialogs;
