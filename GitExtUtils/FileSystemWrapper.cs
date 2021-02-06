@@ -32,7 +32,7 @@ namespace GitExtUtils
                         directory = fileSystem?.Directory.GetCurrentDirectory();
                     }
 
-                    throw new ExternalOperationException(operation, arguments: fileName, directory, fileOperationException);
+                    throw new ExternalOperationException($"{operation} {fileName}", arguments: null, directory, fileOperationException);
                 }
                 catch (Exception descriptionException)
                 {
@@ -45,7 +45,7 @@ namespace GitExtUtils
                         // ignore
                     }
 
-                    throw new ExternalOperationException(operation, arguments: fileName, directory, fileOperationException);
+                    throw new ExternalOperationException($"{operation} {fileName}", arguments: null, directory, fileOperationException);
                 }
             }
         }

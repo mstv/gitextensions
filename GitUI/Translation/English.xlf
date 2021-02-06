@@ -2178,10 +2178,6 @@ compare with first:</source>
         <source>Create pull requests...</source>
         <target />
       </trans-unit>
-      <trans-unit id="_deleteIndexLock.Text">
-        <source>Delete index.lock</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_forkCloneRepositoryToolStripMenuItem.Text">
         <source>Fork/Clone repository...</source>
         <target />
@@ -9528,6 +9524,10 @@ Select this commit to populate the full message.</source>
         <source>Report bug!</source>
         <target />
       </trans-unit>
+      <trans-unit id="_buttonViewDetails.Text">
+        <source>View details</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_cancelText.Text">
         <source>Cancel</source>
         <target />
@@ -9578,6 +9578,10 @@ Select this commit to populate the full message.</source>
       </trans-unit>
       <trans-unit id="_containedInTagsText.Text">
         <source>Contained in tags:</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_context.Text">
+        <source>Context</source>
         <target />
       </trans-unit>
       <trans-unit id="_createPullRequest.Text">

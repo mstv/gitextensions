@@ -19,6 +19,7 @@ namespace GitUI
         private readonly TranslationString _buttonCreateBranch = new("Create branch");
         private readonly TranslationString _buttonIgnore = new("Ignore");
         private readonly TranslationString _buttonReportBug = new("Report bug!");
+        private readonly TranslationString _buttonViewDetails = new("View details");
 
         private readonly TranslationString _containedInCurrentCommitText = new("'{0}' is contained in the currently selected commit");
         private readonly TranslationString _containedInBranchesText = new("Contained in branches:");
@@ -95,6 +96,7 @@ namespace GitUI
 
         private readonly TranslationString _rotInactive = new("[ Inactive ]");
 
+        private readonly TranslationString _context = new("Context");
         private readonly TranslationString _operation = new("Operation");
         private readonly TranslationString _arguments = new("Arguments");
         private readonly TranslationString _directory = new("Directory");
@@ -129,6 +131,7 @@ namespace GitUI
         public static string ButtonCreateBranch => _instance.Value._buttonCreateBranch.Text;
         public static string ButtonIgnore => _instance.Value._buttonIgnore.Text;
         public static string ButtonReportBug => _instance.Value._buttonReportBug.Text;
+        public static string ButtonViewDetails => _instance.Value._buttonViewDetails.Text;
 
         public static string ContainedInCurrentCommit => _instance.Value._containedInCurrentCommitText.Text;
         public static string ContainedInBranches => _instance.Value._containedInBranchesText.Text;
@@ -201,6 +204,7 @@ namespace GitUI
 
         public static string Inactive => _instance.Value._rotInactive.Text;
 
+        public static string Context => _instance.Value._context.Text;
         public static string Operation => _instance.Value._operation.Text;
         public static string Arguments => _instance.Value._arguments.Text;
         public static string Directory => _instance.Value._directory.Text;

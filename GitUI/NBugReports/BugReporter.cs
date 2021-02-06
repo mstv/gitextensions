@@ -29,54 +29,41 @@ namespace GitExtensions
         internal static string Append(StringBuilder text, Exception exception)
         {
             string rootError = exception.Message;
-
-            if (exception.InnerException is not null)
+            for (Exception innerException = exception.InnerException; innerException is not null; innerException = innerException.InnerException)
             {
-                int prevLength = text.Length;
-
-                rootError = Append(text, exception.InnerException);
-
-                // if text was added, append a new line
-                if (prevLength < text.Length)
+                if (!string.IsNullOrEmpty(innerException.Message))
                 {
-                    text.AppendLine();
-                }
-
-                // append the exception message if different
-                if (exception.Message != exception.InnerException.Message)
-                {
-                    text.AppendLine(exception.Message);
+                    rootError = innerException.Message;
                 }
             }
 
             if (exception is UserExternalOperationException userExternalOperationException)
             {
-                // Operation: <context>
-                if (!string.IsNullOrWhiteSpace(userExternalOperationException.Context))
-                {
-                    text.Append(Strings.Operation).Append(_separator).AppendLine(userExternalOperationException.Context);
-                }
+                // Context: <context>
+                AppendUnlessEmpty(userExternalOperationException.Context, Strings.Context);
             }
 
             if (exception is ExternalOperationException externalOperationException)
             {
                 // Operation: <operation>
-                if (!string.IsNullOrWhiteSpace(externalOperationException.Operation))
-                {
-                    text.Append(Strings.Operation).Append(_separator).AppendLine(externalOperationException.Operation);
-                }
+                AppendUnlessEmpty(externalOperationException.Operation, Strings.Operation);
 
                 // Arguments: <args>
-                if (!string.IsNullOrWhiteSpace(externalOperationException.Arguments))
-                {
-                    text.Append(Strings.Arguments).Append(_separator).AppendLine(externalOperationException.Arguments);
-                }
+                AppendUnlessEmpty(externalOperationException.Arguments, Strings.Arguments);
 
                 // Directory: <dir>
-                text.Append(Strings.Directory).Append(_separator).AppendLine(externalOperationException.Directory);
+                AppendUnlessEmpty(externalOperationException.Directory, Strings.Directory);
             }
 
             return rootError;
+
+            void AppendUnlessEmpty(string? value, string designation)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    text.Append(designation).Append(_separator).AppendLine(value);
+                }
+            }
         }
 
         public static void Report(Exception exception, bool isTerminating)
@@ -107,8 +94,10 @@ namespace GitExtensions
             {
                 // directions and button to raise a bug
                 text.AppendLine().AppendLine(Strings.ReportBug);
-                taskDialog.AddButton(Strings.ButtonReportBug, () => ShowNBug(OwnerForm, exception, isTerminating));
             }
+
+            taskDialog.AddButton(isUserExternalOperation ? Strings.ButtonViewDetails : Strings.ButtonReportBug,
+                () => ShowNBug(OwnerForm, exception, isTerminating));
 
             // let the user decide whether to report the bug
             if (!isExternalOperation)
@@ -116,7 +105,7 @@ namespace GitExtensions
                 AddIgnoreOrCloseButton();
             }
 
-            taskDialog.Text = text.ToString();
+            taskDialog.Text = text.ToString().Trim();
             taskDialog.Show();
             return;
 

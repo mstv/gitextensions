@@ -30,7 +30,7 @@ namespace GitUITests.NBugReports
         private const string _context = "context";
         private const string _command = "command";
         private const string _arguments = "arguments";
-        private const string _workingDirectory = "workdir";
+        private const string _directory = "directory";
 
         public static IEnumerable TestCases
         {
@@ -41,22 +41,21 @@ namespace GitUITests.NBugReports
                     "");
                 yield return new TestCaseData(new Exception(_messageOuter, new Exception(_messageMiddle)),
                     _messageMiddle,
-                    $"{_messageOuter}{Environment.NewLine}");
+                    "");
                 yield return new TestCaseData(new Exception(_messageOuter, new Exception(_messageMiddle, new Exception(_messageInner))),
                     _messageInner,
-                    $"{_messageMiddle}{Environment.NewLine}{Environment.NewLine}{_messageOuter}{Environment.NewLine}");
+                    "");
                 yield return new TestCaseData(new UserExternalOperationException(_context,
-                    new ExternalOperationException(_command, _arguments, _workingDirectory, new Exception(_messageOuter, new Exception(_messageInner)))),
+                    new ExternalOperationException(_command, _arguments, _directory, new Exception(_messageOuter, new Exception(_messageInner)))),
                     _messageInner,
-                    $"{_messageOuter}{Environment.NewLine}{Environment.NewLine}"
-                    + $"Operation: {_context}{Environment.NewLine}"
+                    $"Context: {_context}{Environment.NewLine}"
                     + $"Operation: {_command}{Environment.NewLine}"
                     + $"Arguments: {_arguments}{Environment.NewLine}"
-                    + $"Directory: {_workingDirectory}{Environment.NewLine}");
+                    + $"Directory: {_directory}{Environment.NewLine}");
                 yield return new TestCaseData(new UserExternalOperationException(null,
                     new ExternalOperationException(null, null, null, new Exception(_messageInner))),
                     _messageInner,
-                    $"Directory: {Environment.NewLine}");
+                    "");
             }
         }
     }
