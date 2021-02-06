@@ -84,11 +84,6 @@ namespace GitExtensions
             bool isUserExternalOperation = exception is UserExternalOperationException;
             bool isExternalOperation = exception is ExternalOperationException;
 
-            string caption
-                = isUserExternalOperation ? Strings.UserExternalOperationFailed
-                  : isExternalOperation ? Strings.ExternalOperationFailed
-                  : Strings.Error;
-
             StringBuilder text = new();
             string rootError = Append(text, exception);
 
@@ -96,7 +91,7 @@ namespace GitExtensions
             {
                 OwnerWindowHandle = OwnerFormHandle,
                 Icon = TaskDialogStandardIcon.Error,
-                Caption = caption,
+                Caption = Strings.Error,
                 InstructionText = rootError,
                 Cancelable = true,
             };

@@ -95,8 +95,6 @@ namespace GitUI
 
         private readonly TranslationString _rotInactive = new("[ Inactive ]");
 
-        private readonly TranslationString _userExternalOperationFailed = new("User-defined external operation failed");
-        private readonly TranslationString _externalOperationFailed = new("External operation failed");
         private readonly TranslationString _operation = new("Operation");
         private readonly TranslationString _command = new("Command");
         private readonly TranslationString _arguments = new("Arguments");
@@ -204,8 +202,6 @@ namespace GitUI
 
         public static string Inactive => _instance.Value._rotInactive.Text;
 
-        public static string UserExternalOperationFailed => _instance.Value._userExternalOperationFailed.Text;
-        public static string ExternalOperationFailed => _instance.Value._externalOperationFailed.Text;
         public static string Operation => _instance.Value._operation.Text;
         public static string Arguments => _instance.Value._arguments.Text;
         public static string Command => _instance.Value._command.Text;

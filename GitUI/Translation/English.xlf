@@ -9640,10 +9640,6 @@ Select this commit to populate the full message.</source>
         <source>Not on a branch</source>
         <target />
       </trans-unit>
-      <trans-unit id="_externalOperationFailed.Text">
-        <source>External operation failed</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_findGitExecutable.Text">
         <source>Find git...</source>
         <target />
@@ -9884,10 +9880,6 @@ Yes, I allow telemetry!</source>
       </trans-unit>
       <trans-unit id="_unstageSelectedLines.Text">
         <source>Unstage selected line(s)</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_userExternalOperationFailed.Text">
-        <source>User-defined external operation failed</source>
         <target />
       </trans-unit>
       <trans-unit id="_viewPullRequest.Text">
