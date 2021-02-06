@@ -1,3 +1,7 @@
+#if NET5_0_OR_GREATER
+#error Remove this file when targeting .NET 5 if really not needed then, else use it everywhere
+#endif
+
 #nullable enable
 
 using System;
