@@ -95,7 +95,7 @@ namespace GitCommands.Git
             }
             catch (Exception ex)
             {
-                throw new ExternalOperationException(command: "File.Delete", arguments: fileName, FileSystemUtility.GetWorkingDirectoryNoEx(), ex);
+                throw new ExternalOperationException(operation: "File.Delete", arguments: fileName, FileSystemUtility.GetWorkingDirectoryNoEx(), ex);
             }
         }
     }

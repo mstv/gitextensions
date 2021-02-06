@@ -9540,10 +9540,6 @@ Select this commit to populate the full message.</source>
         <source>Combined diff</source>
         <target />
       </trans-unit>
-      <trans-unit id="_command.Text">
-        <source>Command</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_commitDateText.Text">
         <source>{0:Commit date|Commit dates}</source>
         <target />
@@ -9618,6 +9614,10 @@ Select this commit to populate the full message.</source>
       </trans-unit>
       <trans-unit id="_diffWithParent.Text">
         <source>Diff with a/</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_directory.Text">
+        <source>Directory</source>
         <target />
       </trans-unit>
       <trans-unit id="_directoryIsNotAValidRepository.Text">
@@ -9892,10 +9892,6 @@ Yes, I allow telemetry!</source>
       </trans-unit>
       <trans-unit id="_weeksAgo.Text">
         <source>{0} {1:week|weeks} ago</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_workingDirectory.Text">
-        <source>Working directory</source>
         <target />
       </trans-unit>
       <trans-unit id="_workspaceText.Text">

@@ -57,7 +57,7 @@ namespace GitUI.Script
             {
                 ThreadHelper.AssertOnUIThread();
                 throw new UserExternalOperationException($"{Strings.ScriptErrorCantFind}: '{scriptKey}'",
-                    new ExternalOperationException(command: null, arguments: null, module.WorkingDir, innerException: null));
+                    new ExternalOperationException(directory: module.WorkingDir));
             }
 
             if (string.IsNullOrEmpty(scriptInfo.Command))

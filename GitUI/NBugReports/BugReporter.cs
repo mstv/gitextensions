@@ -60,10 +60,10 @@ namespace GitExtensions
 
             if (exception is ExternalOperationException externalOperationException)
             {
-                // Command: <command>
-                if (!string.IsNullOrWhiteSpace(externalOperationException.Command))
+                // Operation: <operation>
+                if (!string.IsNullOrWhiteSpace(externalOperationException.Operation))
                 {
-                    text.Append(Strings.Command).Append(_separator).AppendLine(externalOperationException.Command);
+                    text.Append(Strings.Operation).Append(_separator).AppendLine(externalOperationException.Operation);
                 }
 
                 // Arguments: <args>
@@ -72,8 +72,8 @@ namespace GitExtensions
                     text.Append(Strings.Arguments).Append(_separator).AppendLine(externalOperationException.Arguments);
                 }
 
-                // Working directory: <working dir>
-                text.Append(Strings.WorkingDirectory).Append(_separator).AppendLine(externalOperationException.WorkingDirectory);
+                // Directory: <dir>
+                text.Append(Strings.Directory).Append(_separator).AppendLine(externalOperationException.Directory);
             }
 
             return rootError;

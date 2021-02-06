@@ -96,9 +96,8 @@ namespace GitUI
         private readonly TranslationString _rotInactive = new("[ Inactive ]");
 
         private readonly TranslationString _operation = new("Operation");
-        private readonly TranslationString _command = new("Command");
         private readonly TranslationString _arguments = new("Arguments");
-        private readonly TranslationString _workingDirectory = new("Working directory");
+        private readonly TranslationString _directory = new("Directory");
         private readonly TranslationString _reportBug = new("If you think this was caused by Git Extensions, you can report a bug for the team to investigate.");
 
         // public only because of FormTranslate
@@ -204,8 +203,7 @@ namespace GitUI
 
         public static string Operation => _instance.Value._operation.Text;
         public static string Arguments => _instance.Value._arguments.Text;
-        public static string Command => _instance.Value._command.Text;
-        public static string WorkingDirectory => _instance.Value._workingDirectory.Text;
+        public static string Directory => _instance.Value._directory.Text;
         public static string ReportBug => _instance.Value._reportBug.Text;
 
         #region Scripts
