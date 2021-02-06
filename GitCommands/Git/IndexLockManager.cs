@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using GitExtUtils;
@@ -89,14 +88,7 @@ namespace GitCommands.Git
                 return;
             }
 
-            try
-            {
-                _fileSystem.File.Delete(fileName);
-            }
-            catch (Exception ex)
-            {
-                throw new ExternalOperationException(operation: "File.Delete", arguments: fileName, FileSystemUtility.GetWorkingDirectoryNoEx(), ex);
-            }
+            FileSystemWrapper.DeleteFile(fileName, _fileSystem);
         }
     }
 }

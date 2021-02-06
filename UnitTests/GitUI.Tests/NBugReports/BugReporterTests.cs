@@ -50,13 +50,13 @@ namespace GitUITests.NBugReports
                     _messageInner,
                     $"{_messageOuter}{Environment.NewLine}{Environment.NewLine}"
                     + $"Operation: {_context}{Environment.NewLine}"
-                    + $"Command: {_command}{Environment.NewLine}"
+                    + $"Operation: {_command}{Environment.NewLine}"
                     + $"Arguments: {_arguments}{Environment.NewLine}"
-                    + $"Working directory: {_workingDirectory}{Environment.NewLine}");
+                    + $"Directory: {_workingDirectory}{Environment.NewLine}");
                 yield return new TestCaseData(new UserExternalOperationException(null,
                     new ExternalOperationException(null, null, null, new Exception(_messageInner))),
                     _messageInner,
-                    $"Working directory: {Environment.NewLine}");
+                    $"Directory: {Environment.NewLine}");
             }
         }
     }
