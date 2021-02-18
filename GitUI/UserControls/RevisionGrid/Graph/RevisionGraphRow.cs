@@ -94,6 +94,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     {
                         // This is a crossing lane. We could not merge it in the lane with this row's revision.
 
+#if false
                         // Try to detect this:
                         // *
                         // |
@@ -130,6 +131,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
                         // Segment has not been assigned a lane yet
                         if (!added)
+#endif
                         {
                             newSegmentLanes[segment] = laneIndex;
                             laneIndex++;
