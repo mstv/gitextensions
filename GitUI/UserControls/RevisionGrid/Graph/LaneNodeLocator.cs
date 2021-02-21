@@ -5,21 +5,21 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 {
     internal interface ILaneNodeLocator
     {
-        (RevisionGraphRevision? revision, bool isAtNode) FindPrevNode(int rowIndex, int lane);
+        (RevisionGraphRevision? revision, bool isAtNode, RevisionGraphRevision? singleChild) FindPrevNode(int rowIndex, int lane);
     }
 
     internal sealed class LaneNodeLocator : ILaneNodeLocator
     {
         private readonly IRevisionGraphRowProvider _revisionGraphRowProvider;
 
-        public static readonly (RevisionGraphRevision?, bool) NotFoundResult = (null, false);
+        public static readonly (RevisionGraphRevision?, bool, RevisionGraphRevision?) NotFoundResult = (null, false, null);
 
         public LaneNodeLocator(IRevisionGraphRowProvider revisionGraphRowProvider)
         {
             _revisionGraphRowProvider = revisionGraphRowProvider;
         }
 
-        public (RevisionGraphRevision? revision, bool isAtNode) FindPrevNode(int rowIndex, int lane)
+        public (RevisionGraphRevision? revision, bool isAtNode, RevisionGraphRevision? singleChild) FindPrevNode(int rowIndex, int lane)
         {
             if (rowIndex < 0 || lane < 0)
             {
@@ -36,13 +36,14 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
             if (row.GetCurrentRevisionLane() == lane)
             {
-                return (row.Revision, isAtNode: true);
+                return (row.Revision, isAtNode: true, singleChild: null);
             }
 
             var segmentsForLane = row.GetSegmentsForIndex(lane);
             if (segmentsForLane.Count() > 0)
             {
-                var firstParent = segmentsForLane.First().Parent;
+                RevisionGraphSegment? firstSegment = segmentsForLane.First();
+                RevisionGraphRevision? firstParent = firstSegment.Parent;
 #if DEBUG
                 if (segmentsForLane.Any(segment => segment.Parent != firstParent))
                 {
@@ -51,7 +52,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                                                       rowIndex, lane, segmentsForLane.Count()));
                 }
 #endif
-                return (firstParent, isAtNode: false);
+                return (firstParent, isAtNode: false, firstSegment.Child);
             }
 
             return NotFoundResult;

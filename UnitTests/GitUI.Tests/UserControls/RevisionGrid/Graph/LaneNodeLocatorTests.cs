@@ -20,9 +20,9 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             _laneNodeLocator = new LaneNodeLocator(_revisionGraphRowProvider);
         }
 
-        private RevisionGraphRevision SetupLaneRow(int row, int lane, int laneCount, int nodeLane = -1, RevisionGraphSegment firstSegment = null)
+        private RevisionGraphRevision SetupLaneRow(int row, int lane, int laneCount, int nodeLane = -1, RevisionGraphSegment firstSegment = null, RevisionGraphRevision child = null)
         {
-            var node = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.WorkTreeId, 0);
+            var node = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.IndexId, 0);
             var revisionGraphRow = Substitute.For<IRevisionGraphRow>();
 
             var segments = new List<RevisionGraphSegment>();
@@ -43,7 +43,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             }
             else
             {
-                segments.Add(new RevisionGraphSegment(node, null));
+                segments.Add(new RevisionGraphSegment(node, child));
             }
 
             _revisionGraphRowProvider.GetSegmentsForRow(row).Returns(x => revisionGraphRow);
@@ -53,13 +53,13 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
         [Test]
         public void FindPrevNode_should_return_null_if_lane_negative()
         {
-            _laneNodeLocator.FindPrevNode(0, -1).Should().Be((null, false));
+            _laneNodeLocator.FindPrevNode(0, -1).Should().Be((null, false, null));
         }
 
         [Test]
         public void FindPrevNode_should_return_null_if_rowIndex_negative()
         {
-            _laneNodeLocator.FindPrevNode(-1, 0).Should().Be((null, false));
+            _laneNodeLocator.FindPrevNode(-1, 0).Should().Be((null, false, null));
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
         {
             const int row = 100;
             _revisionGraphRowProvider.GetSegmentsForRow(row).Returns(x => null);
-            _laneNodeLocator.FindPrevNode(row, 0).Should().Be((null, false));
+            _laneNodeLocator.FindPrevNode(row, 0).Should().Be((null, false, null));
         }
 
         [Test]
@@ -86,7 +86,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             var node = SetupLaneRow(row, lane, laneCount: 0, nodeLane: lane);
 
             // row.GetCurrentRevisionLane() == lane
-            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((node, true));
+            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((node, true, null));
         }
 
         [Test]
@@ -97,7 +97,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             SetupLaneRow(row, lane, laneCount: lane);
 
             // lane >= _revisionGraphRowProvider.GetSegmentsForRow(rowIndex).Count
-            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((null, false));
+            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((null, false, null));
         }
 
         [Test]
@@ -109,7 +109,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             _revisionGraphRowProvider.GetSegmentsForRow(row).GetSegmentsForIndex(lane).Returns(x => new List<RevisionGraphSegment>());
 
             // segmentsForLane.Count() <= 0
-            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((null, false));
+            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((null, false, null));
         }
 
         [Test]
@@ -120,7 +120,19 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             var laneNode = SetupLaneRow(row, lane, laneCount: lane + 1);
 
             // innermost "return"
-            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((laneNode, false));
+            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((laneNode, false, null));
+        }
+
+        [Test]
+        public void FindPrevNode_should_return_the_parent_and_child_nodes_of_the_single_segment()
+        {
+            const int row = 100;
+            const int lane = 3;
+            RevisionGraphRevision childNode = new(GitUIPluginInterfaces.ObjectId.WorkTreeId, 0);
+            RevisionGraphRevision laneNode = SetupLaneRow(row, lane, laneCount: lane + 1, child: childNode);
+
+            // innermost "return"
+            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((laneNode, false, childNode));
         }
 
         [Test]
@@ -128,19 +140,19 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
         {
             const int row = 100;
             const int lane = 3;
-            var parentNode = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.WorkTreeId, 0);
+            var parentNode = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.IndexId, 0);
             var childNode = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.WorkTreeId, 0);
             var segment = new RevisionGraphSegment(parentNode, childNode);
             var laneNode = SetupLaneRow(row, lane, laneCount: lane + 1, firstSegment: segment);
 
 #if !DEBUG
             // innermost "return" in RELEASE build
-            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((parentNode, false));
+            _laneNodeLocator.FindPrevNode(row, lane).Should().Be((parentNode, false, null));
 #else
             try
             {
                 // Exception before innermost "return" in DEBUG build
-                _laneNodeLocator.FindPrevNode(row, lane).Should().Be((parentNode, false));
+                _laneNodeLocator.FindPrevNode(row, lane).Should().Be((parentNode, false, null));
                 throw new AssertionException("The debug build should throw an exception!");
             }
             catch (Exception x)
