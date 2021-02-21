@@ -20,7 +20,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
         public string GetLaneInfo(int rowIndex, int lane)
         {
-            (var node, bool isAtNode) = _nodeLocator.FindPrevNode(rowIndex, lane);
+            (RevisionGraphRevision? node, bool isAtNode, RevisionGraphRevision? singleChild) = _nodeLocator.FindPrevNode(rowIndex, lane);
             if (node is null)
             {
                 return string.Empty;
@@ -32,6 +32,12 @@ namespace GitUI.UserControls.RevisionGrid.Graph
             }
 
             StringBuilder laneInfoText = new();
+
+            if (singleChild is not null)
+            {
+                laneInfoText.Append(singleChild.Objectid.ToShortString()).Append(": ").AppendLine(singleChild.GitRevision?.Subject).AppendLine("|");
+            }
+
             if (!node.GitRevision.IsArtificial)
             {
                 if (isAtNode)
