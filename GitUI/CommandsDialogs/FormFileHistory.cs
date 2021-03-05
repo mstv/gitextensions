@@ -406,7 +406,7 @@ namespace GitUI.CommandsDialogs
                     IsTracked = true,
                     IsSubmodule = GitModule.IsValidGitWorkingDir(_fullPathResolver.Resolve(fileName))
                 };
-                View.ViewGitItemRevisionAsync(file, revision.ObjectId);
+                _ = View.ViewGitItemRevisionAsync(file, revision.ObjectId);
             }
             else if (tabControl1.SelectedTab == DiffTab)
             {
@@ -418,7 +418,7 @@ namespace GitUI.CommandsDialogs
                 };
                 var revisions = FileChanges.GetSelectedRevisions();
                 var item = new FileStatusItem(firstRev: revisions.Skip(1).LastOrDefault(), secondRev: revisions.FirstOrDefault(), file);
-                Diff.ViewChangesAsync(item, defaultText: "You need to select at least one revision to view diff.");
+                _ = Diff.ViewChangesAsync(item, defaultText: "You need to select at least one revision to view diff.");
             }
             else if (tabControl1.SelectedTab == CommitInfoTabPage)
             {
