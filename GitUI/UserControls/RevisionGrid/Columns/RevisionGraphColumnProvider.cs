@@ -31,6 +31,13 @@ namespace GitUI.UserControls.RevisionGrid.Columns
         private RevisionGraphDrawStyleEnum _revisionGraphDrawStyleCache;
         private RevisionGraphDrawStyleEnum _revisionGraphDrawStyle;
 
+        private struct SegmentLanes
+        {
+            internal int StartLane;
+            internal int CenterLane;
+            internal int EndLane;
+        }
+
         public RevisionGraphColumnProvider(RevisionGridControl grid, RevisionGraph revisionGraph, IGitRevisionSummaryBuilder gitRevisionSummaryBuilder)
             : base("Graph")
         {
@@ -251,7 +258,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                             return;
                         }
 
-                        IRevisionGraphRow? previousRow = _revisionGraph.GetSegmentsForRow(Math.Max(0, index - 1));
+                        IRevisionGraphRow? previousRow = index < 1 ? null : _revisionGraph.GetSegmentsForRow(index - 1);
                         IRevisionGraphRow? nextRow = _revisionGraph.GetSegmentsForRow(index + 1);
 
                         int centerY = top + (rowHeight / 2);
@@ -262,48 +269,22 @@ namespace GitUI.UserControls.RevisionGrid.Columns
 
                         foreach (RevisionGraphSegment revisionGraphSegment in currentRow.Segments.Reverse().OrderBy(s => s.Child.IsRelative))
                         {
-                            int startLane = -10;
-                            int centerLane = -10;
-                            int endLane = -10;
+                            SegmentLanes lanes
+                                = GetLanes(revisionGraphSegment, previousRow, currentRow, nextRow, () => _revisionGraph.GetSegmentsForRow(index + 2), li => currentRowRevisionLaneInfo = li);
 
-                            if (revisionGraphSegment.Parent == currentRow.Revision)
-                            {
-                                // This lane ends here
-                                startLane = GetLaneForRow(previousRow, revisionGraphSegment);
-                                centerLane = GetLaneForRow(currentRow, revisionGraphSegment);
-                                currentRowRevisionLaneInfo = revisionGraphSegment.LaneInfo;
-                            }
-                            else
-                            {
-                                if (revisionGraphSegment.Child == currentRow.Revision)
-                                {
-                                    // This lane starts here
-                                    centerLane = GetLaneForRow(currentRow, revisionGraphSegment);
-                                    endLane = GetLaneForRow(nextRow, revisionGraphSegment);
-                                    currentRowRevisionLaneInfo = revisionGraphSegment.LaneInfo;
-                                }
-                                else
-                                {
-                                    // This lane crosses
-                                    startLane = GetLaneForRow(previousRow, revisionGraphSegment);
-                                    centerLane = GetLaneForRow(currentRow, revisionGraphSegment);
-                                    endLane = GetLaneForRow(nextRow, revisionGraphSegment);
-                                }
-                            }
-
-                            int startX = g.RenderingOrigin.X + (int)((startLane + 0.5) * LaneWidth);
-                            int centerX = g.RenderingOrigin.X + (int)((centerLane + 0.5) * LaneWidth);
-                            int endX = g.RenderingOrigin.X + (int)((endLane + 0.5) * LaneWidth);
+                            int startX = g.RenderingOrigin.X + (int)((lanes.StartLane + 0.5) * LaneWidth);
+                            int centerX = g.RenderingOrigin.X + (int)((lanes.CenterLane + 0.5) * LaneWidth);
+                            int endX = g.RenderingOrigin.X + (int)((lanes.EndLane + 0.5) * LaneWidth);
 
                             Brush brush = GetBrushForLaneInfo(revisionGraphSegment.LaneInfo, revisionGraphSegment.Child.IsRelative);
 
-                            if (startLane >= 0 && centerLane >= 0 && (startLane <= MaxLanes || centerLane <= MaxLanes))
+                            if (lanes.StartLane >= 0 && lanes.CenterLane >= 0 && (lanes.StartLane <= MaxLanes || lanes.CenterLane <= MaxLanes))
                             {
                                 // EndSegment
                                 DrawSegment(g, brush, startX, startY, centerX, centerY);
                             }
 
-                            if (endLane >= 0 && centerLane >= 0 && (endLane <= MaxLanes || centerLane <= MaxLanes))
+                            if (lanes.EndLane >= 0 && lanes.CenterLane >= 0 && (lanes.EndLane <= MaxLanes || lanes.CenterLane <= MaxLanes))
                             {
                                 // StartSegment
                                 DrawSegment(g, brush, centerX, centerY, endX, endY);
@@ -349,6 +330,46 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                                 }
                             }
                         }
+                    }
+
+                    static SegmentLanes GetLanes(RevisionGraphSegment revisionGraphSegment,
+                        IRevisionGraphRow? previousRow,
+                        IRevisionGraphRow currentRow,
+                        IRevisionGraphRow? nextRow,
+                        Func<IRevisionGraphRow?> getNextNextRow,
+                        Action<LaneInfo?> setLaneInfo)
+                    {
+                        SegmentLanes lanes = new();
+                        lanes.StartLane = -10;
+                        lanes.CenterLane = -10;
+                        lanes.EndLane = -10;
+
+                        if (revisionGraphSegment.Parent == currentRow.Revision)
+                        {
+                            // This lane ends here
+                            lanes.StartLane = RevisionGraphColumnProvider.GetLaneForRow(previousRow, revisionGraphSegment);
+                            lanes.CenterLane = RevisionGraphColumnProvider.GetLaneForRow(currentRow, revisionGraphSegment);
+                            setLaneInfo?.Invoke(revisionGraphSegment.LaneInfo);
+                        }
+                        else
+                        {
+                            if (revisionGraphSegment.Child == currentRow.Revision)
+                            {
+                                // This lane starts here
+                                lanes.CenterLane = RevisionGraphColumnProvider.GetLaneForRow(currentRow, revisionGraphSegment);
+                                lanes.EndLane = RevisionGraphColumnProvider.GetLaneForRow(nextRow, revisionGraphSegment);
+                                setLaneInfo?.Invoke(revisionGraphSegment.LaneInfo);
+                            }
+                            else
+                            {
+                                // This lane crosses
+                                lanes.StartLane = GetLaneForRow(previousRow, revisionGraphSegment);
+                                lanes.CenterLane = GetLaneForRow(currentRow, revisionGraphSegment);
+                                lanes.EndLane = GetLaneForRow(nextRow, revisionGraphSegment);
+                            }
+                       }
+
+                        return lanes;
                     }
                 }
             }
