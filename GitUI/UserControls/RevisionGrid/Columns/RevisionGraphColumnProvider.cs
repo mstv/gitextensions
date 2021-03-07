@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -34,6 +35,13 @@ namespace GitUI.UserControls.RevisionGrid.Columns
             internal int StartLane;
             internal int CenterLane;
             internal int EndLane;
+            internal bool DrawFromStart;
+            internal bool DrawToEnd;
+
+            /// <summary>
+            /// Go perpendicalur through the center in order to avoid crossing independend nodes
+            /// </summary>
+            internal bool DrawPerpendicular;
         }
 
         public RevisionGraphColumnProvider(RevisionGridControl grid, RevisionGraph revisionGraph, IGitRevisionSummaryBuilder gitRevisionSummaryBuilder)
@@ -247,7 +255,9 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                         IRevisionGraphRow? previousRow = index < 1 ? null : _revisionGraph.GetSegmentsForRow(index - 1);
                         IRevisionGraphRow? nextRow = _revisionGraph.GetSegmentsForRow(index + 1);
 
-                        int centerY = top + (rowHeight / 2);
+                        int halfRowHeight = rowHeight / 2;
+                        int halfPerpendicularHeight = rowHeight / 3;
+                        int centerY = top + halfRowHeight;
                         int startY = centerY - rowHeight;
                         int endY = centerY + rowHeight;
 
@@ -258,23 +268,64 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                             SegmentLanes lanes
                                 = GetLanes(revisionGraphSegment, previousRow, currentRow, nextRow, () => _revisionGraph.GetSegmentsForRow(index + 2), li => currentRowRevisionLaneInfo = li);
 
+                            if (!lanes.DrawFromStart && !lanes.DrawToEnd)
+                            {
+                                continue;
+                            }
+
                             int startX = g.RenderingOrigin.X + (int)((lanes.StartLane + 0.5) * LaneWidth);
                             int centerX = g.RenderingOrigin.X + (int)((lanes.CenterLane + 0.5) * LaneWidth);
                             int endX = g.RenderingOrigin.X + (int)((lanes.EndLane + 0.5) * LaneWidth);
 
-                            Brush brush = GetBrushForLaneInfo(revisionGraphSegment.LaneInfo, revisionGraphSegment.Child.IsRelative);
+                            List<Point> points = new();
 
-                            if (lanes.StartLane >= 0 && lanes.CenterLane >= 0 && (lanes.StartLane <= MaxLanes || lanes.CenterLane <= MaxLanes))
+                            if (lanes.DrawFromStart)
                             {
-                                // EndSegment
-                                DrawSegment(g, brush, startX, startY, centerX, centerY);
+                                points.Add(new(startX, startY));
+
+                                bool drawPreviousPerpendicular = true;
+                                if (index >= 2)
+                                {
+                                    Validates.NotNull(previousRow);
+                                    SegmentLanes previousLanes
+                                        = GetLanes(revisionGraphSegment, _revisionGraph.GetSegmentsForRow(index - 2), previousRow, currentRow, () => nextRow, setLaneInfo: null);
+                                    drawPreviousPerpendicular = !previousLanes.DrawFromStart || previousLanes.DrawPerpendicular;
+                                }
+
+                                if (drawPreviousPerpendicular)
+                                {
+                                    points.Add(new(startX, startY + halfPerpendicularHeight));
+                                }
+
+                                if (lanes.DrawPerpendicular)
+                                {
+                                    points.Add(new(centerX, centerY - halfPerpendicularHeight));
+                                }
                             }
 
-                            if (lanes.EndLane >= 0 && lanes.CenterLane >= 0 && (lanes.EndLane <= MaxLanes || lanes.CenterLane <= MaxLanes))
+                            points.Add(new(centerX, centerY));
+
+                            if (lanes.DrawToEnd)
                             {
-                                // StartSegment
-                                DrawSegment(g, brush, centerX, centerY, endX, endY);
+                                if (lanes.DrawPerpendicular)
+                                {
+                                    points.Add(new(centerX, centerY + halfPerpendicularHeight));
+                                }
+
+                                Validates.NotNull(nextRow);
+                                SegmentLanes nextLanes
+                                    = GetLanes(revisionGraphSegment, currentRow, nextRow, _revisionGraph.GetSegmentsForRow(index + 2), () => _revisionGraph.GetSegmentsForRow(index + 3), setLaneInfo: null);
+                                if (!nextLanes.DrawToEnd || nextLanes.DrawPerpendicular)
+                                {
+                                    points.Add(new(endX, endY - halfPerpendicularHeight));
+                                }
+
+                                points.Add(new(endX, endY));
                             }
+
+                            using Pen lanePen = new(GetBrushForLaneInfo(revisionGraphSegment.LaneInfo, revisionGraphSegment.Child.IsRelative), LaneLineWidth);
+                            g.SmoothingMode = SmoothingMode.AntiAlias;
+                            g.DrawCurve(lanePen, points.ToArray(), 0.0f);
                         }
 
                         if (currentRow.GetCurrentRevisionLane() < MaxLanes)
@@ -323,7 +374,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                         IRevisionGraphRow currentRow,
                         IRevisionGraphRow? nextRow,
                         Func<IRevisionGraphRow?> getNextNextRow,
-                        Action<LaneInfo?> setLaneInfo)
+                        Action<LaneInfo?>? setLaneInfo)
                     {
                         SegmentLanes lanes = new();
                         lanes.StartLane = -10;
@@ -359,6 +410,14 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                                 ////RevisionGraphColumnProvider.StraightenSegment(revisionGraphSegment, getNextNextRow, nextRow, ref lanes.EndLane, lanes.CenterLane);
                             }
                         }
+
+                        lanes.DrawFromStart = lanes.CenterLane >= 0 && lanes.StartLane >= 0 && (lanes.StartLane <= MaxLanes || lanes.CenterLane <= MaxLanes);
+                        lanes.DrawToEnd = lanes.CenterLane >= 0 && lanes.EndLane >= 0 && (lanes.EndLane <= MaxLanes || lanes.CenterLane <= MaxLanes);
+
+                        lanes.DrawPerpendicular = lanes.CenterLane == lanes.StartLane || lanes.StartLane < 0
+                            || lanes.CenterLane == lanes.EndLane || lanes.EndLane < 0
+                            || (lanes.StartLane < lanes.CenterLane && lanes.EndLane < lanes.CenterLane)
+                            || (lanes.StartLane > lanes.CenterLane && lanes.EndLane > lanes.CenterLane);
 
                         return lanes;
                     }
@@ -414,33 +473,6 @@ namespace GitUI.UserControls.RevisionGrid.Columns
             }
 
             return -1;
-        }
-
-        private void DrawSegment(Graphics g, Brush laneBrush, int x0, int y0, int x1, int y1)
-        {
-            Point p0 = new(x0, y0);
-            Point p1 = new(x1, y1);
-
-            using Pen lanePen = new(laneBrush, LaneLineWidth);
-            if (x0 == x1)
-            {
-                g.SmoothingMode = SmoothingMode.None;
-                g.DrawLine(lanePen, p0, p1);
-            }
-            else
-            {
-                // Anti-aliasing with bezier & PixelOffsetMode.HighQuality
-                // introduces an offset of ~1/8 px - compensate it.
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                const float offset = -1f / 8f;
-
-                float yMid = (y0 + y1) / 2f;
-                PointF c0 = new(offset + p0.X, offset + yMid);
-                PointF c1 = new(offset + p1.X, offset + yMid);
-                PointF e0 = new(offset + p0.X, offset + p0.Y);
-                PointF e1 = new(offset + p1.X, offset + p1.Y);
-                g.DrawBezier(lanePen, e0, c0, c1, e1);
-            }
         }
 
         public override void Clear()
