@@ -278,7 +278,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
 
                                 if (nextRow is not null)
                                 {
-                                    StraightenSegment(index, revisionGraphSegment, centerLane, ref endLane, nextRow);
+                                    ////StraightenSegment(index, revisionGraphSegment, centerLane, ref endLane, nextRow);
                                 }
                             }
 
