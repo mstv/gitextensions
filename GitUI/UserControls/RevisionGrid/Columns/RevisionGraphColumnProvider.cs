@@ -256,7 +256,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                         IRevisionGraphRow? nextRow = _revisionGraph.GetSegmentsForRow(index + 1);
 
                         int halfRowHeight = rowHeight / 2;
-                        int halfPerpendicularHeight = rowHeight / 3;
+                        int halfPerpendicularHeight = rowHeight / 4;
                         int centerY = top + halfRowHeight;
                         int startY = centerY - rowHeight;
                         int endY = centerY + rowHeight;
@@ -303,7 +303,10 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                                 }
                             }
 
-                            points.Add(new(centerX, centerY));
+                            if (!lanes.DrawPerpendicular || !lanes.DrawFromStart || !lanes.DrawToEnd)
+                            {
+                                points.Add(new(centerX, centerY));
+                            }
 
                             if (lanes.DrawToEnd)
                             {
@@ -323,9 +326,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                                 points.Add(new(endX, endY));
                             }
 
-                            using Pen lanePen = new(GetBrushForLaneInfo(revisionGraphSegment.LaneInfo, revisionGraphSegment.Child.IsRelative), LaneLineWidth);
-                            g.SmoothingMode = SmoothingMode.AntiAlias;
-                            g.DrawCurve(lanePen, points.ToArray(), 0.0f);
+                            DrawSegment(g, GetBrushForLaneInfo(revisionGraphSegment.LaneInfo, revisionGraphSegment.Child.IsRelative), points.ToArray(), rowHeight);
                         }
 
                         if (currentRow.GetCurrentRevisionLane() < MaxLanes)
@@ -421,6 +422,16 @@ namespace GitUI.UserControls.RevisionGrid.Columns
 
                         return lanes;
                     }
+
+                    static void DrawSegment(Graphics g, Brush laneBrush, Point[] points, int rowHeight)
+                    {
+                        using Pen lanePen = new(laneBrush, LaneLineWidth);
+                        g.SmoothingMode = SmoothingMode.AntiAlias;
+                        for (int indexP1 = 0, indexP2; (indexP2 = indexP1 + 1) < points.Length; indexP1 = indexP2)
+                        {
+                            RevisionGraphColumnProvider.DrawSegment(g, laneBrush, points[indexP1].X, points[indexP1].Y, points[indexP2].X, points[indexP2].Y, rowHeight);
+                        }
+                    }
                 }
             }
         }
@@ -473,6 +484,39 @@ namespace GitUI.UserControls.RevisionGrid.Columns
             }
 
             return -1;
+        }
+
+        private static void DrawSegment(Graphics g, Brush laneBrush, int x0, int y0, int x1, int y1, int rowHeight)
+        {
+            Point p0 = new(x0, y0);
+            Point p1 = new(x1, y1);
+
+            using Pen lanePen = new(laneBrush, LaneLineWidth);
+            if (x0 == x1)
+            {
+                g.SmoothingMode = SmoothingMode.None;
+                g.DrawLine(lanePen, p0, p1);
+            }
+            else if (y1 - y0 >= rowHeight * 3 / 4)
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                const float offset = -1f / 8f;
+                g.DrawLine(lanePen, new PointF(offset + x0, y0), new PointF(offset + x1, y1));
+            }
+            else
+            {
+                // Anti-aliasing with bezier & PixelOffsetMode.HighQuality
+                // introduces an offset of ~1/8 px - compensate it.
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                const float offset = -1f / 8f;
+
+                float yMid = (y0 + y1) / 2f;
+                PointF c0 = new(offset + p0.X, offset + yMid);
+                PointF c1 = new(offset + p1.X, offset + yMid);
+                PointF e0 = new(offset + p0.X, offset + p0.Y);
+                PointF e1 = new(offset + p1.X, offset + p1.Y);
+                g.DrawBezier(lanePen, e0, c0, c1, e1);
+            }
         }
 
         public override void Clear()
