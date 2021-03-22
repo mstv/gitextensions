@@ -29,27 +29,28 @@ namespace GitUI.UserControls.RevisionGrid.Graph
         }
 
         public RevisionGraphRevision Revision { get; }
+
         public IReadOnlyList<RevisionGraphSegment> Segments { get; }
 
-        // This dictonary contains a cached list of all segments and the lane index the segment is in for this row.
+        /// <summary>
+        /// This dictonary contains a cached list of all segments and the lane index the segment is in for this row.
+        /// </summary>
         private IDictionary<RevisionGraphSegment, int>? _segmentLanes;
 
-        // The cached lanecount
+        /// <summary>
+        /// Contains the gaps created by <cref>MoveLanesRight</cref>
+        /// </summary>
+        private HashSet<int> _gaps = new();
+
+        /// <summary>
+        /// The cached lanecount
+        /// </summary>
         private int _laneCount;
 
-        // The cached revisionlane
+        /// <summary>
+        /// The cached revisionlane
+        /// </summary>
         private int _revisionLane;
-
-        public void MoveLanesRight(int fromLane)
-        {
-            ++_laneCount;
-            Validates.NotNull(_segmentLanes);
-            RevisionGraphSegment[] segmentsToBeMoved = _segmentLanes.Where(keyValue => keyValue.Value >= fromLane).Select(keyValue => keyValue.Key).ToArray();
-            foreach (RevisionGraphSegment segment in segmentsToBeMoved)
-            {
-                ++_segmentLanes[segment];
-            }
-        }
 
         // The row contains ordered segments. This method sorts the segments per lane.
         // Segments that cross this row (start above and end below) get there own private lane.
@@ -186,6 +187,33 @@ namespace GitUI.UserControls.RevisionGrid.Graph
             }
 
             return -1;
+        }
+
+        public void MoveLanesRight(int fromLane)
+        {
+            int nextGap = _gaps.Min(lane => lane > fromLane ? lane : null) ?? int.MaxValue;
+
+            Validates.NotNull(_segmentLanes);
+            RevisionGraphSegment[] segmentsToBeMoved = _segmentLanes.Where(keyValue => keyValue.Value >= fromLane && keyValue.Value < nextGap).Select(keyValue => keyValue.Key).ToArray();
+            if (!segmentsToBeMoved.Any())
+            {
+                return;
+            }
+
+            _gaps.Add(fromLane);
+            if (nextGap < int.MaxValue)
+            {
+                _gaps.Remove(nextGap);
+            }
+            else
+            {
+                ++_laneCount;
+            }
+
+            foreach (RevisionGraphSegment segment in segmentsToBeMoved)
+            {
+                ++_segmentLanes[segment];
+            }
         }
     }
 }
