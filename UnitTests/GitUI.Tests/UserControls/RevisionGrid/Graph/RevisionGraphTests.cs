@@ -11,6 +11,8 @@ namespace GitUITests.UserControls.RevisionGrid
         [SetUp]
         public void Setup()
         {
+            AppSettings.ReduceGraphCrossings.Value = false;
+
             _revisionGraph = new RevisionGraph();
 
             foreach (GitRevision revision in Revisions)
