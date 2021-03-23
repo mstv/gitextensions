@@ -88,6 +88,8 @@ namespace GitUI.UserControls.RevisionGrid.Graph
         public void CacheTo(int currentRowIndex, int lastToCacheRowIndex)
         {
             currentRowIndex += _straightenLanesLookAhead;
+            lastToCacheRowIndex += _straightenLanesLookAhead;
+
             List<RevisionGraphRevision> orderedNodesCache = BuildOrderedNodesCache(currentRowIndex);
 
             BuildOrderedRowCache(orderedNodesCache, currentRowIndex, lastToCacheRowIndex);
@@ -358,13 +360,19 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 // | | |<-- previous lane
                 // |/ /
                 // * |<---- current lane
+                // | |
+                // | |
+                // | |
                 // |\ \
-                // | | |<-- next lane
+                // | | |<-- lookahead lane
                 //
                 // And change it into this:
                 // | | |
                 // |/  |
                 // *   |
+                // |   |
+                // |   |
+                // |   |
                 // |\  |
                 // | | |
                 //
@@ -383,23 +391,21 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         if (previousLane > currentLane)
                         {
                             int straightenedCurrentLane = currentLane + 1;
-                            int nextLane = nextRow.GetLaneIndexForSegment(revisionGraphSegment);
-                            if ((nextLane == straightenedCurrentLane) || (nextLane > straightenedCurrentLane && previousLane == straightenedCurrentLane))
+                            int lookaheadLane = currentLane;
+                            int nextIndex = currentIndex + 1;
+                            for (int lookaheadIndex = nextIndex; lookaheadLane == currentLane && lookaheadIndex <= Math.Min(currentIndex + _straightenLanesLookAhead, lastIndex); ++lookaheadIndex)
                             {
-                                currentRow.MoveLanesRight(currentLane);
-                                moved = true;
-                                continue;
-                            }
-
-                            int nextNextIndex = currentIndex + 2;
-                            if (nextLane == currentLane && nextNextIndex <= lastIndex)
-                            {
-                                int nextNextLane = localOrderedRowCache[nextNextIndex].GetLaneIndexForSegment(revisionGraphSegment);
-                                if ((nextNextLane == straightenedCurrentLane) || (nextNextLane > straightenedCurrentLane && previousLane == straightenedCurrentLane))
+                                lookaheadLane = localOrderedRowCache[lookaheadIndex].GetLaneIndexForSegment(revisionGraphSegment);
+                                if ((lookaheadLane == straightenedCurrentLane) || (lookaheadLane > straightenedCurrentLane && previousLane == straightenedCurrentLane))
                                 {
                                     currentRow.MoveLanesRight(currentLane);
-                                    nextRow.MoveLanesRight(currentLane);
+                                    for (; nextIndex < lookaheadIndex; ++nextIndex)
+                                    {
+                                        localOrderedRowCache[nextIndex].MoveLanesRight(currentLane);
+                                    }
+
                                     moved = true;
+                                    break;
                                 }
                             }
                         }
