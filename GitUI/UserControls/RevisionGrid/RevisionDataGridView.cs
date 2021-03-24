@@ -479,12 +479,11 @@ namespace GitUI.UserControls.RevisionGrid
                 // Cache the next item
                 _revisionGraph.CacheTo(toIndex, Math.Min(fromIndex + 1500, toIndex));
 
-                var rowIndex = _revisionGraph.GetCachedCount();
+                await this.InvokeAsync(UpdateRowCount);
 
-                await this.InvokeAsync(UpdateRowCount, toIndex);
                 return;
 
-                void UpdateRowCount(int row)
+                void UpdateRowCount()
                 {
                     if (RowCount < _revisionGraph.Count)
                     {
