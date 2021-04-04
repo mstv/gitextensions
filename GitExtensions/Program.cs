@@ -66,7 +66,7 @@ namespace GitExtensions
             {
                 DiagnosticsClient.Initialize(ThisAssembly.Git.IsDirty);
 
-                if (!Debugger.IsAttached)
+                ////if (!Debugger.IsAttached)
                 {
                     AppDomain.CurrentDomain.UnhandledException += (s, e) => BugReporter.Report((Exception)e.ExceptionObject, e.IsTerminating);
                     Application.ThreadException += (s, e) => BugReporter.Report(e.Exception, isTerminating: false);

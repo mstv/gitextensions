@@ -138,6 +138,8 @@ namespace GitCommands
                             _exitTaskCompletionSource.TrySetException(ex);
                         }
                     }
+
+                    throw new ExternalOperationException(null, null, string.Empty, new Exception($"Process exited with failure code -1"));
                 }
             }
 
