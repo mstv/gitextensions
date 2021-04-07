@@ -1512,7 +1512,7 @@ namespace GitUI.CommandsDialogs
                 Validates.NotNull(shell.ExecutablePath);
 
                 var executable = new Executable(shell.ExecutablePath, Module.WorkingDir);
-                executable.Start(createWindow: true);
+                executable.Start(createWindow: true, throwOnErrorOutput: false); // throwOnErrorOutput would redirect the output
             }
             catch (Exception exception)
             {
