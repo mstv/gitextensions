@@ -168,6 +168,7 @@ namespace GitExtensions.UITests.Script
             ex.And.Directory.Should().Be(_module.WorkingDir);
         }
 
+        [Ignore("Blocks on exception popup uncaught by test runner")]
         [Test]
         public void RunScript_with_arguments_with_s_option_with_RevisionGrid_without_selection_shall_display_error_and_return_false()
         {

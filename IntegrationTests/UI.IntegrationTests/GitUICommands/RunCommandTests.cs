@@ -120,6 +120,7 @@ namespace GitUITests.GitUICommandsTests
             });
         }
 
+        [Ignore("Blocks on exception popup uncaught by test runner")]
         [Test]
         public void RunCommandBasedOnArgument_browse()
         {

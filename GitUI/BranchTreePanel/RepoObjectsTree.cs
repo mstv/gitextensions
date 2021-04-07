@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using GitCommands;
 using GitCommands.Git;
+using GitExtUtils;
 using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
 using GitUI.CommandsDialogs;
@@ -275,11 +276,20 @@ namespace GitUI.BranchTreePanel
             ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                HashSet<string> mergedBranches = selectedGuid is null
-                    ? new HashSet<string>()
-                    : (await Module.GetMergedBranchesAsync(includeRemote: true, fullRefname: true, commit: selectedGuid)).ToHashSet();
+                HashSet<string> mergedBranches = new();
+                if (selectedGuid is not null)
+                {
+                    try
+                    {
+                        mergedBranches = (await Module.GetMergedBranchesAsync(includeRemote: true, fullRefname: true, commit: selectedGuid)).ToHashSet();
+                    }
+                    catch (ExternalOperationException)
+                    {
+                        // ignore not parsable "HEAD"
+                    }
 
-                selectedRevision?.Refs.ForEach(gitRef => mergedBranches.Remove(gitRef.CompleteName));
+                    selectedRevision?.Refs.ForEach(gitRef => mergedBranches.Remove(gitRef.CompleteName));
+                }
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
