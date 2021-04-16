@@ -120,7 +120,7 @@ namespace GitCommands
                     Dispose();
 
                     _logOperation.LogProcessEnd(ex);
-                    throw new ExternalOperationException(fileName, arguments, workDir, ex);
+                    throw new ExternalOperationException(ex, fileName, arguments, workDir);
                 }
             }
 

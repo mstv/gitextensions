@@ -9678,6 +9678,10 @@ Select this commit to populate the full message.</source>
         <source>The selected item is not a valid git repository.</source>
         <target />
       </trans-unit>
+      <trans-unit id="_directoryText.Text">
+        <source>Directory</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_disableMenuItem.Text">
         <source>Disable this dropdown</source>
         <target />
@@ -9696,6 +9700,10 @@ Select this commit to populate the full message.</source>
       </trans-unit>
       <trans-unit id="_errorCaptionNotOnBranch.Text">
         <source>Not on a branch</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_exitCodeText.Text">
+        <source>Exit code</source>
         <target />
       </trans-unit>
       <trans-unit id="_findGitExecutable.Text">
@@ -9958,10 +9966,6 @@ Yes, I allow telemetry!</source>
       </trans-unit>
       <trans-unit id="_weeksAgo.Text">
         <source>{0} {1:week|weeks} ago</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_workingDirectoryText.Text">
-        <source>Working directory</source>
         <target />
       </trans-unit>
       <trans-unit id="_workspaceText.Text">
