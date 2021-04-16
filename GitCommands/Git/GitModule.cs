@@ -2460,9 +2460,9 @@ namespace GitCommands
             // shows untracked files
             var args = new GitArgumentBuilder("log")
             {
-                $"{stashName}^3",
                 "--pretty=format:\"%T\"",
-                "--max-count=1"
+                "--max-count=1",
+                $"-- {stashName}^3"
             };
             var untrackedTreeHash = _gitExecutable.GetOutput(args);
 
