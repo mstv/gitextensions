@@ -328,7 +328,7 @@ namespace GitUI.CommandsDialogs
 
         private void SetTitle(string? alternativeFileName = null)
         {
-            StringBuilder str = new()
+            StringBuilder str = new StringBuilder()
                 .Append("File History - ")
                 .Append(FileName);
 

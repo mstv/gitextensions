@@ -130,7 +130,7 @@ namespace GitUI.CommitInfo
                 return WebUtility.HtmlEncode(textIfEmpty);
             }
 
-            StringBuilder sb = new()
+            StringBuilder sb = new StringBuilder()
                 .AppendLine(WebUtility.HtmlEncode(prefix))
                 .Append(linksJoined);
             if (truncated)
