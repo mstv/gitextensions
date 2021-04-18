@@ -46,7 +46,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
 
         private static IReadOnlyList<string> GetDirectories(GitModule? currentModule, IEnumerable<Repository> repositoryHistory)
         {
-            var directories = new List<string>();
+            List<string> directories = new();
 
             if (!string.IsNullOrWhiteSpace(AppSettings.DefaultCloneDestinationPath))
             {
@@ -83,7 +83,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
 
         public static GitModule? OpenModule(IWin32Window owner, GitModule? currentModule)
         {
-            using var open = new FormOpenDirectory(currentModule);
+            using FormOpenDirectory open = new(currentModule);
             open.ShowDialog(owner);
             return open._chosenModule;
         }

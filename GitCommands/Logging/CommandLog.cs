@@ -131,7 +131,7 @@ namespace GitCommands.Logging
         {
             get
             {
-                var s = new StringBuilder();
+                StringBuilder s = new();
 
                 s.Append("File name:   ").AppendLine(FileName);
                 s.Append("Arguments:   ").AppendLine(Arguments);

@@ -54,7 +54,7 @@ namespace GitCommands.Git
                 return null;
             }
 
-            var aheadBehindGitCommand = new GitArgumentBuilder("for-each-ref")
+            GitArgumentBuilder aheadBehindGitCommand = new("for-each-ref")
             {
                 $"--color=never",
                 $"--format=\"{_refFormat}\"",
@@ -68,7 +68,7 @@ namespace GitCommands.Git
             }
 
             var matches = _aheadBehindRegEx.Matches(result);
-            var aheadBehindForBranchesData = new Dictionary<string, AheadBehindData>();
+            Dictionary<string, AheadBehindData> aheadBehindForBranchesData = new();
             foreach (Match match in matches)
             {
                 var branch = match.Groups["branch"].Value;

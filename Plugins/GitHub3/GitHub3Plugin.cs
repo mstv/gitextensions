@@ -118,7 +118,7 @@ namespace GitExtensions.Plugins.GitHub3
             if (string.IsNullOrEmpty(GitHubLoginInfo.OAuthToken))
             {
                 var authorizationApiUrl = new Uri(new Uri(GitHubApiEndpoint), GitHubAuthorizationRelativeUrl).ToString();
-                using var gitHubCredentialsPrompt = new GitHubCredentialsPrompt(authorizationApiUrl);
+                using GitHubCredentialsPrompt gitHubCredentialsPrompt = new(authorizationApiUrl);
 
                 gitHubCredentialsPrompt.ShowDialog(args.OwnerForm);
             }
@@ -202,7 +202,7 @@ namespace GitExtensions.Plugins.GitHub3
 
             IEnumerable<IHostedRemote> Remotes()
             {
-                var set = new HashSet<IHostedRemote>();
+                HashSet<IHostedRemote> set = new();
 
                 foreach (string remote in gitModule.GetRemoteNames())
                 {
@@ -215,7 +215,7 @@ namespace GitExtensions.Plugins.GitHub3
 
                     if (new GitHubRemoteParser().TryExtractGitHubDataFromRemoteUrl(url, out var owner, out var repository))
                     {
-                        var hostedRemote = new GitHubHostedRemote(remote, owner, repository, url);
+                        GitHubHostedRemote hostedRemote = new(remote, owner, repository, url);
 
                         if (set.Add(hostedRemote))
                         {

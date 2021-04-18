@@ -417,7 +417,7 @@ namespace GitCommands.Git.Commands
                 throw new ArgumentException($"For arguments \"{nameof(from)}\" and \"{nameof(onto)}\", either both must have values, or neither may.");
             }
 
-            var builder = new GitArgumentBuilder("rebase");
+            GitArgumentBuilder builder = new("rebase");
             if (ignoreDate)
             {
                 builder.Add("--ignore-date");

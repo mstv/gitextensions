@@ -49,7 +49,7 @@ namespace GitUI.CommandsDialogs
 
         private void StageSubmodule()
         {
-            var args = new GitArgumentBuilder("add")
+            GitArgumentBuilder args = new("add")
             {
                 "--",
                 _filename.QuoteNE()

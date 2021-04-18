@@ -29,7 +29,7 @@ namespace GitUI.Script
 
             static void FixAmbiguousHotkeyCommandIdentifiers()
             {
-                var ids = new HashSet<int>();
+                HashSet<int> ids = new();
 
                 foreach (var script in _scripts!)
                 {
@@ -72,7 +72,7 @@ namespace GitUI.Script
         {
             try
             {
-                var sw = new StringWriter();
+                StringWriter sw = new();
                 _serializer.Serialize(sw, _scripts);
                 return sw.ToString();
             }
@@ -92,7 +92,7 @@ namespace GitUI.Script
 
             try
             {
-                using var stringReader = new StringReader(xml);
+                using StringReader stringReader = new(xml);
                 using var xmlReader = new XmlTextReader(stringReader);
                 return (BindingList<ScriptInfo>)_serializer.Deserialize(xmlReader);
             }
@@ -171,7 +171,7 @@ namespace GitUI.Script
                 const string paramSeparator = "<_PARAM_SEPARATOR_>";
                 const string scriptSeparator = "<_SCRIPT_SEPARATOR_>";
 
-                var scripts = new BindingList<ScriptInfo>();
+                BindingList<ScriptInfo> scripts = new();
 
                 if (inputString.Contains(paramSeparator) || inputString.Contains(scriptSeparator))
                 {

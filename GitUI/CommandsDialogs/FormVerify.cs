@@ -119,7 +119,7 @@ namespace GitUI.CommandsDialogs
 
         private void mnuLostObjectsCreateTag_Click(object sender, EventArgs e)
         {
-            using var frm = new FormCreateTag(UICommands, GetCurrentGitRevision());
+            using FormCreateTag frm = new(UICommands, GetCurrentGitRevision());
             var dialogResult = frm.ShowDialog(this);
             if (dialogResult == DialogResult.OK)
             {
@@ -129,7 +129,7 @@ namespace GitUI.CommandsDialogs
 
         private void mnuLostObjectsCreateBranch_Click(object sender, EventArgs e)
         {
-            using var frm = new FormCreateBranch(UICommands, GetCurrentGitRevision());
+            using FormCreateBranch frm = new(UICommands, GetCurrentGitRevision());
             var dialogResult = frm.ShowDialog(this);
             if (dialogResult == DialogResult.OK)
             {
@@ -356,7 +356,7 @@ namespace GitUI.CommandsDialogs
 
             if (obj is not null)
             {
-                using var frm = new FormEdit(UICommands, obj);
+                using FormEdit frm = new(UICommands, obj);
                 frm.IsReadOnly = true;
                 frm.ShowDialog(this);
             }

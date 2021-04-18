@@ -8,7 +8,7 @@ namespace GitCommands
     {
         public static string Parse(string input)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
             var currentWord = new StringBuilder();
             var currentSurroundingText = new StringBuilder();
             bool readingWord = false;
@@ -75,7 +75,7 @@ namespace GitCommands
 
         private static string ParseEncodedWord(string input)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
             if (!input.StartsWith("=?"))
             {
                 return input;

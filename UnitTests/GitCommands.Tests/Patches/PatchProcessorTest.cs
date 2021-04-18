@@ -149,7 +149,7 @@ index cdf8bebba,55ff37bb9..000000000
             const string fileNameA = "thisisatesta.txt";
             const string fileNameB = "thisisatestb.txt";
 
-            var patchText = new StringBuilder();
+            StringBuilder patchText = new();
             var patchOutput = new StringBuilder();
 
             AppendHeaderLine(header);

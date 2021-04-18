@@ -16,7 +16,7 @@ namespace GitCommands
                 return buf;
             }
 
-            var bufStatistic = new BufStatistic(buf);
+            BufStatistic bufStatistic = new(buf);
 
             if (bufStatistic.cntLf == 0)
             {

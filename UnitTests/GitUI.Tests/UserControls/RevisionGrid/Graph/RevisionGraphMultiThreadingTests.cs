@@ -47,7 +47,7 @@ namespace GitUITests.UserControls.RevisionGrid
             for (int i = 0; i < _numberOfRepeats; i++)
             {
                 // Simulate thread that loads revisions from git
-                var loadRevisionsTask = new Task(() => LoadRandomRevisions());
+                Task loadRevisionsTask = new(() => LoadRandomRevisions());
 
                 // Simulate thread that caches the rows in the background
                 var buildCacheTask = new Task(() => BuildCache());

@@ -60,7 +60,7 @@ namespace GitUI.Avatars
         /// </summary>
         private static string FormatExecute<TInput>(TInput input, IEnumerable<Action<StringBuilder, TInput>> formatParts)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
 
             foreach (var formatter in formatParts)
             {

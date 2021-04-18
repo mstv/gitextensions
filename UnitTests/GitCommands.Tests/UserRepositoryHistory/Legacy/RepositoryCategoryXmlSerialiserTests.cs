@@ -95,7 +95,7 @@ namespace GitCommandsTests.UserRepositoryHistory.Legacy
             };
 
             string xml;
-            using var sw = new StringWriter();
+            using StringWriter sw = new();
             var serializer = new XmlSerializer(typeof(List<RepositoryCategory>));
             var ns = new XmlSerializerNamespaces();
             ns.Add(string.Empty, string.Empty);

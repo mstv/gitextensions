@@ -30,7 +30,7 @@ namespace GitUI.Avatars
                     return image;
                 }
 
-                var resizedImage = new Bitmap(_image, new Size(imageSize, imageSize));
+                Bitmap resizedImage = new(_image, new Size(imageSize, imageSize));
                 _sizeCache.Add(imageSize, resizedImage);
 
                 return resizedImage;

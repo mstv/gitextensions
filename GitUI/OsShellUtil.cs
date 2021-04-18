@@ -64,7 +64,7 @@ namespace GitUI
             if (GitCommands.Utils.EnvUtils.IsWindowsVistaOrGreater())
             {
                 // use Vista+ dialog
-                using var dialog = new CommonOpenFileDialog();
+                using CommonOpenFileDialog dialog = new();
                 dialog.IsFolderPicker = true;
 
                 if (selectedPath is not null)
@@ -82,7 +82,7 @@ namespace GitUI
             else
             {
                 // use XP-era dialog
-                using var dialog = new FolderBrowserDialog();
+                using FolderBrowserDialog dialog = new();
                 if (selectedPath is not null)
                 {
                     dialog.SelectedPath = selectedPath;

@@ -20,7 +20,7 @@ namespace GitCommandsTests.Git.Commands
         [TestCase("  ")]
         public void Validate_should_throw_if_tag_name_invalid(string tagName)
         {
-            var args = new GitCreateTagArgs(tagName, Revision);
+            GitCreateTagArgs args = new(tagName, Revision);
             var cmd = new GitCreateTagCmd(args, TagMessageFile);
 
             Assert.Throws<ArgumentException>(() => cmd.Validate());
@@ -29,7 +29,7 @@ namespace GitCommandsTests.Git.Commands
         [Test]
         public void Validate_should_throw_if_tag_revision_invalid()
         {
-            var args = new GitCreateTagArgs(TagName, null);
+            GitCreateTagArgs args = new(TagName, null);
             var cmd = new GitCreateTagCmd(args, TagMessageFile);
 
             Assert.Throws<ArgumentException>(() => cmd.Validate());
@@ -41,7 +41,7 @@ namespace GitCommandsTests.Git.Commands
         public void Validate_should_throw_for_SignWithSpecificKey_if_tag_keyId_invalid(string signKeyId)
         {
             var args = new GitCreateTagArgs(TagName, Revision, TagOperation.SignWithSpecificKey, signKeyId: signKeyId);
-            var cmd = new GitCreateTagCmd(args, TagMessageFile);
+            GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             Assert.Throws<ArgumentException>(() => cmd.Validate());
         }
@@ -49,7 +49,7 @@ namespace GitCommandsTests.Git.Commands
         [Test]
         public void ToLine_should_throw_if_operation_not_supported()
         {
-            var args = new GitCreateTagArgs(TagName, Revision, (TagOperation)10);
+            GitCreateTagArgs args = new(TagName, Revision, (TagOperation)10);
             var cmd = new GitCreateTagCmd(args, TagMessageFile);
 
             Assert.Throws<NotSupportedException>(() => _ = cmd.Arguments);
@@ -60,7 +60,7 @@ namespace GitCommandsTests.Git.Commands
         public void ToLine_should_render_force_flag(bool force, string expected)
         {
             var args = new GitCreateTagArgs(TagName, Revision, TagOperation.SignWithDefaultKey, TagMessage, KeyId, force);
-            var cmd = new GitCreateTagCmd(args, TagMessageFile);
+            GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             var cmdLine = cmd.Arguments;
 
@@ -73,7 +73,7 @@ namespace GitCommandsTests.Git.Commands
         [TestCase(TagOperation.SignWithSpecificKey, "tag -f -u A9876F -F \"c:/.git/TAGMESSAGE\" \"bla\" -- 0123456789012345678901234567890123456789")]
         public void ToLine_should_render_different_operations(TagOperation operation, string expected)
         {
-            var args = new GitCreateTagArgs(TagName, Revision, operation, signKeyId: KeyId, force: true);
+            GitCreateTagArgs args = new(TagName, Revision, operation, signKeyId: KeyId, force: true);
             var cmd = new GitCreateTagCmd(args, TagMessageFile);
 
             var actualCmdLine = cmd.Arguments;

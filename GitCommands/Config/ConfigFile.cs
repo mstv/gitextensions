@@ -83,7 +83,7 @@ namespace GitCommands.Config
 
         public string GetAsString()
         {
-            var configFileContent = new StringBuilder();
+            StringBuilder configFileContent = new();
 
             foreach (var section in ConfigSections)
             {
@@ -227,7 +227,7 @@ namespace GitCommands.Config
 
         public IConfigSection? FindConfigSection(string name)
         {
-            var configSectionToFind = new ConfigSection(name, true);
+            ConfigSection configSectionToFind = new(name, true);
 
             return FindConfigSection(configSectionToFind);
         }

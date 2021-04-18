@@ -106,7 +106,7 @@ namespace GitUI.UserControls.RevisionGrid
             List<string> tagNames = new List<string>();
             foreach (var revision in revisions)
             {
-                var refLists = new GitRefListsForRevision(revision);
+                GitRefListsForRevision refLists = new(revision);
                 branchNames.AddRange(refLists.GetAllBranchNames());
                 tagNames.AddRange(refLists.GetAllTagNames());
             }

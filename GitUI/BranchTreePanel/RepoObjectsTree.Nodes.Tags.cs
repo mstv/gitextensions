@@ -68,7 +68,7 @@ namespace GitUI.BranchTreePanel
 
             public bool Checkout()
             {
-                using var form = new FormCheckoutRevision(UICommands);
+                using FormCheckoutRevision form = new(UICommands);
                 form.SetRevision(FullPath);
                 return form.ShowDialog(TreeViewNode.TreeView) != DialogResult.Cancel;
             }
@@ -128,7 +128,7 @@ namespace GitUI.BranchTreePanel
 
             private Nodes FillTagTree(IReadOnlyList<IGitRef> tags, CancellationToken token)
             {
-                var nodes = new Nodes(this);
+                Nodes nodes = new(this);
                 var pathToNodes = new Dictionary<string, BaseBranchNode>();
                 foreach (IGitRef tag in tags)
                 {

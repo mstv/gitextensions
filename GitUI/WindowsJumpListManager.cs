@@ -96,7 +96,7 @@ namespace GitUI
                 }
 
                 // sanitise
-                var sb = new StringBuilder(repositoryDescription);
+                StringBuilder sb = new(repositoryDescription);
                 foreach (char c in Path.GetInvalidFileNameChars())
                 {
                     sb.Replace(c, '_');

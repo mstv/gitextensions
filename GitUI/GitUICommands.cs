@@ -147,7 +147,7 @@ namespace GitUI
         {
             return DoActionOnRepo(owner, action: () =>
             {
-                using var form = new FormDeleteBranch(this, branches);
+                using FormDeleteBranch form = new(this, branches);
                 form.ShowDialog(owner);
                 return true;
             }, changesRepo: false);
@@ -157,7 +157,7 @@ namespace GitUI
         {
             return DoActionOnRepo(owner, action: () =>
             {
-                using var form = new FormDeleteRemoteBranch(this, remoteBranch);
+                using FormDeleteRemoteBranch form = new(this, remoteBranch);
                 form.ShowDialog(owner);
                 return true;
             }, changesRepo: false);
@@ -167,7 +167,7 @@ namespace GitUI
         {
             return DoActionOnRepo(owner, action: () =>
             {
-                using var form = new FormCheckoutRevision(this);
+                using FormCheckoutRevision form = new(this);
                 form.SetRevision(revision);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }, preEvent: PreCheckoutRevision, postEvent: PostCheckoutRevision);
@@ -323,7 +323,7 @@ namespace GitUI
         {
             return DoActionOnRepo(owner, action: () =>
             {
-                using var form = new FormCheckoutBranch(this, branch, remote, containRevisions);
+                using FormCheckoutBranch form = new(this, branch, remote, containRevisions);
                 return form.DoDefaultActionOrShow(owner) != DialogResult.Cancel;
             }, preEvent: PreCheckoutBranch, postEvent: PostCheckoutBranch);
         }
@@ -382,7 +382,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormLog(this);
+                using FormLog form = new(this);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }
 
@@ -393,7 +393,7 @@ namespace GitUI
         {
             return DoActionOnRepo(owner, action: () =>
             {
-                using var form = new FormAddFiles(this, addFiles);
+                using FormAddFiles form = new(this, addFiles);
                 form.ShowDialog(owner);
                 return true;
             });
@@ -415,7 +415,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormCreateBranch(this, objectId, newBranchNamePrefix);
+                using FormCreateBranch form = new(this, objectId, newBranchNamePrefix);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }
 
@@ -426,7 +426,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormClone(this, url, openedFromProtocolHandler, gitModuleChanged);
+                using FormClone form = new(this, url, openedFromProtocolHandler, gitModuleChanged);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -441,7 +441,7 @@ namespace GitUI
 
         public bool StartCleanupRepositoryDialog(IWin32Window? owner = null, string? path = null)
         {
-            using var form = new FormCleanupRepository(this);
+            using FormCleanupRepository form = new(this);
             form.SetPathArgument(path);
             form.ShowDialog(owner);
 
@@ -501,7 +501,7 @@ namespace GitUI
                         });
                     }
 
-                    using var form = new FormCommit(this, commitMessage: commitMessage);
+                    using FormCommit form = new(this, commitMessage: commitMessage);
                     if (showOnlyWhenChanges)
                     {
                         form.ShowDialogWhenChanges(owner);
@@ -531,7 +531,7 @@ namespace GitUI
             {
                 dir ??= Module.IsValidGitWorkingDir() ? Module.WorkingDir : string.Empty;
 
-                using var frm = new FormInit(dir, gitModuleChanged);
+                using FormInit frm = new(dir, gitModuleChanged);
                 frm.ShowDialog(owner);
                 return true;
             }
@@ -562,7 +562,7 @@ namespace GitUI
 
             bool Action()
             {
-                using var formPull = new FormPull(this, remoteBranch, remote, pullAction);
+                using FormPull formPull = new(this, remoteBranch, remote, pullAction);
                 var dlgResult = pullOnShow
                     ? formPull.PullAndShowDialogWhenFailed(owner, remote, pullAction)
                     : formPull.ShowDialog(owner);
@@ -586,7 +586,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var viewPatch = new FormViewPatch(this);
+                using FormViewPatch viewPatch = new(this);
                 if (!Strings.IsNullOrEmpty(patchFile))
                 {
                     viewPatch.LoadPatch(patchFile);
@@ -604,7 +604,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var viewPatch = new FormCommitDiff(this, objectId);
+                using FormCommitDiff viewPatch = new(this, objectId);
                 viewPatch.ShowDialog(null);
                 return true;
             }
@@ -621,7 +621,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormSparseWorkingCopy(this);
+                using FormSparseWorkingCopy form = new(this);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -643,7 +643,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormFormatPatch(this);
+                using FormFormatPatch form = new(this);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -683,7 +683,7 @@ namespace GitUI
             {
                 if (onlyWorkTree)
                 {
-                    var args = new GitArgumentBuilder("checkout")
+                    GitArgumentBuilder args = new("checkout")
                     {
                         "--",
                         "."
@@ -760,7 +760,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormRevertCommit(this, revision);
+                using FormRevertCommit form = new(this, revision);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }
 
@@ -771,7 +771,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormResolveConflicts(this, offerCommit);
+                using FormResolveConflicts form = new(this, offerCommit);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -783,7 +783,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormCherryPick(this, revision);
+                using FormCherryPick form = new(this, revision);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }
 
@@ -808,7 +808,7 @@ namespace GitUI
                     // ReSharper disable once PossibleMultipleEnumeration
                     foreach (var r in revisions)
                     {
-                        var frm = new FormCherryPick(this, r);
+                        FormCherryPick frm = new(this, r);
                         if (prevForm is not null)
                         {
                             frm.CopyOptions(prevForm);
@@ -844,7 +844,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormMergeBranch(this, branch);
+                using FormMergeBranch form = new(this, branch);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -867,7 +867,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormDeleteTag(this, tag);
+                using FormDeleteTag form = new(this, tag);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }
 
@@ -878,7 +878,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormGitIgnore(this, localExcludes);
+                using FormGitIgnore form = new(this, localExcludes);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -890,7 +890,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var frm = new FormAddToGitIgnore(this, localExclude, filePattern);
+                using FormAddToGitIgnore frm = new(this, localExclude, filePattern);
                 frm.ShowDialog(owner);
                 return true;
             }
@@ -930,7 +930,7 @@ namespace GitUI
         {
             return DoActionOnRepo(owner, action: () =>
                 {
-                    using var form = new FormArchive(this)
+                    using FormArchive form = new(this)
                     {
                         SelectedRevision = revision,
                     };
@@ -946,7 +946,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormMailMap(this);
+                using FormMailMap form = new(this);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -958,7 +958,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormVerify(this);
+                using FormVerify form = new(this);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -972,7 +972,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormRemotes(this)
+                using FormRemotes form = new(this)
                 {
                     PreselectRemoteOnLoad = preselectRemote,
                     PreselectLocalOnLoad = preselectLocal
@@ -1015,7 +1015,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormRebase(this, from, to, onto, interactive, startRebaseImmediately);
+                using FormRebase form = new(this, from, to, onto, interactive, startRebaseImmediately);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -1027,7 +1027,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormRenameBranch(this, branch);
+                using FormRenameBranch form = new(this, branch);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }
 
@@ -1038,7 +1038,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormSubmodules(this);
+                using FormSubmodules form = new(this);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -1116,7 +1116,7 @@ namespace GitUI
         /// <param name="firstId">First selected commit id (as in a diff).</param>
         public bool StartBrowseDialog(IWin32Window? owner = null, string filter = "", ObjectId? selectedId = null, ObjectId? firstId = null)
         {
-            var form = new FormBrowse(this, filter, selectedId, firstId);
+            FormBrowse form = new(this, filter, selectedId, firstId);
 
             if (Application.MessageLoop)
             {
@@ -1156,7 +1156,7 @@ namespace GitUI
 
         public FormDiff ShowFormDiff(ObjectId baseCommitSha, ObjectId headCommitSha, string baseCommitDisplayStr, string headCommitDisplayStr)
         {
-            var diffForm = new FormDiff(this, baseCommitSha, headCommitSha, baseCommitDisplayStr, headCommitDisplayStr)
+            FormDiff diffForm = new(this, baseCommitSha, headCommitSha, baseCommitDisplayStr, headCommitDisplayStr)
             {
                 ShowInTaskbar = true
             };
@@ -1172,7 +1172,7 @@ namespace GitUI
 
             bool Action()
             {
-                using var form = new FormPush(this);
+                using FormPush form = new(this);
                 if (forceWithLease)
                 {
                     form.CheckForceWithLease();
@@ -1206,7 +1206,7 @@ namespace GitUI
         {
             return DoActionOnRepo(owner, action: () =>
                 {
-                    using var form = new FormApplyPatch(this);
+                    using FormApplyPatch form = new(this);
                     if (Directory.Exists(patchFile!))
                     {
                         form.SetPatchDir(patchFile!);
@@ -1226,7 +1226,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormGitAttributes(this);
+                using FormGitAttributes form = new(this);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -1238,7 +1238,7 @@ namespace GitUI
         {
             try
             {
-                var e = new GitUIEventArgs(ownerForm, this);
+                GitUIEventArgs e = new(ownerForm, this);
                 gitUIEventHandler?.Invoke(this, e);
                 return !e.Cancel;
             }
@@ -1254,7 +1254,7 @@ namespace GitUI
         {
             if (gitUIEventHandler is not null)
             {
-                var e = new GitUIPostActionEventArgs(ownerForm, this, actionDone);
+                GitUIPostActionEventArgs e = new(ownerForm, this, actionDone);
                 gitUIEventHandler(this, e);
             }
         }
@@ -1263,7 +1263,7 @@ namespace GitUI
         {
             if (!gitHoster.ConfigurationOk)
             {
-                var eventArgs = new GitUIEventArgs(null, this);
+                GitUIEventArgs eventArgs = new(null, this);
                 gitHoster.Execute(eventArgs);
             }
 
@@ -1286,7 +1286,7 @@ namespace GitUI
         {
             WrapRepoHostingCall(TranslatedStrings.ForkCloneRepo, gitHoster, gh =>
             {
-                using var frm = new ForkAndCloneForm(gitHoster, gitModuleChanged);
+                using ForkAndCloneForm frm = new(gitHoster, gitModuleChanged);
                 frm.ShowDialog(owner);
             });
         }
@@ -1327,7 +1327,7 @@ namespace GitUI
                 gitHoster,
                 gh =>
                 {
-                    var form = new CreatePullRequestForm(this, gitHoster, chooseRemote, chooseBranch)
+                    CreatePullRequestForm form = new(this, gitHoster, chooseRemote, chooseBranch)
                     {
                         ShowInTaskbar = true
                     };
@@ -1524,7 +1524,7 @@ namespace GitUI
 
         private bool RunSearchFileCommand()
         {
-            var searchWindow = new SearchWindow<string>(FindFileMatches);
+            SearchWindow<string> searchWindow = new(FindFileMatches);
             Application.Run(searchWindow);
             if (searchWindow.SelectedItem is not null)
             {
@@ -1637,7 +1637,7 @@ namespace GitUI
 
         public bool StartFileEditorDialog(string? filename, bool showWarning = false)
         {
-            using var formEditor = new FormEditor(this, filename, showWarning);
+            using FormEditor formEditor = new(this, filename, showWarning);
             return formEditor.ShowDialog() != DialogResult.Cancel;
         }
 
@@ -1715,7 +1715,7 @@ namespace GitUI
 
             return DoActionOnRepo(owner: null, action: () =>
             {
-                using var frm = new FormBlame(this, blameFileName, null, initialLine);
+                using FormBlame frm = new(this, blameFileName, null, initialLine);
                 frm.ShowDialog(null);
                 return true;
             }, changesRepo: false);
@@ -1733,7 +1733,7 @@ namespace GitUI
 
         private static IReadOnlyDictionary<string, string?> InitializeArguments(IReadOnlyList<string> args)
         {
-            var arguments = new Dictionary<string, string?>();
+            Dictionary<string, string?> arguments = new();
 
             for (int i = 2; i < args.Count; i++)
             {
@@ -1864,7 +1864,7 @@ namespace GitUI
                     throw new InvalidOperationException("CommandText is required");
                 }
 
-                using var form = new FormRemoteProcess(_commands, process: null, CommandText);
+                using FormRemoteProcess form = new(_commands, process: null, CommandText);
                 if (Title is not null)
                 {
                     form.Text = Title;
@@ -1887,7 +1887,7 @@ namespace GitUI
             {
                 CommandOutput = form.GetOutputString();
 
-                var e = new GitRemoteCommandCompletedEventArgs(this, isError, false);
+                GitRemoteCommandCompletedEventArgs e = new(this, isError, false);
 
                 Completed?.Invoke(form, e);
 

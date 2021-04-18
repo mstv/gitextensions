@@ -61,7 +61,7 @@ namespace GitUI.HelperDialogs
         {
             Debug.Assert(owner is not null, "Progress window must be owned by another window! This is a bug, please correct and send a pull request with a fix.");
 
-            using var formProcess = new FormProcess(commands: null, process, arguments, workingDirectory, input, useDialogSettings);
+            using FormProcess formProcess = new(commands: null, process, arguments, workingDirectory, input, useDialogSettings);
             formProcess.ShowDialog(owner);
             return !formProcess.ErrorOccurred();
         }
@@ -70,7 +70,7 @@ namespace GitUI.HelperDialogs
         {
             Debug.Assert(owner is not null, "Progress window must be owned by another window! This is a bug, please correct and send a pull request with a fix.");
 
-            using var formProcess = new FormProcess(commands: null, process, arguments, workingDirectory, input, useDialogSettings);
+            using FormProcess formProcess = new(commands: null, process, arguments, workingDirectory, input, useDialogSettings);
             formProcess.ShowDialog(owner);
             return formProcess.GetOutputString();
         }
@@ -139,7 +139,7 @@ namespace GitUI.HelperDialogs
             {
                 ConsoleOutput.KillProcess();
 
-                var module = new GitModule(WorkingDirectory);
+                GitModule module = new(WorkingDirectory);
                 module.UnlockIndex(includeSubmodules: true);
             }
             catch

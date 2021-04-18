@@ -474,7 +474,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
 
         private bool PromptCategoryName(List<string> categories, string? originalName, [NotNullWhen(returnValue: true)] out string? name)
         {
-            using var dialog = new FormDashboardCategoryTitle(categories, originalName);
+            using FormDashboardCategoryTitle dialog = new(categories, originalName);
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
                 name = dialog.Category;
@@ -647,7 +647,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
 
         private void mnuConfigure_Click(object sender, EventArgs e)
         {
-            using var frm = new FormRecentReposSettings();
+            using FormRecentReposSettings frm = new();
             var result = frm.ShowDialog(this);
             if (result == DialogResult.OK)
             {

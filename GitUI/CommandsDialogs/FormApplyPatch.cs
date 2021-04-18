@@ -214,7 +214,7 @@ namespace GitUI.CommandsDialogs
         {
             try
             {
-                using var sr = new StreamReader(path);
+                using StreamReader sr = new(path);
                 string line = sr.ReadLine();
 
                 return line is not null && (line.StartsWith("diff ") || line.StartsWith("Index: "));

@@ -13,7 +13,7 @@ namespace GitUI.Editor.Diff
 
         public DiffLinesInfo Analyze(string diffContent)
         {
-            var ret = new DiffLinesInfo();
+            DiffLinesInfo ret = new();
             var isCombinedDiff = PatchProcessor.IsCombinedDiff(diffContent);
             var lineNumInDiff = 0;
             var leftLineNum = DiffLineInfo.NotApplicableLineNum;

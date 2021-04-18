@@ -722,7 +722,7 @@ namespace GitUI.CommandsDialogs
                     {
                         string remote = _NO_TRANSLATE_Remotes.Text;
                         string pruneCmd = "remote prune " + remote;
-                        using var formPrune = new FormRemoteProcess(UICommands, process: null, pruneCmd)
+                        using FormRemoteProcess formPrune = new(UICommands, process: null, pruneCmd)
                         {
                             Remote = remote,
                             Text = string.Format(_pruneFromCaption.Text, remote)
@@ -885,7 +885,7 @@ namespace GitUI.CommandsDialogs
             string remoteBranchName = Module.GetSetting(string.Format("branch.{0}.merge", _branch));
             if (!string.IsNullOrEmpty(remoteBranchName))
             {
-                var args = new GitArgumentBuilder("name-rev")
+                GitArgumentBuilder args = new("name-rev")
                 {
                     "--name-only",
                     remoteBranchName.QuoteNE()
@@ -905,7 +905,7 @@ namespace GitUI.CommandsDialogs
 
             if (File.Exists(AppSettings.Pageant))
             {
-                var files = new HashSet<string>(new PathEqualityComparer());
+                HashSet<string> files = new(new PathEqualityComparer());
                 foreach (var remote in GetSelectedRemotes())
                 {
                     var sshKeyFile = Module.GetPuttyKeyFileForRemote(remote);

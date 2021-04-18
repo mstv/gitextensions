@@ -164,7 +164,7 @@ namespace BugReporter.Serialization
 
         public string ToXmlString()
         {
-            var serializer = new XmlSerializer(typeof(SerializableException));
+            XmlSerializer serializer = new(typeof(SerializableException));
             using var stream = new MemoryStream();
             stream.SetLength(0);
             serializer.Serialize(stream, this);
@@ -175,7 +175,7 @@ namespace BugReporter.Serialization
 
         public static SerializableException FromXmlString(string xml)
         {
-            var serializer = new XmlSerializer(typeof(SerializableException));
+            XmlSerializer serializer = new(typeof(SerializableException));
             using StringReader reader = new(xml);
             SerializableException exception = (SerializableException)serializer.Deserialize(reader);
 
@@ -199,7 +199,7 @@ namespace BugReporter.Serialization
 
             if (extendedProperties.Any())
             {
-                var extendedInformation = new SerializableDictionary<string, object>();
+                SerializableDictionary<string, object> extendedInformation = new();
 
                 foreach (var property in extendedProperties.Where(property => property.GetValue(exception, null) is not null))
                 {

@@ -59,7 +59,7 @@ namespace GitUI.Avatars
 
         private static Image GenerateSafetynetFallback()
         {
-            var bmp = new Bitmap(1, 1);
+            Bitmap bmp = new(1, 1);
             bmp.SetPixel(0, 0, Color.Red);
             return bmp;
         }

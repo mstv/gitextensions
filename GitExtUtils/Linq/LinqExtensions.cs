@@ -21,7 +21,7 @@ namespace System.Linq
                 throw new ArgumentNullException(nameof(keySelector));
             }
 
-            var result = new HashSet<TKey>();
+            HashSet<TKey> result = new();
 
             foreach (var element in source)
             {
@@ -162,7 +162,7 @@ namespace System.Linq
                 return Array.Empty<T>();
             }
 
-            var list = new List<T>();
+            List<T> list = new();
 
             do
             {

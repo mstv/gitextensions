@@ -38,7 +38,7 @@ namespace GitCommands.UserRepositoryHistory
         /// <returns>Short name for repository.</returns>
         public string Get(string repositoryDir)
         {
-            var dirInfo = new DirectoryInfo(repositoryDir);
+            DirectoryInfo dirInfo = new(repositoryDir);
             if (!dirInfo.Exists)
             {
                 return dirInfo.Name;

@@ -249,7 +249,7 @@ namespace GitUI.SpellChecker
 
         private ToolStripMenuItem AddContextMenuItem(string text, EventHandler eventHandler)
         {
-            var menuItem = new ToolStripMenuItem(text, null, eventHandler);
+            ToolStripMenuItem menuItem = new(text, null, eventHandler);
             SpellCheckContextMenu.Items.Add(menuItem);
             return menuItem;
         }
@@ -266,7 +266,7 @@ namespace GitUI.SpellChecker
                 var dictionaryToolStripMenuItem = new ToolStripMenuItem(_dictionaryText.Text);
                 SpellCheckContextMenu.Items.Add(dictionaryToolStripMenuItem);
 
-                var toolStripDropDown = new ContextMenuStrip();
+                ContextMenuStrip toolStripDropDown = new();
 
                 var noDicToolStripMenuItem = new ToolStripMenuItem("None");
                 noDicToolStripMenuItem.Click += DicToolStripMenuItemClick;
@@ -279,11 +279,11 @@ namespace GitUI.SpellChecker
 
                 foreach (var fileName in Directory.GetFiles(AppSettings.GetDictionaryDir(), "*.dic", SearchOption.TopDirectoryOnly))
                 {
-                    var file = new FileInfo(fileName);
+                    FileInfo file = new(fileName);
 
                     var dic = file.Name.Replace(".dic", "");
 
-                    var dicToolStripMenuItem = new ToolStripMenuItem(dic);
+                    ToolStripMenuItem dicToolStripMenuItem = new(dic);
                     dicToolStripMenuItem.Click += DicToolStripMenuItemClick;
 
                     if (Settings.Dictionary == dic)

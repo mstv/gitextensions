@@ -105,7 +105,7 @@ namespace GitUI.CommandsDialogs.WorktreeDialog
         {
             // https://git-scm.com/docs/git-worktree
 
-            var args = new GitArgumentBuilder("worktree")
+            GitArgumentBuilder args = new("worktree")
             {
                 "add",
                 WorktreeDirectory.Quote(),

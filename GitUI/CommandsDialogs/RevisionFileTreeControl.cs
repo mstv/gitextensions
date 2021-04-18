@@ -402,12 +402,12 @@ See the changes in the commit form.");
         {
             if (e.Item is TreeNode { Tag: GitItem gitItem })
             {
-                var fileList = new StringCollection();
+                StringCollection fileList = new();
                 var fileName = _fullPathResolver.Resolve(gitItem.FileName);
 
                 fileList.Add(fileName.ToNativePath());
 
-                var obj = new DataObject();
+                DataObject obj = new();
                 obj.SetFileDropList(fileList);
 
                 DoDragDrop(obj, DragDropEffects.Copy);
@@ -764,7 +764,7 @@ See the changes in the commit form.");
                 return;
             }
 
-            var itemStatus = new GitItemStatus(name: selectedFile);
+            GitItemStatus itemStatus = new(name: selectedFile);
 
             var answer = MessageBox.Show(_assumeUnchangedMessage.Text, _assumeUnchangedCaption.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 

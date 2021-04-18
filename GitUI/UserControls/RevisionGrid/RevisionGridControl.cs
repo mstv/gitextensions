@@ -261,7 +261,7 @@ namespace GitUI
 
             _buildServerWatcher = new BuildServerWatcher(this, _gridView, () => Module);
 
-            var gitRevisionSummaryBuilder = new GitRevisionSummaryBuilder();
+            GitRevisionSummaryBuilder gitRevisionSummaryBuilder = new();
             _revisionGraphColumnProvider = new RevisionGraphColumnProvider(this, _gridView._revisionGraph, gitRevisionSummaryBuilder);
             _gridView.AddColumn(_revisionGraphColumnProvider);
             _gridView.AddColumn(new MessageColumnProvider(this, gitRevisionSummaryBuilder));
@@ -404,7 +404,7 @@ namespace GitUI
                 return;
             }
 
-            using var dlg = new FormQuickGitRefSelector();
+            using FormQuickGitRefSelector dlg = new();
             dlg.Init(actionLabel, refs);
             dlg.Location = GetQuickItemSelectorLocation();
             if (dlg.ShowDialog(ParentForm) != DialogResult.OK || dlg.SelectedRef is null)
@@ -715,7 +715,7 @@ namespace GitUI
                 ? string.Empty
                 : revision.ObjectId.ToShortString() + ": ";
 
-            var gitRefListsForRevision = new GitRefListsForRevision(revision);
+            GitRefListsForRevision gitRefListsForRevision = new(revision);
 
             var descriptiveRef = gitRefListsForRevision.AllBranches
                 .Concat(gitRefListsForRevision.AllTags)
@@ -949,7 +949,7 @@ namespace GitUI
                     predicate = null;
                 }
 
-                var revisions = new Subject<GitRevision>();
+                Subject<GitRevision> revisions = new();
                 _revisionSubscription?.Dispose();
                 _revisionSubscription = revisions
                     .ObserveOn(ThreadPoolScheduler.Instance)
@@ -1161,7 +1161,7 @@ namespace GitUI
                 return null;
             }
 
-            var spi = new SuperProjectInfo();
+            SuperProjectInfo spi = new();
             var (code, commit) = await gitModule.GetSuperprojectCurrentCheckoutAsync().ConfigureAwait(false);
             if (code == 'U')
             {
@@ -1288,7 +1288,7 @@ namespace GitUI
 
         private IEnumerable<ObjectId> TryGetParents(ObjectId objectId)
         {
-            var args = new GitArgumentBuilder("rev-list")
+            GitArgumentBuilder args = new("rev-list")
             {
                 { AppSettings.MaxRevisionGraphCommits > 0, $"--max-count={AppSettings.MaxRevisionGraphCommits}" },
                 objectId
@@ -1661,7 +1661,7 @@ namespace GitUI
             SetEnabled(stopBisectToolStripMenuItem, inTheMiddleOfBisect);
             SetEnabled(bisectSeparator, inTheMiddleOfBisect);
 
-            var deleteTagDropDown = new ContextMenuStrip();
+            ContextMenuStrip deleteTagDropDown = new();
             var deleteBranchDropDown = new ContextMenuStrip();
             var checkoutBranchDropDown = new ContextMenuStrip();
             var mergeBranchDropDown = new ContextMenuStrip();
@@ -2383,7 +2383,7 @@ namespace GitUI
                 return;
             }
 
-            var args = new GitArgumentBuilder("merge-base")
+            GitArgumentBuilder args = new("merge-base")
             {
                 { revisions.Count > 2 || (revisions.Count == 2 && hasArtificial), "--octopus" },
                 { revisions.Count < 1, "HEAD" },

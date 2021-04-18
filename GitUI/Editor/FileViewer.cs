@@ -329,14 +329,14 @@ namespace GitUI.Editor
 
         public ToolStripSeparator AddContextMenuSeparator()
         {
-            var separator = new ToolStripSeparator();
+            ToolStripSeparator separator = new();
             contextMenu.Items.Add(separator);
             return separator;
         }
 
         public ToolStripMenuItem AddContextMenuEntry(string text, EventHandler toolStripItem_Click)
         {
-            var toolStripItem = new ToolStripMenuItem(text);
+            ToolStripMenuItem toolStripItem = new(text);
             contextMenu.Items.Add(toolStripItem);
             toolStripItem.Click += toolStripItem_Click;
             return toolStripItem;
@@ -465,7 +465,7 @@ namespace GitUI.Editor
                     {
                         try
                         {
-                            var summary = new StringBuilder()
+                            StringBuilder summary = new()
                                 .AppendLine("Binary file:")
                                 .AppendLine()
                                 .AppendLine(fileName)
@@ -870,7 +870,7 @@ namespace GitUI.Editor
 
                     if (File.Exists(resolvedPath))
                     {
-                        var file = new FileInfo(resolvedPath);
+                        FileInfo file = new(resolvedPath);
                         return file.Length;
                     }
                 }
@@ -910,7 +910,7 @@ namespace GitUI.Editor
         {
             if (IsIcon())
             {
-                using var icon = new Icon(stream);
+                using Icon icon = new(stream);
                 return icon.ToBitmap();
             }
 
@@ -923,7 +923,7 @@ namespace GitUI.Editor
 
             MemoryStream CopyStream()
             {
-                var copy = new MemoryStream();
+                MemoryStream copy = new();
                 stream.CopyTo(copy);
                 return copy;
             }
@@ -1042,7 +1042,7 @@ namespace GitUI.Editor
                                     ResetView(ViewMode.Text, null);
 
                                     var text = getFileText();
-                                    var summary = new StringBuilder()
+                                    StringBuilder summary = new()
                                         .AppendLine(string.Format(_cannotViewImage.Text, fileName))
                                         .AppendLine()
                                         .AppendLine($"{text.Length:N0} bytes:")
@@ -1447,7 +1447,7 @@ namespace GitUI.Editor
                 return;
             }
 
-            var args = new GitArgumentBuilder("apply")
+            GitArgumentBuilder args = new("apply")
             {
                 "--cached",
                 "--index",
@@ -1519,7 +1519,7 @@ namespace GitUI.Editor
                 return;
             }
 
-            var args = new GitArgumentBuilder("apply")
+            GitArgumentBuilder args = new("apply")
             {
                 "--whitespace=nowarn",
                 { currentItemStaged, "--reverse --index" }
@@ -1575,7 +1575,7 @@ namespace GitUI.Editor
                 return;
             }
 
-            var args = new GitArgumentBuilder("apply")
+            GitArgumentBuilder args = new("apply")
             {
                 "--3way",
                 "--index",
@@ -1856,7 +1856,7 @@ namespace GitUI.Editor
 
         private void goToLineToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using var formGoToLine = new FormGoToLine();
+            using FormGoToLine formGoToLine = new();
             formGoToLine.SetMaxLineNumber(internalFileViewer.MaxLineNumber);
             if (formGoToLine.ShowDialog(this) == DialogResult.OK)
             {

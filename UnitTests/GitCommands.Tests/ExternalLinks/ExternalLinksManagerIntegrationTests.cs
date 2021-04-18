@@ -55,7 +55,7 @@ namespace GitCommandsTests.ExternalLinks
         {
             _externalLinksStorage.Load(_userRoaming).Count.Should().Be(1);
 
-            var manager = new ExternalLinksManager(_repoDistributed);
+            ExternalLinksManager manager = new(_repoDistributed);
 
             // 1 comes from the user roaming settings
             // 3 come from the distributed
@@ -84,7 +84,7 @@ namespace GitCommandsTests.ExternalLinks
         {
             _externalLinksStorage.Load(_userRoaming).Count.Should().Be(1);
 
-            var manager = new ExternalLinksManager(_repoLocal);
+            ExternalLinksManager manager = new(_repoLocal);
 
             // 1 comes from the user roaming settings
             // 3 come from the distributed
@@ -116,7 +116,7 @@ namespace GitCommandsTests.ExternalLinks
             _externalLinksStorage.Load(_userRoaming).Count.Should().Be(1);
             _externalLinksStorage.Load(_repoDistributed).Count.Should().Be(3);
 
-            var manager = new ExternalLinksManager(_repoLocal);
+            ExternalLinksManager manager = new(_repoLocal);
 
             // 1 comes from the user roaming settings
             // 3 come from the distributed
@@ -149,7 +149,7 @@ namespace GitCommandsTests.ExternalLinks
             _externalLinksStorage.Load(_userRoaming).Count.Should().Be(1);
             _externalLinksStorage.Load(_repoDistributed).Count.Should().Be(3);
 
-            var manager = new ExternalLinksManager(_repoLocal);
+            ExternalLinksManager manager = new(_repoLocal);
 
             var effective = manager.GetEffectiveSettings();
 

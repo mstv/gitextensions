@@ -90,7 +90,7 @@ namespace CommonTestUtils
 
             if (_commandArgumentsSet.TryRemove(arguments, out _))
             {
-                var process = new MockProcess();
+                MockProcess process = new();
                 _processes.Add(process);
                 return process;
             }
@@ -134,7 +134,7 @@ namespace CommonTestUtils
                 }
                 else
                 {
-                    var cts = new CancellationTokenSource();
+                    CancellationTokenSource cts = new();
                     var ct = cts.Token;
                     cts.Cancel();
                     return Task.FromCanceled<int>(ct);

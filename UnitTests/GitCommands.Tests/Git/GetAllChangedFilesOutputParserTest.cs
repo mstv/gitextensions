@@ -25,7 +25,7 @@ namespace GitCommandsTests.Git.Commands
         {
             // TODO produce a valid working directory
             var module = new GitModule(Path.GetTempPath());
-            var getAllChangedFilesOutputParser = new GetAllChangedFilesOutputParser(() => module);
+            GetAllChangedFilesOutputParser getAllChangedFilesOutputParser = new(() => module);
 
             using (ApprovalResults.ForScenario(testName.Replace(' ', '_')))
             {

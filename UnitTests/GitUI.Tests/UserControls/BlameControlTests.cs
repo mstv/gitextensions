@@ -75,7 +75,7 @@ namespace GitUITests.UserControls
         [TestCase(true, true, false, false, "3/22/2010 - author1")]
         public void BuildAuthorLine_When_FilePath_IsDifferent(bool showAuthorDate, bool showAuthor, bool showFilePath, bool displayAuthorFirst, string expectedResult)
         {
-            var line = new StringBuilder();
+            StringBuilder line = new();
 
             _blameControl.GetTestAccessor().BuildAuthorLine(_gitBlameLine, line, CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern,
                 "fileName_different.txt", showAuthor, showAuthorDate, showFilePath, displayAuthorFirst);
@@ -86,7 +86,7 @@ namespace GitUITests.UserControls
         [Test]
         public void BuildAuthorLine_When_FilePath_Is_Identic()
         {
-            var line = new StringBuilder();
+            StringBuilder line = new();
 
             _blameControl.GetTestAccessor().BuildAuthorLine(_gitBlameLine, line, CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern,
                 "fileName.txt", true, true, true, false);

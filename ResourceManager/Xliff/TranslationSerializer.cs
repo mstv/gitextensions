@@ -10,7 +10,7 @@ namespace ResourceManager.Xliff
         public static void Serialize(TranslationFile translation, string path)
         {
             using TextWriter tw = new StreamWriter(path, false);
-            var serializer = new XmlSerializer(typeof(TranslationFile));
+            XmlSerializer serializer = new(typeof(TranslationFile));
             serializer.Serialize(tw, translation);
         }
 
@@ -21,7 +21,7 @@ namespace ResourceManager.Xliff
                 return null;
             }
 
-            var serializer = new XmlSerializer(typeof(TranslationFile));
+            XmlSerializer serializer = new(typeof(TranslationFile));
             TextReader? stringReader = null;
             try
             {

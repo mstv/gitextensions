@@ -49,7 +49,7 @@ namespace GitExtUtils
         /// <param name="value">The value to store against the provided key.</param>
         public void Add(TKey key, TValue value)
         {
-            var entry = new Entry(key, value);
+            Entry entry = new(key, value);
 
             if (_nodeByKey.TryGetValue(key, out var node))
             {

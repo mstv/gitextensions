@@ -60,7 +60,7 @@ namespace GitUI.CommitInfo
 
         private (IEnumerable<string> formattedBranches, bool truncated) FilterAndFormatBranches(IEnumerable<string> branches, bool showAsLinks, bool limit)
         {
-            var formattedBranches = new List<string>();
+            List<string> formattedBranches = new();
             bool truncated = false;
 
             const string remotesPrefix = "remotes/";
@@ -130,7 +130,7 @@ namespace GitUI.CommitInfo
                 return WebUtility.HtmlEncode(textIfEmpty);
             }
 
-            var sb = new StringBuilder()
+            StringBuilder sb = new()
                 .AppendLine(WebUtility.HtmlEncode(prefix))
                 .Append(linksJoined);
             if (truncated)

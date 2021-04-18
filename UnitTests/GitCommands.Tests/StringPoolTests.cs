@@ -12,7 +12,7 @@ namespace GitCommandsTests
         [Test]
         public void Intern()
         {
-            var pool = new StringPool();
+            StringPool pool = new();
 
             const string source = "abcabcabcabcabc";
 
@@ -135,7 +135,7 @@ namespace GitCommandsTests
         [Test, Ignore("For hash analysis only, has no assertions")]
         public void AnalyzeHashFunctionDistribution()
         {
-            var seenHashes = new HashSet<int>();
+            HashSet<int> seenHashes = new();
             var collisions = new List<int>();
 
             const int hashCount = 200_000;

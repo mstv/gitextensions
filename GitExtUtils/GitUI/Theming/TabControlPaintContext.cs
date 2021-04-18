@@ -77,7 +77,7 @@ namespace GitExtUtils.GitUI.Theming
                 return;
             }
 
-            using var canvasBrush = new SolidBrush(_parentBackColor);
+            using SolidBrush canvasBrush = new(_parentBackColor);
             _graphics.FillRectangle(canvasBrush, _clipRectangle);
 
             RenderSelectedPageBackground();

@@ -384,7 +384,7 @@ namespace GitUI.CommandsDialogs
         {
             toolStripMenuItemTarget.DropDownItems.Clear();
 
-            var toolStripItems = new List<ToolStripItem>();
+            List<ToolStripItem> toolStripItems = new();
             foreach (var menuCommand in menuCommands)
             {
                 var toolStripItem = MenuCommand.CreateToolStripItem(menuCommand);

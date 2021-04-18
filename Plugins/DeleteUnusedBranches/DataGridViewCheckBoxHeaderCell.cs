@@ -42,7 +42,7 @@ namespace GitExtensions.Plugins.DeleteUnusedBranches
                 formattedValue, errorText, cellStyle,
                 advancedBorderStyle, paintParts);
 
-            var p = new Point();
+            Point p = new();
             Size s = CheckBoxRenderer.GetGlyphSize(graphics, CheckBoxState.UncheckedNormal);
             p.X = cellBounds.Location.X + (cellBounds.Width / 2) - (s.Width / 2);
             p.Y = cellBounds.Location.Y + (cellBounds.Height / 2) - (s.Height / 2);

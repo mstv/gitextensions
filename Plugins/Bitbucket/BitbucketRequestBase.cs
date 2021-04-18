@@ -43,7 +43,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 Authenticator = new HttpBasicAuthenticator(Settings.Username, Settings.Password)
             };
 
-            var request = new RestRequest(ApiUrl, RequestMethod);
+            RestRequest request = new(ApiUrl, RequestMethod);
             if (RequestBody is not null)
             {
                 request.AddJsonBody(RequestBody);
@@ -96,7 +96,7 @@ namespace GitExtensions.Plugins.Bitbucket
 
             if (json["errors"] is not null)
             {
-                var messages = new List<string>();
+                List<string> messages = new();
                 var errorResponse = new BitbucketResponse<T> { Success = false };
                 foreach (var error in json["errors"])
                 {

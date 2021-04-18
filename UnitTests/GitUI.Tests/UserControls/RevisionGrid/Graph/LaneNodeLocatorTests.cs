@@ -25,7 +25,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             var node = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.WorkTreeId, 0);
             var revisionGraphRow = Substitute.For<IRevisionGraphRow>();
 
-            var segments = new List<RevisionGraphSegment>();
+            List<RevisionGraphSegment> segments = new();
             if (firstSegment is not null)
             {
                 segments.Add(firstSegment);
@@ -130,7 +130,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
             const int lane = 3;
             var parentNode = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.WorkTreeId, 0);
             var childNode = new RevisionGraphRevision(GitUIPluginInterfaces.ObjectId.WorkTreeId, 0);
-            var segment = new RevisionGraphSegment(parentNode, childNode);
+            RevisionGraphSegment segment = new(parentNode, childNode);
             var laneNode = SetupLaneRow(row, lane, laneCount: lane + 1, firstSegment: segment);
 
 #if !DEBUG

@@ -62,7 +62,7 @@ namespace GitUITests.CommandsDialogs
         public void RememberFile_ShouldEnableFirstRemember_Commit(bool isSubmodule, bool isDeleted, bool isSecondRev, bool result)
         {
             var rev = new GitRevision(ObjectId.Random());
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: rev,
                 item: new GitItemStatus(name: "file1")
@@ -106,7 +106,7 @@ namespace GitUITests.CommandsDialogs
         public void RememberFile_ShouldEnableSecondRemember_Commit(bool isSubmodule, bool isDeleted, bool isSecondRev, bool result)
         {
             var rev = new GitRevision(ObjectId.Random());
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: rev,
                 item: new GitItemStatus("file1")
@@ -125,7 +125,7 @@ namespace GitUITests.CommandsDialogs
 
             _rememberFileContextMenuController.GetGitCommit(null, null, false).Should().BeNull();
 
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: null,
                 secondRev: rev,
                 item: new GitItemStatus("file"));
@@ -138,7 +138,7 @@ namespace GitUITests.CommandsDialogs
             var rev = new GitRevision(ObjectId.Random());
             var workTree = new GitRevision(ObjectId.WorkTreeId);
             var name = "WorkTreeFile";
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: workTree,
                 secondRev: rev,
                 item: new GitItemStatus(name));
@@ -151,7 +151,7 @@ namespace GitUITests.CommandsDialogs
             var rev = new GitRevision(ObjectId.Random());
             var workTree = new GitRevision(ObjectId.WorkTreeId);
             var name = "WorkTreeFile";
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: workTree,
                 item: new GitItemStatus(name));
@@ -177,7 +177,7 @@ namespace GitUITests.CommandsDialogs
             var rev = new GitRevision(ObjectId.Random());
             var index = new GitRevision(ObjectId.IndexId);
             const string name = "File";
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: index,
                 item: new GitItemStatus(name) { TreeGuid = null });
@@ -189,7 +189,7 @@ namespace GitUITests.CommandsDialogs
         public void RememberFile_GetGitCommit_Commit(bool isSecondRev)
         {
             var id = ObjectId.Random();
-            var rev = new GitRevision(id);
+            GitRevision rev = new(id);
             const string newName = "newName";
             const string oldName = "oldName";
             var item = new FileStatusItem(
@@ -208,7 +208,7 @@ namespace GitUITests.CommandsDialogs
         public void RememberFile_GetGitCommit_CommitNoOld(bool isSecondRev)
         {
             var id = ObjectId.Random();
-            var rev = new GitRevision(id);
+            GitRevision rev = new(id);
             const string newName = "newName";
             var item = new FileStatusItem(
                 firstRev: rev,

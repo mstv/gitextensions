@@ -62,7 +62,7 @@ namespace GitExtensions.Plugins.FindLargeFiles
                     DateTime date;
                     if (!revData.ContainsKey(commit))
                     {
-                        var args = new GitArgumentBuilder("show")
+                        GitArgumentBuilder args = new("show")
                         {
                             "-s",
                             commit,
@@ -109,7 +109,7 @@ namespace GitExtensions.Plugins.FindLargeFiles
                     var packFiles = Directory.GetFiles(objectsPackDirectory, "pack-*.idx");
                     foreach (var pack in packFiles)
                     {
-                        var args = new GitArgumentBuilder("verify-pack")
+                        GitArgumentBuilder args = new("verify-pack")
                         {
                             "-v",
                             pack
@@ -164,7 +164,7 @@ namespace GitExtensions.Plugins.FindLargeFiles
             _revList = _gitCommands.GitExecutable.GetOutput(args).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             pbRevisions.Maximum = (int)(_revList.Length * 1.1f);
             BranchesGrid.DataSource = _gitObjects;
-            var thread = new Thread(FindLargeFilesFunction);
+            Thread thread = new(FindLargeFilesFunction);
             thread.Start();
         }
 
@@ -179,7 +179,7 @@ namespace GitExtensions.Plugins.FindLargeFiles
                     pbRevisions.Value = i;
                 });
                 string rev = _revList[i];
-                var args = new GitArgumentBuilder("ls-tree")
+                GitArgumentBuilder args = new("ls-tree")
                 {
                     "-zrl",
                     rev
@@ -206,7 +206,7 @@ namespace GitExtensions.Plugins.FindLargeFiles
         {
             if (MessageBox.Show(this, _areYouSureToDelete.Text, _deleteCaption.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                var sb = new StringBuilder();
+                StringBuilder sb = new();
                 foreach (GitObject gitObject in _gitObjects.Where(gitObject => gitObject.Delete))
                 {
                     sb.AppendLine(string.Format("\"{0}\" filter-branch --index-filter \"git rm -r -f --cached --ignore-unmatch {1}\" --prune-empty -- --all",

@@ -98,7 +98,7 @@ namespace TfsInterop
         {
             Validates.NotNull(_buildDefinitions);
 
-            var result = new List<IBuild>();
+            List<IBuild> result = new();
             foreach (var buildDefinition in _buildDefinitions)
             {
                 Validates.NotNull(_buildServer);
@@ -260,12 +260,12 @@ namespace TfsInterop
                     _urlPrefix = "http://" + hostname + ":8080/tfs/" + (string.IsNullOrEmpty(teamCollection) ? "" : teamCollection + "/") + projectName + "/_build?_a=summary&buildId=";
                 }
 
-                var connection = new VssConnection(new Uri(url), new VssCredentials(true));
+                VssConnection connection = new(new Uri(url), new VssCredentials(true));
 
                 connection.Settings.BypassProxyOnLocal = false;
                 BuildHttpClient buildClient = await connection.GetClientAsync<BuildHttpClient>().ConfigureAwait(false);
                 var definitions = await buildClient.GetDefinitionsAsync(project: projectName).ConfigureAwait(false);
-                var buildDefinitions = new List<DefinitionReference>();
+                List<DefinitionReference> buildDefinitions = new();
 
                 foreach (var def in definitions)
                 {

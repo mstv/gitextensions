@@ -294,7 +294,7 @@ namespace GitUI.UserControls.RevisionGrid
                 var commitBodyForeColor = GetCommitBodyForeground(e.State, e.RowIndex);
 
                 e.Graphics.FillRectangle(backBrush, e.CellBounds);
-                var cellStyle = new CellStyle(backBrush, foreColor, commitBodyForeColor, _normalFont, _boldFont, _monospaceFont);
+                CellStyle cellStyle = new(backBrush, foreColor, commitBodyForeColor, _normalFont, _boldFont, _monospaceFont);
                 provider.OnCellPainting(e, revision, _rowHeight, cellStyle);
 
                 e.Handled = true;

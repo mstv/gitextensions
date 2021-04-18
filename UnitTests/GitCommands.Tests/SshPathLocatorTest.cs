@@ -27,14 +27,14 @@ namespace GitCommandsTests
         {
             const string path = @"C:\somedir\ssh.exe";
             _environment.GetEnvironmentVariable("GIT_SSH", EnvironmentVariableTarget.Process).Returns(path);
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(@"c:\someotherdir").Should().Be(path);
         }
 
         [Test]
         public void Find_on_null_should_return_empty_string_if_no_GIT_SSH_is_set()
         {
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(null).Should().Be(string.Empty);
         }
 
@@ -45,7 +45,7 @@ namespace GitCommandsTests
             var directoryBase = Substitute.For<DirectoryBase>();
             directoryBase.GetParent(path).Returns((DirectoryInfoBase)null);
             _fileSystem.Directory.Returns(directoryBase);
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(path).Should().Be(string.Empty);
         }
 
@@ -56,7 +56,7 @@ namespace GitCommandsTests
             var directoryBase = Substitute.For<DirectoryBase>();
             directoryBase.GetParent(path).Throws<Exception>();
             _fileSystem.Directory.Returns(directoryBase);
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(path).Should().Be(string.Empty);
         }
 
@@ -67,7 +67,7 @@ namespace GitCommandsTests
             var directoryBase = Substitute.For<DirectoryBase>();
             directoryBase.GetParent(path).Throws<Exception>();
             _fileSystem.Directory.Returns(directoryBase);
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(path).Should().Be(string.Empty);
         }
 
@@ -75,7 +75,7 @@ namespace GitCommandsTests
         public void Find_on_gitBinDir_having_ssh_exe_in_parent_directory_children_should_return_first_ssh_exe_found()
         {
             var path = SetUpFileSystemWithSshExePathsAs("first", "second");
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(path).Should().Be("first");
         }
 
@@ -83,7 +83,7 @@ namespace GitCommandsTests
         public void Find_on_gitBinDir_having_no_ssh_exe_in_parent_directory_children_should_return_empty_string()
         {
             var path = SetUpFileSystemWithSshExePathsAs();
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(path).Should().Be(string.Empty);
         }
 
@@ -92,7 +92,7 @@ namespace GitCommandsTests
         {
             const string sshExe = @"C:\someotherdir\ssh.exe";
             var path = SetUpFileSystemWithSshExePathsAs(sshExe);
-            var sshPathLocator = new SshPathLocator(_fileSystem, _environment);
+            SshPathLocator sshPathLocator = new(_fileSystem, _environment);
             sshPathLocator.Find(path + (withTrailingSeparator ? @"\" : "")).Should().Be(sshExe);
         }
 

@@ -185,7 +185,7 @@ namespace GitUI.CommandsDialogs
                 // Must be handled when displaying
                 var headId = Module.RevParse("HEAD");
                 Validates.NotNull(headId);
-                var headRev = new GitRevision(headId);
+                GitRevision headRev = new(headId);
                 var indexRev = new GitRevision(ObjectId.IndexId)
                 {
                     ParentIds = new[] { headId }
@@ -205,7 +205,7 @@ namespace GitUI.CommandsDialogs
 
                 var selectedId = Module.RevParse(gitStash.Name);
                 Validates.NotNull(selectedId);
-                var secondRev = new GitRevision(selectedId);
+                GitRevision secondRev = new(selectedId);
                 if (firstId is not null)
                 {
                     secondRev.ParentIds = new[] { firstId };

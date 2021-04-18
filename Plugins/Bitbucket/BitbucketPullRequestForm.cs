@@ -88,7 +88,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 Validates.NotNull(_settings.ProjectKey);
                 Validates.NotNull(_settings.RepoSlug);
 
-                var list = new List<Repository>();
+                List<Repository> list = new();
                 var getDefaultRepo = new GetRepoRequest(_settings.ProjectKey, _settings.RepoSlug, _settings);
                 var defaultRepo = await getDefaultRepo.SendAsync().ConfigureAwait(false);
                 if (defaultRepo.Success)
@@ -123,7 +123,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 Validates.NotNull(_settings.ProjectKey);
                 Validates.NotNull(_settings.RepoSlug);
 
-                var list = new List<PullRequest>();
+                List<PullRequest> list = new();
                 var getPullRequests = new GetPullRequest(_settings.ProjectKey, _settings.RepoSlug, _settings);
                 var result = await getPullRequests.SendAsync().ConfigureAwait(false);
                 if (result.Success)
@@ -160,7 +160,7 @@ namespace GitExtensions.Plugins.Bitbucket
                     Reviewers = _reviewers
                 };
                 Validates.NotNull(_settings);
-                var pullRequest = new CreatePullRequestRequest(_settings, info);
+                CreatePullRequestRequest pullRequest = new(_settings, info);
                 var response = await pullRequest.SendAsync();
                 await this.SwitchToMainThreadAsync();
                 if (response.Success)
@@ -189,7 +189,7 @@ namespace GitExtensions.Plugins.Bitbucket
 
             Validates.NotNull(_settings);
 
-            var list = new List<string>();
+            List<string> list = new();
             var getBranches = new GetBranchesRequest(selectedRepo, _settings);
             var result = await getBranches.SendAsync().ConfigureAwait(false);
             if (result.Success)
@@ -275,7 +275,7 @@ namespace GitExtensions.Plugins.Bitbucket
             }
 
             Validates.NotNull(_settings);
-            var getCommit = new GetHeadCommitRequest(repo, branch, _settings);
+            GetHeadCommitRequest getCommit = new(repo, branch, _settings);
             var result = await getCommit.SendAsync().ConfigureAwait(false);
             return result.Success ? result.Result : null;
         }
@@ -320,7 +320,7 @@ namespace GitExtensions.Plugins.Bitbucket
 
                 await this.SwitchToMainThreadAsync();
 
-                var sb = new StringBuilder();
+                StringBuilder sb = new();
                 sb.AppendLine();
                 foreach (var commit in result.Result)
                 {
@@ -369,7 +369,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 Validates.NotNull(_settings);
 
                 // Merge
-                var mergeRequest = new MergePullRequest(_settings, mergeInfo);
+                MergePullRequest mergeRequest = new(_settings, mergeInfo);
                 var response = ThreadHelper.JoinableTaskFactory.Run(() => mergeRequest.SendAsync());
                 if (response.Success)
                 {
@@ -400,7 +400,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 Validates.NotNull(_settings);
 
                 // Approve
-                var approveRequest = new ApprovePullRequest(_settings, mergeInfo);
+                ApprovePullRequest approveRequest = new(_settings, mergeInfo);
                 var response = ThreadHelper.JoinableTaskFactory.Run(() => approveRequest.SendAsync());
                 if (response.Success)
                 {

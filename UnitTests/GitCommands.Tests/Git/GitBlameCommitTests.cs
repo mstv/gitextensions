@@ -16,7 +16,7 @@ namespace GitCommandsTests.Git
             var authorTime = DateTime.Now;
             var commitHash = ObjectId.Random();
 
-            var str = new StringBuilder();
+            StringBuilder str = new();
 
             str.AppendLine("Author: Author");
             str.AppendLine("Author date: " + authorTime);

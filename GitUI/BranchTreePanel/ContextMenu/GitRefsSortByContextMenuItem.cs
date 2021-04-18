@@ -21,7 +21,7 @@ namespace GitUI.BranchTreePanel.ContextMenu
 
             foreach (var option in EnumHelper.GetValues<GitRefsSortBy>().Select(e => (Text: e.GetDescription(), Value: e)))
             {
-                var item = new ToolStripMenuItem()
+                ToolStripMenuItem item = new()
                 {
                     Text = option.Text,
                     Image = null,

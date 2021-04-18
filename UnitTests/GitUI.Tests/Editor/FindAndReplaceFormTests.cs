@@ -152,7 +152,7 @@ namespace GitUITests.Editor
             AssertTextRange(new TextRange(0, 4), actualRange);
 
             // Move the caret outside of the originally selected region.
-            var newCaretPosition = new TextLocation(1, 1);
+            TextLocation newCaretPosition = new(1, 1);
             _textEditorControl.ActiveTextAreaControl.Caret.Position = newCaretPosition;
 
             actualRange = await _findAndReplaceForm.FindNextAsync(true, false, null);

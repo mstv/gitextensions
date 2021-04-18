@@ -177,7 +177,7 @@ namespace GitUI.BranchTreePanel
                 }
                 else if (GitStatus is not null)
                 {
-                    var changeCount = new ArtificialCommitChangeCount();
+                    ArtificialCommitChangeCount changeCount = new();
                     changeCount.Update(GitStatus);
                     toolTip = changeCount.GetSummary();
                 }
@@ -374,12 +374,12 @@ namespace GitUI.BranchTreePanel
 
                 Validates.NotNull(threadModule);
 
-                var submoduleNodes = new List<SubmoduleNode>();
+                List<SubmoduleNode> submoduleNodes = new();
 
                 // We always want to display submodules rooted from the top project.
                 CreateSubmoduleNodes(result, threadModule, ref submoduleNodes);
 
-                var nodes = new Nodes(this);
+                Nodes nodes = new(this);
                 AddTopAndNodesToTree(ref nodes, submoduleNodes, threadModule, result);
                 return nodes;
             }
@@ -466,7 +466,7 @@ namespace GitUI.BranchTreePanel
                 var topModule = threadModule.GetTopModule();
 
                 // Build a mapping of top-module-relative path to node
-                var pathToNodes = new Dictionary<string, Node>();
+                Dictionary<string, Node> pathToNodes = new();
 
                 // Add existing SubmoduleNodes
                 foreach (var node in submoduleNodes)
@@ -489,7 +489,7 @@ namespace GitUI.BranchTreePanel
                 }
 
                 // Now build the tree
-                var rootNode = new DummyNode();
+                DummyNode rootNode = new();
                 var nodesInTree = new HashSet<Node>();
                 foreach (var node in submoduleNodes)
                 {

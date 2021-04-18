@@ -36,7 +36,7 @@ namespace GitUI
 
             FormClosing += GitExtensionsForm_FormClosing;
 
-            var cancelButton = new Button();
+            Button cancelButton = new();
             cancelButton.Click += CancelButtonClick;
             CancelButton = cancelButton;
 

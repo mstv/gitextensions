@@ -20,7 +20,7 @@ namespace GitUITests.CommandsDialogs
         [Test]
         public void BrowseDiff_SuppressDiffToLocalWhenNoSelectedRevision()
         {
-            var selectionInfo = new ContextMenuDiffToolInfo();
+            ContextMenuDiffToolInfo selectionInfo = new();
             _revisionDiffContextMenuController.ShouldShowMenuFirstToSelected(selectionInfo).Should().BeFalse();
             _revisionDiffContextMenuController.ShouldShowMenuFirstToLocal(selectionInfo).Should().BeFalse();
             _revisionDiffContextMenuController.ShouldShowMenuSelectedToLocal(selectionInfo).Should().BeFalse();
@@ -30,7 +30,7 @@ namespace GitUITests.CommandsDialogs
         public void BrowseDiff_SuppressDiffToLocalWhenNoLocalExists()
         {
             var rev = new GitRevision(ObjectId.Random());
-            var selectionInfo = new ContextMenuDiffToolInfo(selectedRevision: rev, localExists: false);
+            ContextMenuDiffToolInfo selectionInfo = new(selectedRevision: rev, localExists: false);
             _revisionDiffContextMenuController.ShouldShowMenuFirstToSelected(selectionInfo).Should().BeTrue();
             _revisionDiffContextMenuController.ShouldShowMenuFirstToLocal(selectionInfo).Should().BeFalse();
             _revisionDiffContextMenuController.ShouldShowMenuSelectedToLocal(selectionInfo).Should().BeFalse();
@@ -40,7 +40,7 @@ namespace GitUITests.CommandsDialogs
         public void BrowseDiff_ShowContextDiffToolForWorkTree()
         {
             var rev = new GitRevision(ObjectId.WorkTreeId);
-            var selectionInfo = new ContextMenuDiffToolInfo(selectedRevision: rev);
+            ContextMenuDiffToolInfo selectionInfo = new(selectedRevision: rev);
             _revisionDiffContextMenuController.ShouldShowMenuFirstToSelected(selectionInfo).Should().BeTrue();
             _revisionDiffContextMenuController.ShouldShowMenuFirstToLocal(selectionInfo).Should().BeTrue();
             _revisionDiffContextMenuController.ShouldShowMenuSelectedToLocal(selectionInfo).Should().BeFalse();
@@ -63,7 +63,7 @@ namespace GitUITests.CommandsDialogs
         public void BrowseDiff_ShowContextDiffToolForDeletedAndNew(bool d, bool n)
         {
             var rev = new GitRevision(ObjectId.Random());
-            var selectionInfo = new ContextMenuDiffToolInfo(selectedRevision: rev, allAreDeleted: d, allAreNew: n);
+            ContextMenuDiffToolInfo selectionInfo = new(selectedRevision: rev, allAreDeleted: d, allAreNew: n);
             _revisionDiffContextMenuController.ShouldShowMenuFirstToSelected(selectionInfo).Should().BeTrue();
             _revisionDiffContextMenuController.ShouldShowMenuFirstToLocal(selectionInfo).Should().BeTrue();
             _revisionDiffContextMenuController.ShouldShowMenuSelectedToLocal(selectionInfo).Should().Be(!d);

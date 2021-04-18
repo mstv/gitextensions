@@ -247,7 +247,7 @@ namespace GitExtUtils.GitUI.Theming
             Func<double, double>? s = null,
             Func<double, double>? l = null)
         {
-            var hsl = new HslColor(c);
+            HslColor hsl = new(c);
             var transformed = new HslColor(
                 h?.Invoke(hsl.H) ?? hsl.H,
                 s?.Invoke(hsl.S) ?? hsl.S,
@@ -288,7 +288,7 @@ namespace GitExtUtils.GitUI.Theming
 
         public static HslColor ToPerceptedHsl(this Color rgb)
         {
-            var hsl = new HslColor(rgb);
+            HslColor hsl = new(rgb);
             return hsl.WithLuminosity(PerceptedL(rgb, hsl.L));
         }
 
@@ -304,7 +304,7 @@ namespace GitExtUtils.GitUI.Theming
         {
             double excludeHTo = 15d; // orange
 
-            var hsl = new HslColor(color);
+            HslColor hsl = new(color);
             var deltaH = ((hsl.H * 360d) - excludeHTo + 180).Modulo(360) - 180;
 
             const double deltaFrom = -140d;

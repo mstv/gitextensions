@@ -113,7 +113,7 @@ namespace GitUI.Avatars
                 font = new Font(AppSettings.CommitFont.FontFamily, fontSizeEstimation * size / sizeSquare);
                 textSize = _graphics.MeasureString(text, font);
 
-                var img = new Bitmap(size, size);
+                Bitmap img = new(size, size);
 
                 using var drawing = Graphics.FromImage(img);
                 drawing.Clear(backColor);

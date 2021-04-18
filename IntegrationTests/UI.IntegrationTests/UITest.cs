@@ -12,7 +12,7 @@ namespace GitExtensions.UITests
     {
         public static async Task WaitForIdleAsync()
         {
-            var idleCompletionSource = new TaskCompletionSource<VoidResult>();
+            TaskCompletionSource<VoidResult> idleCompletionSource = new();
             Application.Idle += HandleApplicationIdle;
 
             // Queue an event to make sure we don't stall if the application was already idle

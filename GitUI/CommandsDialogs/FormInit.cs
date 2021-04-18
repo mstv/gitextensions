@@ -65,7 +65,7 @@ namespace GitUI.CommandsDialogs
                 return;
             }
 
-            var module = new GitModule(directoryPath);
+            GitModule module = new(directoryPath);
 
             if (!System.IO.Directory.Exists(module.WorkingDir))
             {
@@ -90,7 +90,7 @@ namespace GitUI.CommandsDialogs
                 }
 
                 // this is going to throw if it's an invalid path (e.g. contains special chars)
-                var info = new DirectoryInfo(path);
+                DirectoryInfo info = new(path);
 
                 return Path.IsPathRooted(path.Trim());
             }

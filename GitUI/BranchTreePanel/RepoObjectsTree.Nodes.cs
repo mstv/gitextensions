@@ -76,7 +76,7 @@ namespace GitUI.BranchTreePanel
             /// </summary>
             internal void FillTreeViewNode(TreeNode treeViewNode)
             {
-                var prevNodes = new HashSet<Node>();
+                HashSet<Node> prevNodes = new();
                 for (var i = 0; i < treeViewNode.Nodes.Count; i++)
                 {
                     prevNodes.Add(Node.GetNode(treeViewNode.Nodes[i]));

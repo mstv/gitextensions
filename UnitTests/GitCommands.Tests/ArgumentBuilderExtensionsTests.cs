@@ -223,7 +223,7 @@ namespace GitCommandsTests
 
                 foreach (T member in Enum.GetValues(typeof(T)))
                 {
-                    var args = new ArgumentBuilder();
+                    ArgumentBuilder args = new();
 
                     Assert.DoesNotThrow(() => method.Invoke(null, new object[] { args, member }));
                 }
@@ -337,7 +337,7 @@ namespace GitCommandsTests
         public void BuildBatchArguments_builder_work_as_expected(string command, string[] arguments, int maxLength, string[] expected, int[] expectedCounts,
             int baseLength = 0)
         {
-            var batch = new GitArgumentBuilder(command)
+            GitArgumentBuilder batch = new(command)
                 .BuildBatchArguments(arguments, baseLength, maxLength);
 
             var args = batch.Select(item => item.Argument.ToString()).ToArray();

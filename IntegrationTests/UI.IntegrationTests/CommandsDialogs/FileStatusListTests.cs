@@ -40,7 +40,7 @@ namespace GitExtensions.UITests.CommandsDialogs
         {
             var accessor = _fileStatusList.GetTestAccessor();
 
-            var itemNotInList = new GitItemStatus(name: "not in list");
+            GitItemStatus itemNotInList = new(name: "not in list");
             var item0 = new GitItemStatus(name: "z.0");
             var item1 = new GitItemStatus(name: "x.1");
             var item2 = new GitItemStatus(name: "y.2");

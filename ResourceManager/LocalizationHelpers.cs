@@ -79,7 +79,7 @@ namespace ResourceManager
 
         public static string GetSubmoduleText(GitModule superproject, string name, string hash, bool cache)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.AppendLine("Submodule " + name);
             sb.AppendLine();
             GitModule module = superproject.GetSubmodule(name);
@@ -134,7 +134,7 @@ namespace ResourceManager
             }
 
             GitModule gitModule = moduleIsParent ? module.GetSubmodule(status.Name) : module;
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.AppendLine("Submodule " + status.Name + " Change");
 
             // TEMP, will be moved in the follow up refactor

@@ -97,7 +97,7 @@ namespace GitUI.CommandsDialogs
 
         private void Revert_Click(object sender, EventArgs e)
         {
-            var args = new ArgumentBuilder();
+            ArgumentBuilder args = new();
             var canExecute = true;
 
             if (_isMerge)

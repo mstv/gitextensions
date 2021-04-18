@@ -536,7 +536,7 @@ namespace GitUI
 
             ListViewItem? FindPrevItemInGroups()
             {
-                var searchInGroups = new List<ListViewGroup>();
+                List<ListViewGroup> searchInGroups = new();
                 var foundCurrentGroup = false;
                 for (var i = FileStatusListView.Groups.Count - 1; i >= 0; i--)
                 {
@@ -570,7 +570,7 @@ namespace GitUI
 
             ListViewItem? FindNextItemInGroups()
             {
-                var searchInGroups = new List<ListViewGroup>();
+                List<ListViewGroup> searchInGroups = new();
                 var foundCurrentGroup = false;
                 for (var i = 0; i < FileStatusListView.Groups.Count; i++)
                 {
@@ -908,7 +908,7 @@ namespace GitUI
 
             bool hasChanges = GitItemStatusesWithDescription.Any(x => x.Statuses.Count > 0);
 
-            var list = new List<ListViewItem>();
+            List<ListViewItem> list = new();
             foreach (var i in GitItemStatusesWithDescription)
             {
                 ListViewGroup? group = null;
@@ -1463,7 +1463,7 @@ namespace GitUI
             {
                 if (SelectedItems.Any())
                 {
-                    var fileList = new StringCollection();
+                    StringCollection fileList = new();
 
                     foreach (FileStatusItem item in SelectedItems)
                     {
@@ -1475,7 +1475,7 @@ namespace GitUI
                         }
                     }
 
-                    var obj = new DataObject();
+                    DataObject obj = new();
                     obj.SetFileDropList(fileList);
 
                     // Proceed with the drag and drop, passing in the list item.

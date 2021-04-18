@@ -155,12 +155,12 @@ namespace GitUI
 
             if (filled)
             {
-                using var brush = new SolidBrush(color);
+                using SolidBrush brush = new(color);
                 graphics.FillPolygon(brush, _arrowPoints);
             }
             else
             {
-                using var pen = new Pen(color);
+                using Pen pen = new(color);
                 graphics.DrawPolygon(pen, _arrowPoints);
             }
         }
@@ -172,7 +172,7 @@ namespace GitUI
             var right = left + rect.Width;
             var bottom = top + rect.Height;
 
-            var path = new GraphicsPath();
+            GraphicsPath path = new();
             path.AddArc(left, top, radius, radius, startAngle: 180, sweepAngle: 90);
             path.AddArc(right - radius, top, radius, radius, 270, 90);
             path.AddArc(right - radius, bottom - radius, radius, radius, 0, 90);

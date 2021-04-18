@@ -45,9 +45,9 @@ namespace GitUI.UserControls.RevisionGrid.Columns
 
         public override void OnCellPainting(DataGridViewCellPaintingEventArgs e, GitRevision revision, int rowHeight, in CellStyle style)
         {
-            var indicator = new MultilineIndicator(e, revision);
+            MultilineIndicator indicator = new(e, revision);
             var messageBounds = indicator.RemainingCellBounds;
-            var superprojectRefs = new List<IGitRef>();
+            List<IGitRef> superprojectRefs = new();
             var offset = ColumnLeftMargin;
 
             if (_grid.TryGetSuperProjectInfo(out var spi))

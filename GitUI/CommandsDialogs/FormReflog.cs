@@ -72,7 +72,7 @@ namespace GitUI.CommandsDialogs
             {
                 var item = (string)Branches.SelectedItem;
                 await TaskScheduler.Default;
-                var arguments = new GitArgumentBuilder("reflog")
+                GitArgumentBuilder arguments = new("reflog")
                 {
                     "--no-abbrev",
                     item
@@ -102,7 +102,7 @@ namespace GitUI.CommandsDialogs
 
             UICommands.DoActionOnRepo(() =>
             {
-                using var form = new FormCreateBranch(UICommands, GetShaOfRefLine());
+                using FormCreateBranch form = new(UICommands, GetShaOfRefLine());
                 form.CheckoutAfterCreation = false;
                 form.UserAbleToChangeRevision = false;
                 form.CouldBeOrphan = false;

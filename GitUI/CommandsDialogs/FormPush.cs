@@ -431,7 +431,7 @@ namespace GitUI.CommandsDialogs
             else
             {
                 // Push Multiple Branches Tab selected
-                var pushActions = new List<GitPushAction>();
+                List<GitPushAction> pushActions = new();
                 Validates.NotNull(_branchTable);
                 foreach (DataRow row in _branchTable.Rows)
                 {
@@ -474,7 +474,7 @@ namespace GitUI.CommandsDialogs
             _candidateForRebasingMergeCommit = PushToRemote.Checked && (_selectedBranch != AllRefs) && TabControlTagBranch.SelectedTab == BranchTab;
             _selectedRemoteBranchName = RemoteBranch.Text;
 
-            using var form = new FormRemoteProcess(UICommands, process: null, pushCmd)
+            using FormRemoteProcess form = new(UICommands, process: null, pushCmd)
             {
                 Remote = remote,
                 Text = string.Format(_pushToCaption.Text, destination),
@@ -656,7 +656,7 @@ namespace GitUI.CommandsDialogs
                     StartupLocation = TaskDialogStartupLocation.CenterOwner,
                     Cancelable = true
                 };
-                var btnPullDefault = new TaskDialogCommandLink("PullDefault", null, pullDefaultButtonText);
+                TaskDialogCommandLink btnPullDefault = new("PullDefault", null, pullDefaultButtonText);
                 btnPullDefault.Click += (s, e) =>
                 {
                     dialogResult = 0;
@@ -1012,7 +1012,7 @@ namespace GitUI.CommandsDialogs
                 {
                     EnsurePageant(remote);
 
-                    var formProcess = new FormRemoteProcess(UICommands, process: null, $"ls-remote --heads \"{remote}\"")
+                    FormRemoteProcess formProcess = new(UICommands, process: null, $"ls-remote --heads \"{remote}\"")
                     {
                         Remote = remote
                     };

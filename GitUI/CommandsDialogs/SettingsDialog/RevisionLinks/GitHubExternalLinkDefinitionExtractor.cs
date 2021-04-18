@@ -19,7 +19,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.RevisionLinks
 
         public override IList<ExternalLinkDefinition> GetDefinitions(string remoteUrl)
         {
-            var externalLinkDefinitions = new List<ExternalLinkDefinition>();
+            List<ExternalLinkDefinition> externalLinkDefinitions = new();
             string? organizationName = null;
             string? repoName = null;
 

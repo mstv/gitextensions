@@ -133,7 +133,7 @@ namespace BugReporter
 
         private void ExceptionDetailsListView_DoubleClick(object sender, EventArgs e)
         {
-            using var detailView = new ExceptionDetailView();
+            using ExceptionDetailView detailView = new();
             detailView.ShowDialog(exceptionDetailsListView.SelectedItems[0].Text, exceptionDetailsListView.SelectedItems[0].SubItems[1].Text);
         }
 

@@ -14,7 +14,7 @@ namespace AzureDevOpsIntegrationTests
         [SetUp]
         public void Initialize()
         {
-            var adapter = new AzureDevOpsAdapter();
+            AzureDevOpsAdapter adapter = new();
             _sut = adapter.GetTestAccessor();
         }
 

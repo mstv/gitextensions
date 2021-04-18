@@ -47,7 +47,7 @@ namespace GitCommands.ExternalLinks
 
             if (settings.LowerPriority is not null)
             {
-                var lowerPriorityLoader = new ConfiguredLinkDefinitionsProvider(_externalLinksStorage);
+                ConfiguredLinkDefinitionsProvider lowerPriorityLoader = new(_externalLinksStorage);
                 effective = effective.Union(lowerPriorityLoader.Get(settings.LowerPriority));
             }
 

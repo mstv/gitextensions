@@ -88,7 +88,7 @@ namespace GitUITests.BranchTreePanel
         public void WithActiveBranch_HasFilteredItems()
         {
             // Arrange
-            var generator = new LocalBranchMenuItems<TestBranchNode>(_factory);
+            LocalBranchMenuItems<TestBranchNode> generator = new(_factory);
 
             // Act
             const int notFiltered = 2; // create branch, rename

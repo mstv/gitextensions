@@ -243,7 +243,7 @@ namespace GitUI.CommandsDialogs
 
             IReadOnlyList<string> GetContainsRevisionBranches()
             {
-                var result = new HashSet<string>();
+                HashSet<string> result = new();
                 if (_containRevisions.Count > 0)
                 {
                     var branches = Module.GetAllBranchesWhichContainGivenCommit(_containRevisions[0], LocalBranch.Checked,

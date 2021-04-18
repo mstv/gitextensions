@@ -32,7 +32,7 @@ namespace GitUI.AutoCompletion
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var autoCompleteWords = new HashSet<string>();
+            HashSet<string> autoCompleteWords = new();
 
             IGitModule module = GetModule();
             ArgumentString cmd = GitCommandHelpers.GetAllChangedFilesCmd(true, UntrackedFilesMode.Default, noLocks: true);
@@ -119,7 +119,7 @@ namespace GitUI.AutoCompletion
                 throw new NotImplementedException("Please add AutoCompleteRegexes.txt file into .csproj");
             }
 
-            using var sr = new StreamReader(s);
+            using StreamReader sr = new(s);
             return sr.ReadToEnd().Split(Delimiters.LineFeedAndCarriageReturn, StringSplitOptions.RemoveEmptyEntries);
         }
 
@@ -127,7 +127,7 @@ namespace GitUI.AutoCompletion
         {
             var autoCompleteRegexes = ReadOrInitializeAutoCompleteRegexes();
 
-            var regexes = new Dictionary<string, Regex>();
+            Dictionary<string, Regex> regexes = new();
 
             foreach (var line in autoCompleteRegexes)
             {

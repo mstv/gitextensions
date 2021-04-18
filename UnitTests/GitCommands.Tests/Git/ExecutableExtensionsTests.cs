@@ -50,7 +50,7 @@ namespace GitCommandsTests.Git
         {
             const string arguments = "abc";
 
-            var cache = new CommandCache();
+            CommandCache cache = new();
 
             cache.Add(
                 arguments,
@@ -72,7 +72,7 @@ namespace GitCommandsTests.Git
             const string commandOutput = "Hello World!";
 
             // Empty cache
-            var cache = new CommandCache();
+            CommandCache cache = new();
 
             using (_executable.StageOutput(arguments, commandOutput))
             {
@@ -134,7 +134,7 @@ namespace GitCommandsTests.Git
 
         private string GenerateStringByLength(int length)
         {
-            var sb = new StringBuilder(length);
+            StringBuilder sb = new(length);
 
             for (int i = 0; i < length; i++)
             {

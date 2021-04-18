@@ -336,7 +336,7 @@ namespace GitUI.CommandsDialogs
             bool isAnySubmodule = selectedItems.Any(item => item.Item.IsSubmodule);
             (bool allFilesExist, bool allDirectoriesExist, bool allFilesOrUntrackedDirectoriesExist) = FileOrUntrackedDirExists(selectedItems, _fullPathResolver);
 
-            var selectionInfo = new ContextMenuSelectionInfo(
+            ContextMenuSelectionInfo selectionInfo = new(
                 selectedRevision: selectedRev,
                 isDisplayOnlyDiff: isDisplayOnlyDiff,
                 isStatusOnly: isStatusOnly,

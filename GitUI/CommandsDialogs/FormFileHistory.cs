@@ -252,7 +252,7 @@ namespace GitUI.CommandsDialogs
                     // note: This implementation is quite a quick hack (by someone who does not speak C# fluently).
                     //
 
-                    var args = new GitArgumentBuilder("log")
+                    GitArgumentBuilder args = new("log")
                     {
                         "--format=\"%n\"",
                         "--name-only",
@@ -328,7 +328,7 @@ namespace GitUI.CommandsDialogs
 
         private void SetTitle(string? alternativeFileName = null)
         {
-            var str = new StringBuilder()
+            StringBuilder str = new()
                 .Append("File History - ")
                 .Append(FileName);
 
@@ -401,7 +401,7 @@ namespace GitUI.CommandsDialogs
             {
                 Validates.NotNull(fileName);
                 View.Encoding = Diff.Encoding;
-                var file = new GitItemStatus(name: fileName)
+                GitItemStatus file = new(name: fileName)
                 {
                     IsTracked = true,
                     IsSubmodule = GitModule.IsValidGitWorkingDir(_fullPathResolver.Resolve(fileName))
@@ -411,7 +411,7 @@ namespace GitUI.CommandsDialogs
             else if (tabControl1.SelectedTab == DiffTab)
             {
                 Validates.NotNull(fileName);
-                var file = new GitItemStatus(name: fileName)
+                GitItemStatus file = new(name: fileName)
                 {
                     IsTracked = true,
                     IsSubmodule = GitModule.IsValidGitWorkingDir(_fullPathResolver.Resolve(fileName))

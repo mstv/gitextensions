@@ -61,7 +61,7 @@ namespace ResourceManagerTests.CommitDataRenders
         [Test]
         public void GetFont_should_get_font_from_style_provider()
         {
-            using var c = new Control();
+            using Control c = new();
             using var g = c.CreateGraphics();
             _renderer.GetFont(g);
 

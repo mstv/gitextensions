@@ -55,7 +55,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
 
         public (IReadOnlyList<RecentRepoInfo> recentRepositories, IReadOnlyList<RecentRepoInfo> favouriteRepositories) PreRenderRepositories(Graphics g)
         {
-            var mostRecentRepos = new List<RecentRepoInfo>();
+            List<RecentRepoInfo> mostRecentRepos = new();
             var lessRecentRepos = new List<RecentRepoInfo>();
 
             var splitter = new RecentRepoSplitter

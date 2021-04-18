@@ -29,7 +29,7 @@ namespace GitExtensions.Plugins.ReleaseNotesGenerator
         public static HtmlFragment FromClipboard()
         {
             string rawClipboardText = Clipboard.GetText(TextDataFormat.Html);
-            var h = new HtmlFragment(rawClipboardText);
+            HtmlFragment h = new(rawClipboardText);
             return h;
         }
 
@@ -223,7 +223,7 @@ namespace GitExtensions.Plugins.ReleaseNotesGenerator
             // Finally copy to clipboard.
             // http://stackoverflow.com/questions/13332377/how-to-set-html-text-in-clipboard
             string data = sb.ToString();
-            var dataObject = new DataObject();
+            DataObject dataObject = new();
             dataObject.SetText(data, TextDataFormat.Html);
             dataObject.SetText(htmlFragment, TextDataFormat.Text);
 

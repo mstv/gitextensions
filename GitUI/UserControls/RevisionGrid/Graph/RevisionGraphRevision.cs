@@ -61,7 +61,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
             int maxScore = Score;
 
-            var stack = new Stack<RevisionGraphRevision>();
+            Stack<RevisionGraphRevision> stack = new();
             stack.Push(this);
             while (stack.Count > 0)
             {
@@ -109,7 +109,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 return;
             }
 
-            var stack = new Stack<RevisionGraphRevision>();
+            Stack<RevisionGraphRevision> stack = new();
             stack.Push(this);
 
             while (stack.Count > 0)

@@ -447,7 +447,7 @@ namespace GitCommandsTests.Remote
             [Test]
             public void ToggleRemoteState_should_not_fail_if_activate_repeatedly()
             {
-                using var helper = new GitModuleTestHelper();
+                using GitModuleTestHelper helper = new();
                 var manager = new ConfigFileRemoteSettingsManager(() => helper.Module);
 
                 const string remoteName = "active";
@@ -461,7 +461,7 @@ namespace GitCommandsTests.Remote
             [Test]
             public void ToggleRemoteState_should_not_fail_if_deactivate_repeatedly()
             {
-                using var helper = new GitModuleTestHelper();
+                using GitModuleTestHelper helper = new();
                 var manager = new ConfigFileRemoteSettingsManager(() => helper.Module);
 
                 const string remoteName = "active";

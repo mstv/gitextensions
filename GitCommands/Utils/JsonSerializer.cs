@@ -8,7 +8,7 @@ namespace GitCommands.Utils
         public static string Serialize<T>(T? myObject) where T : class
         {
             var json = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
-            var stream = new MemoryStream();
+            MemoryStream stream = new();
             json.WriteObject(stream, myObject);
             return Encoding.UTF8.GetString(stream.ToArray());
         }

@@ -122,7 +122,7 @@ namespace GitExtensions.Plugins.AutoCompileSubmodules
 
         private static string SolutionFilesToString(IReadOnlyList<FileInfo> solutionFiles)
         {
-            var solutionString = new StringBuilder();
+            StringBuilder solutionString = new();
 
             for (var n = solutionFiles.Count - 1; n > 0; n--)
             {

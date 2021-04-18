@@ -121,7 +121,7 @@ namespace GitUI.Editor
                 return Array.Empty<TextMarker>();
             }
 
-            var selectionMarkers = new List<TextMarker>();
+            List<TextMarker> selectionMarkers = new();
 
             string textContent = TextEditor.Document.TextContent;
             int indexMatch = -1;

@@ -46,7 +46,7 @@ namespace GitUITests.Editor
                         "2:\n" +
                         "3:Selected\n" +
                         "4:";
-            using var testHelper = new GitModuleTestHelper();
+            using GitModuleTestHelper testHelper = new();
             var uiCommands = new GitUICommands(testHelper.Module);
             _uiCommandsSource.UICommands.Returns(x => uiCommands);
             _fileViewer.UICommandsSource = _uiCommandsSource;
@@ -88,7 +88,7 @@ index 62a5c2f08..2bc482714 100644
 -            int scrollPos = ScrollPos;
 +            int scrollPos = VScrollPosition;";
 
-            using var testHelper = new GitModuleTestHelper();
+            using GitModuleTestHelper testHelper = new();
             var uiCommands = new GitUICommands(testHelper.Module);
             _uiCommandsSource.UICommands.Returns(x => uiCommands);
             _fileViewer.UICommandsSource = _uiCommandsSource;
@@ -121,7 +121,7 @@ index 62a5c2f08..2bc482714 100644
 -            int scrollPos = ScrollPos;
 +            int scrollPos = VScrollPosition;";
 
-            using var testHelper = new GitModuleTestHelper();
+            using GitModuleTestHelper testHelper = new();
             var uiCommands = new GitUICommands(testHelper.Module);
             _uiCommandsSource.UICommands.Returns(x => uiCommands);
             _fileViewer.UICommandsSource = _uiCommandsSource;
@@ -145,7 +145,7 @@ index 62a5c2f08..2bc482714 100644
 index b25b745..5194740 100644
 Binary files a/binaryfile.bin and b/binaryfile.bin differ";
 
-            using var testHelper = new GitModuleTestHelper();
+            using GitModuleTestHelper testHelper = new();
             var uiCommands = new GitUICommands(testHelper.Module);
             _uiCommandsSource.UICommands.Returns(x => uiCommands);
             _fileViewer.UICommandsSource = _uiCommandsSource;

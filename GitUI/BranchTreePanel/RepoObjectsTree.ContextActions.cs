@@ -326,7 +326,7 @@ namespace GitUI.BranchTreePanel
 
         private ToolStripItem[] CreateCopyContextMenuItems()
         {
-            var copyContextMenuItem = new CopyContextMenuItem();
+            CopyContextMenuItem copyContextMenuItem = new();
 
             copyContextMenuItem.SetRevisionFunc(() => _scriptHost.GetSelectedRevisions());
 
@@ -366,7 +366,7 @@ namespace GitUI.BranchTreePanel
             where TMenuItem : ToolStripItem, new()
             where TNode : class, INode
         {
-            var result = new TMenuItem();
+            TMenuItem result = new();
             result.Image = icon;
             result.Text = text.Text;
             result.ToolTipText = toolTip.Text;

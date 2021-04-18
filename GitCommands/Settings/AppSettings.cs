@@ -2027,7 +2027,7 @@ namespace GitCommands
             }
             else
             {
-                var utf8 = new UTF8Encoding(false);
+                UTF8Encoding utf8 = new(false);
                 foreach (var encodingName in availableEncodings.LazySplit(';'))
                 {
                     if (encodingName == Encoding.UTF7.HeaderName)

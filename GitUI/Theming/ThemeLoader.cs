@@ -31,7 +31,7 @@ namespace GitUI.Theming
 
         public Theme LoadTheme(string themeFileName, ThemeId themeId, in IReadOnlyList<string> allowedClasses)
         {
-            var themeColors = new ThemeColors();
+            ThemeColors themeColors = new();
             LoadThemeColors(themeFileName, cssImportChain: new[] { themeFileName }, allowedClasses, themeColors);
             return new Theme(themeColors.AppColors, themeColors.SysColors, themeId);
         }

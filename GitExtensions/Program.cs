@@ -113,7 +113,7 @@ namespace GitExtensions
 
             if (string.IsNullOrEmpty(AppSettings.Translation))
             {
-                using var formChoose = new FormChooseTranslation();
+                using FormChooseTranslation formChoose = new();
                 formChoose.ShowDialog();
             }
 
@@ -142,9 +142,9 @@ namespace GitExtensions
 
                     if (AppSettings.CheckSettings)
                     {
-                        var uiCommands = new GitUICommands("");
+                        GitUICommands uiCommands = new("");
                         var commonLogic = new CommonLogic(uiCommands.Module);
-                        var checkSettingsLogic = new CheckSettingsLogic(commonLogic);
+                        CheckSettingsLogic checkSettingsLogic = new(commonLogic);
                         var fakePageHost = new SettingsPageHostMock(checkSettingsLogic);
                         using var checklistSettingsPage = SettingsPageBase.Create<ChecklistSettingsPage>(fakePageHost);
                         if (!checklistSettingsPage.CheckSettings())
@@ -167,7 +167,7 @@ namespace GitExtensions
                 MouseWheelRedirector.Active = true;
             }
 
-            var commands = new GitUICommands(GetWorkingDir(args));
+            GitUICommands commands = new(GetWorkingDir(args));
 
             if (args.Length <= 1)
             {

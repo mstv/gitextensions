@@ -8,7 +8,7 @@ namespace GitUI.CommandsDialogs.CommitDialog
     {
         private static IEnumerable<string> InternalWrapSingleLine(string line, int lineLimit)
         {
-            var wrapper = new WrapperState(lineLimit);
+            WrapperState wrapper = new(lineLimit);
             foreach (var word in line.Split())
             {
                 if (!wrapper.CanAddWord(word))

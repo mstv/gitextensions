@@ -219,7 +219,7 @@ namespace GitUITests.Script
         [Test]
         public void ParseScriptArguments_resolve_sRemotePathFromUrl_selectedRemotes_empty()
         {
-            var noSelectedRemotes = new List<string>();
+            List<string> noSelectedRemotes = new();
 
             var result = ScriptOptionsParser.GetTestAccessor().ParseScriptArguments(
                 arguments: "{openUrl} https://gitlab.com{sRemotePathFromUrl}/tree/{sBranch}", option: "sRemotePathFromUrl",

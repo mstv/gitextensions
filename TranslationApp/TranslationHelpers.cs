@@ -20,7 +20,7 @@ namespace TranslationApp
                 var translatableTypes = TranslationUtil.GetTranslatableTypes();
                 foreach (var (key, types) in translatableTypes)
                 {
-                    var translation = new TranslationFile();
+                    TranslationFile translation = new();
                     try
                     {
                         foreach (Type type in types)
@@ -94,7 +94,7 @@ namespace TranslationApp
             {
                 var oldItems = oldTranslationItems.Find(key);
                 var transItems = translateItems.Find(key);
-                var dict = new Dictionary<string, string>();
+                Dictionary<string, string> dict = new();
                 foreach (var item in items)
                 {
                     var curItems = oldItems.Where(

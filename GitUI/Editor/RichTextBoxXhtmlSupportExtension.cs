@@ -408,7 +408,7 @@ namespace GitUI.Editor.RichTextBoxExtension
                     str = str.Remove(2, 1);
 
                     // Encode unicode characters
-                    var sb = new StringBuilder();
+                    StringBuilder sb = new();
                     foreach (var c in str)
                     {
                         if (c < 0x7f)
@@ -428,7 +428,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         private static PARAFORMAT GetParaFormat(HandleRef handleRef)
         {
-            var pf = new PARAFORMAT();
+            PARAFORMAT pf = new();
             pf.cbSize = Marshal.SizeOf(pf);
 
             // Get the alignment.
@@ -463,7 +463,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         private static PARAFORMAT GetDefaultParaFormat(HandleRef handleRef)
         {
-            var pf = new PARAFORMAT();
+            PARAFORMAT pf = new();
             pf.cbSize = Marshal.SizeOf(pf);
 
             // Get the alignment.
@@ -498,7 +498,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         private static CHARFORMAT GetCharFormat(HandleRef handleRef)
         {
-            var cf = new CHARFORMAT();
+            CHARFORMAT cf = new();
             cf.cbSize = Marshal.SizeOf(cf);
 
             // Get the alignment.
@@ -533,13 +533,13 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void SetCharFormat(this RichTextBox rtb, CFM mask, CFE effects)
         {
-            var cf = new CHARFORMAT(mask, effects);
+            CHARFORMAT cf = new(mask, effects);
             rtb.SetCharFormat(cf);
         }
 
         private static CHARFORMAT GetDefaultCharFormat(HandleRef handleRef)
         {
-            var cf = new CHARFORMAT();
+            CHARFORMAT cf = new();
             cf.cbSize = Marshal.SizeOf(cf);
 
             // Get the alignment.
@@ -574,13 +574,13 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void SetDefaultCharFormat(this RichTextBox rtb, CFM mask, CFE effects)
         {
-            var cf = new CHARFORMAT(mask, effects);
+            CHARFORMAT cf = new(mask, effects);
             rtb.SetDefaultCharFormat(cf);
         }
 
         private static Point GetScrollPoint(HandleRef handleRef)
         {
-            var scrollPoint = new Point();
+            Point scrollPoint = new();
             NativeMethods.SendMessage(handleRef, NativeMethods.EM_GETSCROLLPOS, IntPtr.Zero, ref scrollPoint);
             return scrollPoint;
         }
@@ -673,7 +673,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static string GetXHTMLText(this RichTextBox rtb, bool bParaFormat)
         {
-            var strHTML = new StringBuilder();
+            StringBuilder strHTML = new();
 
             rtb.HideSelection = true;
             IntPtr oldMask = rtb.BeginUpdate();
@@ -720,7 +720,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         private static string ProcessTags(RichTextBox rtb, List<KeyValuePair<int, string>> colFormat, bool bParaFormat)
         {
-            var sbT = new StringBuilder();
+            StringBuilder sbT = new();
 
             ctformatStates bold = ctformatStates.nctNone;
             ctformatStates bitalic = ctformatStates.nctNone;
@@ -812,7 +812,7 @@ namespace GitUI.Editor.RichTextBoxExtension
                     // is italic? => close it
                     if (bitalic != ctformatStates.nctNone)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "</i>");
+                        KeyValuePair<int, string> mfr = new(pos, "</i>");
                         colFormat.Add(mfr);
                         bitalic = ctformatStates.nctNone;
                     }
@@ -820,7 +820,7 @@ namespace GitUI.Editor.RichTextBoxExtension
                     // is bold? => close it
                     if (bold != ctformatStates.nctNone)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "</b>");
+                        KeyValuePair<int, string> mfr = new(pos, "</b>");
                         colFormat.Add(mfr);
                         bold = ctformatStates.nctNone;
                     }
@@ -828,7 +828,7 @@ namespace GitUI.Editor.RichTextBoxExtension
                     // is underline? => close it
                     if (bunderline != ctformatStates.nctNone)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "</u>");
+                        KeyValuePair<int, string> mfr = new(pos, "</u>");
                         colFormat.Add(mfr);
                         bunderline = ctformatStates.nctNone;
                     }
@@ -836,7 +836,7 @@ namespace GitUI.Editor.RichTextBoxExtension
                     // is strikeout? => close it
                     if (bstrikeout != ctformatStates.nctNone)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "</s>");
+                        KeyValuePair<int, string> mfr = new(pos, "</s>");
                         colFormat.Add(mfr);
                         bstrikeout = ctformatStates.nctNone;
                     }
@@ -844,7 +844,7 @@ namespace GitUI.Editor.RichTextBoxExtension
                     // is super? => close it
                     if (super != ctformatStates.nctNone)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "</sup>");
+                        KeyValuePair<int, string> mfr = new(pos, "</sup>");
                         colFormat.Add(mfr);
                         super = ctformatStates.nctNone;
                     }
@@ -852,7 +852,7 @@ namespace GitUI.Editor.RichTextBoxExtension
                     // is sub? => close it
                     if (sub != ctformatStates.nctNone)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "</sub>");
+                        KeyValuePair<int, string> mfr = new(pos, "</sub>");
                         colFormat.Add(mfr);
                         sub = ctformatStates.nctNone;
                     }
@@ -867,7 +867,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
                     if (bacenter == ctformatStates.nctNew)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "<p align=\"center\">");
+                        KeyValuePair<int, string> mfr = new(pos, "<p align=\"center\">");
                         colFormat.Add(mfr);
                     }
                     else if (bacenter == ctformatStates.nctReset)
@@ -880,7 +880,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
                     if (baleft == ctformatStates.nctNew)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "<p align=\"left\">");
+                        KeyValuePair<int, string> mfr = new(pos, "<p align=\"left\">");
                         colFormat.Add(mfr);
                     }
                     else if (baleft == ctformatStates.nctReset)
@@ -893,7 +893,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
                     if (baright == ctformatStates.nctNew)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "<p align=\"right\">");
+                        KeyValuePair<int, string> mfr = new(pos, "<p align=\"right\">");
                         colFormat.Add(mfr);
                     }
                     else if (baright == ctformatStates.nctReset)
@@ -906,7 +906,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
                     if (bnumbering == ctformatStates.nctNew)
                     {
-                        var mfr = new KeyValuePair<int, string>(pos, "<li>");
+                        KeyValuePair<int, string> mfr = new(pos, "<li>");
                         colFormat.Add(mfr);
                     }
                     else if (bnumbering == ctformatStates.nctReset)
@@ -946,44 +946,44 @@ namespace GitUI.Editor.RichTextBoxExtension
             // close pending tags
             if (bold != ctformatStates.nctNone)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "</b>");
+                KeyValuePair<int, string> mfr = new(pos, "</b>");
                 colFormat.Add(mfr);
             }
 
             if (bitalic != ctformatStates.nctNone)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "</i>");
+                KeyValuePair<int, string> mfr = new(pos, "</i>");
                 colFormat.Add(mfr);
             }
 
             if (bstrikeout != ctformatStates.nctNone)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "</s>");
+                KeyValuePair<int, string> mfr = new(pos, "</s>");
                 colFormat.Add(mfr);
             }
 
             if (bunderline != ctformatStates.nctNone)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "</u>");
+                KeyValuePair<int, string> mfr = new(pos, "</u>");
                 colFormat.Add(mfr);
             }
 
             if (super != ctformatStates.nctNone)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "</sup>");
+                KeyValuePair<int, string> mfr = new(pos, "</sup>");
                 colFormat.Add(mfr);
             }
 
             if (sub != ctformatStates.nctNone)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "</sub>");
+                KeyValuePair<int, string> mfr = new(pos, "</sub>");
                 colFormat.Add(mfr);
             }
 
             if (fontSet)
             {
                 // close pending font format
-                var mfr = new KeyValuePair<int, string>(pos, "</font>");
+                KeyValuePair<int, string> mfr = new(pos, "</font>");
                 colFormat.Add(mfr);
             }
 
@@ -1029,12 +1029,12 @@ namespace GitUI.Editor.RichTextBoxExtension
         {
             if (state == ctformatStates.nctNew)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "<" + tag + ">");
+                KeyValuePair<int, string> mfr = new(pos, "<" + tag + ">");
                 colFormat.Add(mfr);
             }
             else if (state == ctformatStates.nctReset)
             {
-                var mfr = new KeyValuePair<int, string>(pos, "</" + tag + ">");
+                KeyValuePair<int, string> mfr = new(pos, "</" + tag + ">");
                 colFormat.Add(mfr);
                 state = ctformatStates.nctNone;
             }
@@ -1061,7 +1061,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
             int nStart = rtb.SelectionStart;
             int nEnd = rtb.SelectionLength;
-            var text = new StringBuilder();
+            StringBuilder text = new();
 
             try
             {
@@ -1178,7 +1178,7 @@ namespace GitUI.Editor.RichTextBoxExtension
         /// </summary>
         private static string EscapeNonXMLChars(string input)
         {
-            var result = new StringBuilder();
+            StringBuilder result = new();
             foreach (char ch in input)
             {
                 if (XmlConvert.IsXmlChar(ch))
@@ -1228,7 +1228,7 @@ namespace GitUI.Editor.RichTextBoxExtension
         public static void SetXHTMLText(this RichTextBox rtb, string xhtmlText)
         {
             rtb.Clear();
-            var cs = new RTFCurrentState();
+            RTFCurrentState cs = new();
 
             var handleRef = new HandleRef(rtb, rtb.Handle);
             cs.cf = GetDefaultCharFormat(handleRef); // to apply character formatting
@@ -1244,7 +1244,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
             try
             {
-                using var stringreader = new StringReader(EscapeNonXMLChars(xhtmlText));
+                using StringReader stringreader = new(EscapeNonXMLChars(xhtmlText));
                 XmlReader reader = XmlReader.Create(stringreader, settings);
                 while (reader.Read())
                 {
@@ -1552,7 +1552,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
             try
             {
-                using var strReader = new StringReader(xhtmlText);
+                using StringReader strReader = new(xhtmlText);
                 XmlReader reader = XmlReader.Create(strReader, settings);
                 while (reader.Read())
                 {

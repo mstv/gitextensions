@@ -100,7 +100,7 @@ namespace GitUI.Script
             GitRevision? currentRevision = null;
 
             IReadOnlyList<GitRevision> allSelectedRevisions = Array.Empty<GitRevision>();
-            var selectedLocalBranches = new List<IGitRef>();
+            List<IGitRef> selectedLocalBranches = new();
             var selectedRemoteBranches = new List<IGitRef>();
             var selectedRemotes = new List<string>();
             var selectedBranches = new List<IGitRef>();
@@ -169,7 +169,7 @@ namespace GitUI.Script
                 return string.Empty;
             }
 
-            using var f = new FormQuickGitRefSelector();
+            using FormQuickGitRefSelector f = new();
             f.Location = scriptHostControl?.GetQuickItemSelectorLocation() ?? new System.Drawing.Point();
             f.Init(FormQuickGitRefSelector.Action.Select, items);
             f.ShowDialog();
@@ -178,7 +178,7 @@ namespace GitUI.Script
 
         private static string AskToSpecify(IEnumerable<string> options, IScriptHostControl? scriptHostControl)
         {
-            using var f = new FormQuickStringSelector();
+            using FormQuickStringSelector f = new();
             f.Location = scriptHostControl?.GetQuickItemSelectorLocation() ?? new System.Drawing.Point();
             f.Init(options.ToList());
             f.ShowDialog();

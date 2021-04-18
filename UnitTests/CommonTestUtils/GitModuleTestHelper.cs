@@ -26,7 +26,7 @@ namespace CommonTestUtils
 
             Directory.CreateDirectory(path);
 
-            var module = new GitModule(path);
+            GitModule module = new(path);
             module.Init(bare: false, shared: false);
             Module = module;
 

@@ -205,7 +205,7 @@ namespace GitUI.CommandsDialogs
             revisionDiff.Bind(RevisionGrid, fileTree, () => RequestRefresh());
             fileTree.Bind(() => RequestRefresh());
 
-            var repositoryDescriptionProvider = new RepositoryDescriptionProvider(new GitDirectoryResolver());
+            RepositoryDescriptionProvider repositoryDescriptionProvider = new(new GitDirectoryResolver());
             _appTitleGenerator = new AppTitleGenerator(repositoryDescriptionProvider);
             _windowsJumpListManager = new WindowsJumpListManager(repositoryDescriptionProvider);
 
@@ -430,7 +430,7 @@ namespace GitUI.CommandsDialogs
                                 TaskbarManager.Instance.SetOverlayIcon(overlay, "");
                             }
 
-                            var repoStateVisualiser = new RepoStateVisualiser();
+                            RepoStateVisualiser repoStateVisualiser = new();
                             var (image, _) = repoStateVisualiser.Invoke(status);
                             _windowsJumpListManager.UpdateCommitIcon(image);
                         }
@@ -485,7 +485,7 @@ namespace GitUI.CommandsDialogs
 
             Brush UpdateCommitButtonAndGetBrush(IReadOnlyList<GitItemStatus>? status, bool showCount)
             {
-                var repoStateVisualiser = new RepoStateVisualiser();
+                RepoStateVisualiser repoStateVisualiser = new();
                 var (image, brush) = repoStateVisualiser.Invoke(status);
 
                 if (showCount)
@@ -1266,7 +1266,7 @@ namespace GitUI.CommandsDialogs
             var recentRepositoryHistory = ThreadHelper.JoinableTaskFactory.Run(
                 () => RepositoryHistoryManager.Locals.AddAsMostRecentAsync(path));
 
-            var mostRecentRepos = new List<RecentRepoInfo>();
+            List<RecentRepoInfo> mostRecentRepos = new();
             using var graphics = CreateGraphics();
             var splitter = new RecentRepoSplitter
             {
@@ -1481,7 +1481,7 @@ namespace GitUI.CommandsDialogs
 
         private void AboutToolStripMenuItemClick(object sender, EventArgs e)
         {
-            using var frm = new FormAbout();
+            using FormAbout frm = new();
             frm.ShowDialog(this);
         }
 
@@ -1632,7 +1632,7 @@ namespace GitUI.CommandsDialogs
 
         private void DonateToolStripMenuItemClick(object sender, EventArgs e)
         {
-            using var frm = new FormDonate();
+            using FormDonate frm = new();
             frm.ShowDialog(this);
         }
 
@@ -1755,7 +1755,7 @@ namespace GitUI.CommandsDialogs
 
         private void ChangelogToolStripMenuItemClick(object sender, EventArgs e)
         {
-            using var frm = new FormChangeLog();
+            using FormChangeLog frm = new();
             frm.ShowDialog(this);
         }
 
@@ -1900,7 +1900,7 @@ namespace GitUI.CommandsDialogs
 
         private void PopulateFavouriteRepositoriesMenu(ToolStripDropDownItem container, in IList<Repository> repositoryHistory)
         {
-            var mostRecentRepos = new List<RecentRepoInfo>();
+            List<RecentRepoInfo> mostRecentRepos = new();
             var lessRecentRepos = new List<RecentRepoInfo>();
 
             using (var graphics = CreateGraphics())
@@ -1941,7 +1941,7 @@ namespace GitUI.CommandsDialogs
 
         private void PopulateRecentRepositoriesMenu(ToolStripDropDownItem container)
         {
-            var mostRecentRepos = new List<RecentRepoInfo>();
+            List<RecentRepoInfo> mostRecentRepos = new();
             var lessRecentRepos = new List<RecentRepoInfo>();
 
             var repositoryHistory = ThreadHelper.JoinableTaskFactory.Run(() => RepositoryHistoryManager.Locals.LoadRecentHistoryAsync());
@@ -2060,7 +2060,7 @@ namespace GitUI.CommandsDialogs
                 return;
             }
 
-            var fileNames = new StringBuilder();
+            StringBuilder fileNames = new();
             foreach (var item in diffFiles.SelectedItems)
             {
                 var path = PathUtil.Combine(module.WorkingDir, item.Item.Name);
@@ -3081,7 +3081,7 @@ namespace GitUI.CommandsDialogs
 
         private void toolStripMenuItemReflog_Click(object sender, EventArgs e)
         {
-            using var formReflog = new FormReflog(UICommands);
+            using FormReflog formReflog = new(UICommands);
             formReflog.ShowDialog();
         }
 
@@ -3217,13 +3217,13 @@ namespace GitUI.CommandsDialogs
 
         private void manageWorktreeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var formManageWorktree = new FormManageWorktree(UICommands);
+            FormManageWorktree formManageWorktree = new(UICommands);
             formManageWorktree.ShowDialog(this);
         }
 
         private void createWorktreeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var formCreateWorktree = new FormCreateWorktree(UICommands);
+            FormCreateWorktree formCreateWorktree = new(UICommands);
             var dialogResult = formCreateWorktree.ShowDialog(this);
             if (dialogResult == DialogResult.OK && formCreateWorktree.OpenWorktree)
             {

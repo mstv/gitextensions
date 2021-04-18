@@ -111,7 +111,7 @@ namespace GitCommandsTests.ExternalLinks
 
         private static BindingList<ConfigFileRemote> GetDefaultRemotes()
         {
-            var remotes = new BindingList<ConfigFileRemote>();
+            BindingList<ConfigFileRemote> remotes = new();
             remotes.Add(new ConfigFileRemote
             {
                 Name = "origin",
@@ -136,7 +136,7 @@ namespace GitCommandsTests.ExternalLinks
         [CanBeNull]
         private static IReadOnlyList<ExternalLinkDefinition> Parse(string xml)
         {
-            var serializer = new XmlSerializer(typeof(List<ExternalLinkDefinition>));
+            XmlSerializer serializer = new(typeof(List<ExternalLinkDefinition>));
             using var stringReader = new StringReader(xml);
             using var xmlReader = new XmlTextReader(stringReader);
             return serializer.Deserialize(xmlReader) as List<ExternalLinkDefinition>;

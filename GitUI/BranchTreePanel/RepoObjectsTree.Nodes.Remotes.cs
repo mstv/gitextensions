@@ -74,13 +74,13 @@ namespace GitUI.BranchTreePanel
 
             private async Task<Nodes> FillBranchTreeAsync(IReadOnlyList<IGitRef> branches, CancellationToken token)
             {
-                var nodes = new Nodes(this);
+                Nodes nodes = new(this);
                 var pathToNodes = new Dictionary<string, BaseBranchNode>();
 
                 var enabledRemoteRepoNodes = new List<RemoteRepoNode>();
                 var remoteByName = (await Module.GetRemotesAsync().ConfigureAwaitRunInline()).ToDictionary(r => r.Name);
 
-                var remotesManager = new ConfigFileRemoteSettingsManager(() => Module);
+                ConfigFileRemoteSettingsManager remotesManager = new(() => Module);
 
                 // Create nodes for enabled remotes with branches
                 foreach (IGitRef branch in branches)
@@ -112,7 +112,7 @@ namespace GitUI.BranchTreePanel
                 {
                     if (remoteByName.TryGetValue(remoteName, out var remote))
                     {
-                        var node = new RemoteRepoNode(this, remoteName, remotesManager, remote, true);
+                        RemoteRepoNode node = new(this, remoteName, remotesManager, remote, true);
                         enabledRemoteRepoNodes.Add(node);
                     }
                 }
@@ -126,7 +126,7 @@ namespace GitUI.BranchTreePanel
                 var disabledRemotes = remotesManager.GetDisabledRemotes();
                 if (disabledRemotes.Count > 0)
                 {
-                    var disabledRemoteRepoNodes = new List<RemoteRepoNode>();
+                    List<RemoteRepoNode> disabledRemoteRepoNodes = new();
                     foreach (var remote in disabledRemotes.OrderBy(remote => remote.Name))
                     {
                         var node = new RemoteRepoNode(this, remote.Name, remotesManager, remote, false);

@@ -916,7 +916,7 @@ namespace GitUI.CommandsDialogs
             };
 
             // Local
-            var btnKeepLocal = new TaskDialogCommandLink("KeepLocal", null, keepLocalButtonText);
+            TaskDialogCommandLink btnKeepLocal = new("KeepLocal", null, keepLocalButtonText);
             btnKeepLocal.Click += (s, e) =>
             {
                 _solveMergeConflictDialogResult = ConflictResolutionPreference.KeepLocal;
@@ -924,7 +924,7 @@ namespace GitUI.CommandsDialogs
             };
 
             // Remote
-            var btnKeepRemote = new TaskDialogCommandLink("KeepRemote", null, keepRemoteButtonText);
+            TaskDialogCommandLink btnKeepRemote = new("KeepRemote", null, keepRemoteButtonText);
             btnKeepRemote.Click += (s, e) =>
             {
                 _solveMergeConflictDialogResult = ConflictResolutionPreference.KeepRemote;
@@ -932,7 +932,7 @@ namespace GitUI.CommandsDialogs
             };
 
             // Base
-            var btnKeepBase = new TaskDialogCommandLink("KeepBase", null, keepBaseButtonText);
+            TaskDialogCommandLink btnKeepBase = new("KeepBase", null, keepBaseButtonText);
             btnKeepBase.Click += (s, e) =>
             {
                 _solveMergeConflictDialogResult = ConflictResolutionPreference.KeepBase;
@@ -1020,7 +1020,7 @@ namespace GitUI.CommandsDialogs
                             break;
                         case ConflictResolutionPreference.KeepBase:
                             // delete
-                            var args = new GitArgumentBuilder("rm")
+                            GitArgumentBuilder args = new("rm")
                             {
                                 "--",
                                 item.Filename.QuoteNE()
@@ -1078,7 +1078,7 @@ namespace GitUI.CommandsDialogs
                     {
                         case ConflictResolutionPreference.KeepLocal:
                             // delete
-                            var args = new GitArgumentBuilder("rm")
+                            GitArgumentBuilder args = new("rm")
                             {
                                 "--",
                                 item.Filename.QuoteNE()
@@ -1150,7 +1150,7 @@ namespace GitUI.CommandsDialogs
                             break;
                         case ConflictResolutionPreference.KeepRemote:
                             // remote
-                            var args = new GitArgumentBuilder("rm")
+                            GitArgumentBuilder args = new("rm")
                             {
                                 "--",
                                 item.Filename.QuoteNE()
@@ -1452,7 +1452,7 @@ namespace GitUI.CommandsDialogs
 
         private void StageFile(string filename)
         {
-            var args = new GitArgumentBuilder("add")
+            GitArgumentBuilder args = new("add")
             {
                 "--",
                 filename.QuoteNE()

@@ -111,7 +111,7 @@ namespace GitCommandsTests
             [Test]
             public void LoadGitCommitTemplate_real_filesystem()
             {
-                using var helper = new GitModuleTestHelper();
+                using GitModuleTestHelper helper = new();
                 var manager = new CommitTemplateManager(() => helper.Module);
 
                 const string content = "line1\r\nline2\rline3\nline4";

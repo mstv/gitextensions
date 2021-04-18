@@ -251,7 +251,7 @@ namespace GitExtensions.Plugins.GitImpact
                     return;
                 }
 
-                using var font = new Font("Arial", LinesFontSize);
+                using Font font = new("Arial", LinesFontSize);
                 Brush brush = Brushes.White;
 
                 foreach (var (point, size) in _lineLabels[author])
@@ -267,7 +267,7 @@ namespace GitExtensions.Plugins.GitImpact
         {
             lock (_dataLock)
             {
-                using var font = new Font("Arial", WeekFontSize);
+                using Font font = new("Arial", WeekFontSize);
                 Brush brush = Brushes.Gray;
 
                 foreach (var (point, date) in _weekLabels)
@@ -307,7 +307,7 @@ namespace GitExtensions.Plugins.GitImpact
                     {
                         // Calculate week-author-rectangle
                         int height = Math.Max(1, (int)Math.Round(Math.Pow(Math.Log(data.ChangedLines), 1.5) * 4));
-                        var rc = new Rectangle(x, y, BlockWidth, height);
+                        Rectangle rc = new(x, y, BlockWidth, height);
 
                         // Add rectangle to temporary list
                         if (!author_points_dict.ContainsKey(author))

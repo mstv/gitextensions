@@ -76,7 +76,7 @@ namespace GitExtensions.Plugins.GitHub3
             string note = $"Token for Git Extensions on {Environment.MachineName} at {DateTime.Now:g}";
             string githubScopesJson = "{\"scopes\":[\"repo\", \"public_repo\"],\"note\":\"" + note + "\"}";
 
-            using var request = new HttpRequestMessage(new HttpMethod("POST"), _authorizationApiUrl);
+            using HttpRequestMessage request = new(new HttpMethod("POST"), _authorizationApiUrl);
             var base64Authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{login}:{password}"));
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64Authorization);
             request.Headers.Add("User-Agent", "GitExtensions");

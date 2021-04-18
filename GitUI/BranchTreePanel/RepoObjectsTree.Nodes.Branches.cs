@@ -381,11 +381,11 @@ namespace GitUI.BranchTreePanel
 
                 #endregion
 
-                var nodes = new Nodes(this);
+                Nodes nodes = new(this);
                 var aheadBehindData = _aheadBehindDataProvider?.GetData();
 
                 var currentBranch = Module.GetSelectedBranch();
-                var pathToNode = new Dictionary<string, BaseBranchNode>();
+                Dictionary<string, BaseBranchNode> pathToNode = new();
                 foreach (IGitRef branch in branches)
                 {
                     token.ThrowIfCancellationRequested();
