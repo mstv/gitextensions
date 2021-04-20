@@ -24,7 +24,7 @@ namespace GitCommands.Git
                 return false;
             }
 
-            Regex sha1Match = new(@"^\(.* (?<sha1>.*)\)$").Match(text);
+            Match sha1Match = new Regex(@"^\(.* (?<sha1>.*)\)$").Match(text);
             if (!sha1Match.Success)
             {
                 return false;

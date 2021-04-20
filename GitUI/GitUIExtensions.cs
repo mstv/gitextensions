@@ -74,7 +74,7 @@ namespace GitUI
                         fileViewer.GetExtraDiffArguments(isRangeDiff: true));
 
                 // Try set highlighting from first found filename
-                Regex match = new(@"\n\s*(@@|##)\s+(?<file>[^#:\n]+)").Match(output ?? "");
+                Match match = new Regex(@"\n\s*(@@|##)\s+(?<file>[^#:\n]+)").Match(output ?? "");
                 var filename = match.Groups["file"].Success ? match.Groups["file"].Value : item.Item.Name;
 
                 return fileViewer.ViewRangeDiffAsync(filename, output ?? defaultText);

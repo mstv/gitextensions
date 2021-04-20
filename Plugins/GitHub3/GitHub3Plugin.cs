@@ -117,7 +117,7 @@ namespace GitExtensions.Plugins.GitHub3
         {
             if (string.IsNullOrEmpty(GitHubLoginInfo.OAuthToken))
             {
-                Uri authorizationApiUrl = new(new Uri(GitHubApiEndpoint), GitHubAuthorizationRelativeUrl).ToString();
+                string authorizationApiUrl = new Uri(new Uri(GitHubApiEndpoint), GitHubAuthorizationRelativeUrl).ToString();
                 using GitHubCredentialsPrompt gitHubCredentialsPrompt = new(authorizationApiUrl);
 
                 gitHubCredentialsPrompt.ShowDialog(args.OwnerForm);

@@ -129,7 +129,7 @@ namespace GitUI.Editor.Diff
 
         public void DisplayLineNumFor(string diff)
         {
-            DiffLineNumAnalyzer result = new().Analyze(diff);
+            DiffLinesInfo result = new DiffLineNumAnalyzer().Analyze(diff);
             _diffLines = result.DiffLines;
             MaxLineNumber = result.MaxLineNumber;
         }
