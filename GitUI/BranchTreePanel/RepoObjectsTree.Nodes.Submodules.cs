@@ -514,7 +514,7 @@ namespace GitUI.BranchTreePanel
                 Validates.NotNull(result.TopProject);
 
                 // Add top-module node, and move children of root to it
-                var topModuleNode = new SubmoduleNode(
+                SubmoduleNode topModuleNode = new(
                     this,
                     result.TopProject,
                     result.TopProject.Bold,

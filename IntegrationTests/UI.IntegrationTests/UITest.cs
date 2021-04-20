@@ -86,7 +86,7 @@ namespace GitExtensions.UITests
             RunForm<Form>(
                 showForm: () =>
                 {
-                    var form = new Form { Text = $"Test {typeof(T).Name}" };
+                    Form form = new() { Text = $"Test {typeof(T).Name}" };
                     control = createControl(form);
                     Assert.True(form.Controls.Contains(control));
                     Application.Run(form);

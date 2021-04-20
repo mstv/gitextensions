@@ -102,7 +102,7 @@ namespace GitUI.CommandsDialogs.SubmodulesDialog
                 return Array.Empty<string>();
             }
 
-            var gitArguments = new GitArgumentBuilder("ls-remote") { "--heads", url.ToPosixPath().Quote() };
+            GitArgumentBuilder gitArguments = new("ls-remote") { "--heads", url.ToPosixPath().Quote() };
             var heads = gitExecutable.GetOutput(gitArguments);
             return heads.LazySplit('\n', StringSplitOptions.RemoveEmptyEntries)
                         .Select(head =>

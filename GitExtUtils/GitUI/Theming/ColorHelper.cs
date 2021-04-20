@@ -248,7 +248,7 @@ namespace GitExtUtils.GitUI.Theming
             Func<double, double>? l = null)
         {
             HslColor hsl = new(c);
-            var transformed = new HslColor(
+            HslColor transformed = new(
                 h?.Invoke(hsl.H) ?? hsl.H,
                 s?.Invoke(hsl.S) ?? hsl.S,
                 l?.Invoke(hsl.L) ?? hsl.L);

@@ -53,7 +53,7 @@ namespace GitExtensions.Plugins.ReleaseNotesGenerator
 
             Match m;
 
-            var r = new Regex(
+            Regex r = new(
                 "([a-zA-Z]+):(.+?)[\r\n]",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 

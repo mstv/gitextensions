@@ -97,7 +97,7 @@ namespace GitCommands.ExternalLinks
 
         private static IEnumerable<ExternalLink> ParseRevision(GitRevision revision, ExternalLinkDefinition definition, Match? remoteMatch)
         {
-            var links = new List<IEnumerable<ExternalLink>>();
+            List<IEnumerable<ExternalLink>> links = new();
 
             if (definition.SearchInParts.Contains(ExternalLinkDefinition.RevisionPart.LocalBranches))
             {

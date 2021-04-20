@@ -20,7 +20,7 @@ namespace GitUI.Avatars
         /// </remarks>
         public static Func<TInput, string> Create<TInput>(string template, Func<string, Func<TInput, string?>> valueMapperProvider)
         {
-            var formatParts = new List<Action<StringBuilder, TInput>>();
+            List<Action<StringBuilder, TInput>> formatParts = new();
             var position = 0;
 
             while (true)

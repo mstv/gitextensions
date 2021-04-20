@@ -24,7 +24,7 @@ namespace GitUITests.UserControls
         [SetUp]
         public void SetUp()
         {
-            var blameCommit1 = new GitBlameCommit(
+            GitBlameCommit blameCommit1 = new(
                 ObjectId.Random(),
                 "author1",
                 "author1@mail.fake",
@@ -37,7 +37,7 @@ namespace GitUITests.UserControls
                 "test summary commit1",
                 "fileName.txt");
 
-            var blameCommit2 = new GitBlameCommit(
+            GitBlameCommit blameCommit2 = new(
                 ObjectId.Random(),
                 "author2",
                 "author2@mail.fake",

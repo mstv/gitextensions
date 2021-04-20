@@ -40,7 +40,7 @@ namespace GitCommands.Settings
 
         protected override void WriteSettings(string fileName)
         {
-            using var xtw = new XmlTextWriter(fileName, Encoding.UTF8) { Formatting = Formatting.Indented };
+            using XmlTextWriter xtw = new(fileName, Encoding.UTF8) { Formatting = Formatting.Indented };
             xtw.WriteStartDocument();
             xtw.WriteStartElement("dictionary");
             _encodedNameMap.WriteXml(xtw);

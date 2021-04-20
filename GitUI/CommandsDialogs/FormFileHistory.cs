@@ -265,7 +265,7 @@ namespace GitUI.CommandsDialogs
                     StringBuilder listOfFileNames = new(fileName.Quote());
 
                     // keep a set of the file names already seen
-                    var setOfFileNames = new HashSet<string?> { fileName };
+                    HashSet<string?> setOfFileNames = new() { fileName };
 
                     var lines = Module.GitExecutable.GetOutputLines(args, outputEncoding: GitModule.LosslessEncoding);
 

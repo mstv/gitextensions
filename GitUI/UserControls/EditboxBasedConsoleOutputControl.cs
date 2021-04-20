@@ -128,7 +128,7 @@ namespace GitUI.UserControls
                     startInfo.EnvironmentVariables.Add(name, value);
                 }
 
-                var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+                Process process = new() { StartInfo = startInfo, EnableRaisingEvents = true };
 
                 process.OutputDataReceived += (sender, args) => FireDataReceived(new TextEventArgs((args.Data ?? "") + '\n'));
                 process.ErrorDataReceived += (sender, args) => FireDataReceived(new TextEventArgs((args.Data ?? "") + '\n'));

@@ -40,7 +40,7 @@ namespace GitUITests.CommandsDialogs
         public void RememberFile_ShouldEnableFirstRemember_WorkTree(bool isSubmodule, bool isDeleted, bool isSecondRev, bool result)
         {
             GitRevision rev = new(ObjectId.Random());
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: new GitRevision(ObjectId.WorkTreeId),
                 item: new GitItemStatus("file1")
@@ -84,7 +84,7 @@ namespace GitUITests.CommandsDialogs
         public void RememberFile_ShouldEnableSecondRemember_WorkTree(bool isSubmodule, bool isDeleted, bool isSecondRev, bool result)
         {
             GitRevision rev = new(ObjectId.Random());
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: new GitRevision(ObjectId.WorkTreeId),
                 item: new GitItemStatus("file1")
@@ -164,7 +164,7 @@ namespace GitUITests.CommandsDialogs
             GitRevision rev = new(ObjectId.Random());
             GitRevision index = new(ObjectId.IndexId);
             const string name = "File";
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: index,
                 item: new GitItemStatus(name) { TreeGuid = ObjectId.Random() });

@@ -138,7 +138,7 @@ Current Branch:
                 return;
             }
 
-            var rm = new System.Resources.ResourceManager("GitUI.Properties.Images", Assembly.GetExecutingAssembly());
+            System.Resources.ResourceManager rm = new("GitUI.Properties.Images", Assembly.GetExecutingAssembly());
 
             // dummy request; for some strange reason the ResourceSets are not loaded untill after the first object request... bug?
             rm.GetObject("dummy");

@@ -297,7 +297,7 @@ namespace GitExtensions.Plugins.DeleteUnusedBranches
 
             IsRefreshing = true;
             var curBranch = _gitUiCommands.GitModule.GetSelectedBranch();
-            var context = new RefreshContext(
+            RefreshContext context = new(
                 _gitCommands,
                 IncludeRemoteBranches.Checked,
                 includeUnmergedBranches.Checked,

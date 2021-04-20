@@ -1308,7 +1308,7 @@ namespace GitUI.CommandsDialogs
 
             _NO_TRANSLATE_WorkingDir.DropDownItems.Add(new ToolStripSeparator());
 
-            var mnuOpenLocalRepository = new ToolStripMenuItem(openToolStripMenuItem.Text, openToolStripMenuItem.Image) { ShortcutKeys = openToolStripMenuItem.ShortcutKeys };
+            ToolStripMenuItem mnuOpenLocalRepository = new(openToolStripMenuItem.Text, openToolStripMenuItem.Image) { ShortcutKeys = openToolStripMenuItem.ShortcutKeys };
             mnuOpenLocalRepository.Click += OpenToolStripMenuItemClick;
             _NO_TRANSLATE_WorkingDir.DropDownItems.Add(mnuOpenLocalRepository);
 

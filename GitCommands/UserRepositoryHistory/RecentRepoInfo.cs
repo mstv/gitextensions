@@ -66,7 +66,7 @@ namespace GitCommands.UserRepositoryHistory
 
         public void SplitRecentRepos(IList<Repository> recentRepositories, List<RecentRepoInfo> mostRecentRepoList, List<RecentRepoInfo> lessRecentRepoList)
         {
-            var orderedRepos = new SortedList<string, List<RecentRepoInfo>>();
+            SortedList<string, List<RecentRepoInfo>> orderedRepos = new();
             List<RecentRepoInfo> mostRecentRepos = new();
             List<RecentRepoInfo> lessRecentRepos = new();
 

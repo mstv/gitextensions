@@ -1224,7 +1224,7 @@ namespace GitUI.CommandsDialogs
                     };
 
                     // Option 1: there are no staged files, but there are unstaged files. Most probably user forgot to stage them.
-                    var lnkStageAndCommit = new TaskDialogCommandLink("StageAndCommit", Unstaged.IsFilterActive ?
+                    TaskDialogCommandLink lnkStageAndCommit = new("StageAndCommit", Unstaged.IsFilterActive ?
                         _noFilesStagedCommitAllFilteredUnstagedOption.Text : _noFilesStagedCommitAllUnstagedOption.Text);
                     lnkStageAndCommit.Click += (s, e) =>
                     {
@@ -1849,7 +1849,7 @@ namespace GitUI.CommandsDialogs
                 indexRev = new GitRevision(ObjectId.IndexId);
             }
 
-            var workTreeRev = new GitRevision(ObjectId.WorkTreeId) { ParentIds = new[] { ObjectId.IndexId } };
+            GitRevision workTreeRev = new(ObjectId.WorkTreeId) { ParentIds = new[] { ObjectId.IndexId } };
             return (headRev, indexRev, workTreeRev);
         }
 

@@ -283,7 +283,7 @@ namespace ResourceManager.Xliff
 
         public static Dictionary<string, List<Type>> GetTranslatableTypes()
         {
-            var dictionary = new Dictionary<string, List<Type>>();
+            Dictionary<string, List<Type>> dictionary = new();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (!assembly.IsTranslatable())

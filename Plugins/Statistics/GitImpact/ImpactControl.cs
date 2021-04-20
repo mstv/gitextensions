@@ -290,7 +290,7 @@ namespace GitExtensions.Plugins.GitImpact
         {
             int h_max = 0;
             int x = 0;
-            var author_points_dict = new Dictionary<string, List<(Rectangle, int changeCount)>>();
+            Dictionary<string, List<(Rectangle, int changeCount)>> author_points_dict = new();
 
             lock (_dataLock)
             {
@@ -365,7 +365,7 @@ namespace GitExtensions.Plugins.GitImpact
                     {
                         var (unscaledRect, num) = points[i];
 
-                        var rect = new Rectangle(unscaledRect.Left, (int)(unscaledRect.Top * height_factor),
+                        Rectangle rect = new(unscaledRect.Left, (int)(unscaledRect.Top * height_factor),
                             unscaledRect.Width, Math.Max(1, (int)(unscaledRect.Height * height_factor)));
 
                         points[i] = (rect, num);

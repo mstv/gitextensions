@@ -92,7 +92,7 @@ namespace GitExtensions.Plugins.Gource
                 File.Delete(file);
             }
 
-            var args = new GitArgumentBuilder("log") { "--pretty=format:\"%aE|%aN\"" };
+            GitArgumentBuilder args = new("log") { "--pretty=format:\"%aE|%aN\"" };
             var lines = GitUIArgs.GitModule.GitExecutable.GetOutput(args).Split('\n');
 
             var authors = lines.Select(
@@ -145,7 +145,7 @@ namespace GitExtensions.Plugins.Gource
 
         private void WorkingDirBrowseClick(object sender, EventArgs e)
         {
-            using var folderDialog = new FolderBrowserDialog { SelectedPath = WorkingDir.Text };
+            using FolderBrowserDialog folderDialog = new() { SelectedPath = WorkingDir.Text };
             folderDialog.ShowDialog(this);
             WorkingDir.Text = folderDialog.SelectedPath;
         }

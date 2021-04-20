@@ -90,7 +90,7 @@ namespace GitCommands
 
                     byte[] memoryData = Convert.FromBase64String(serializedString.Substring(p + 1));
                     using MemoryStream rs = new(memoryData, 0, length);
-                    var sf = new BinaryFormatter { Binder = new MoveNamespaceDeserializationBinder() };
+                    BinaryFormatter sf = new() { Binder = new MoveNamespaceDeserializationBinder() };
                     commitTemplateItem = (CommitTemplateItem[])sf.Deserialize(rs);
 
                     shouldBeUpdated = true;

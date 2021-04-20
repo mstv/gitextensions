@@ -469,7 +469,7 @@ namespace GitCommands
 
         public bool EditNotes(ObjectId commitId)
         {
-            var arguments = new GitArgumentBuilder("notes") { "edit", commitId };
+            GitArgumentBuilder arguments = new("notes") { "edit", commitId };
             var editor = GetEffectiveSetting("core.editor").ToLower();
             var createWindow = !editor.Contains("gitextensions") && !editor.Contains("notepad");
 
@@ -1041,7 +1041,7 @@ namespace GitCommands
         /// </summary>
         public ObjectId? GetCurrentCheckout()
         {
-            var args = new GitArgumentBuilder("rev-parse") { "HEAD" };
+            GitArgumentBuilder args = new("rev-parse") { "HEAD" };
             var result = _gitExecutable.Execute(args);
 
             return result.ExitCode == 0 && ObjectId.TryParse(result.StandardOutput, offset: 0, out var objectId)
@@ -1187,7 +1187,7 @@ namespace GitCommands
                 yield return null;
             }
 
-            var args = new GitArgumentBuilder("submodule") { "status" };
+            GitArgumentBuilder args = new("submodule") { "status" };
             var lines = _gitExecutable.GetOutputLines(args);
 
             string? lastLine = null;
@@ -2524,7 +2524,7 @@ namespace GitCommands
 
             if (!excludeAssumeUnchangedFiles || !excludeSkipWorktreeFiles)
             {
-                var args = new GitArgumentBuilder("ls-files") { "-v" };
+                GitArgumentBuilder args = new("ls-files") { "-v" };
                 string lsOutput = _gitExecutable.GetOutput(args);
 
                 if (!excludeAssumeUnchangedFiles)
@@ -2707,7 +2707,7 @@ namespace GitCommands
 
         private async Task<string?> GetFileContentsAsync(string? path)
         {
-            var args = new GitArgumentBuilder("show") { $"HEAD:{path.ToPosixPath().Quote()}" };
+            GitArgumentBuilder args = new("show") { $"HEAD:{path.ToPosixPath().Quote()}" };
             var result = await _gitExecutable.ExecuteAsync(args).ConfigureAwaitRunInline();
 
             return result.ExitCode == 0
@@ -2871,7 +2871,7 @@ namespace GitCommands
 
         public RemoteActionResult<IReadOnlyList<IGitRef>> GetRemoteServerRefs(string remote, bool tags, bool branches)
         {
-            var result = new RemoteActionResult<IReadOnlyList<IGitRef>>
+            RemoteActionResult<IReadOnlyList<IGitRef>> result = new()
             {
                 AuthenticationFail = false,
                 HostKeyFail = false,
@@ -3566,7 +3566,7 @@ namespace GitCommands
         public string GetCustomDiffMergeTools(bool isDiff)
         {
             // Note that --gui has no effect here
-            var args = new GitArgumentBuilder(isDiff ? "difftool" : "mergetool") { "--tool-help" };
+            GitArgumentBuilder args = new(isDiff ? "difftool" : "mergetool") { "--tool-help" };
             return _gitExecutable.GetOutput(args);
         }
 
@@ -4125,7 +4125,7 @@ namespace GitCommands
 
         public bool HasLfsSupport()
         {
-            var args = new GitArgumentBuilder("lfs") { "version" };
+            GitArgumentBuilder args = new("lfs") { "version" };
             return _gitExecutable.RunCommand(args);
         }
 

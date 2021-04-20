@@ -213,8 +213,8 @@ namespace JenkinsIntegration
         {
             try
             {
-                var allBuildInfos = new List<JoinableTask<ResponseInfo>>();
-                var latestBuildInfos = new List<JoinableTask<ResponseInfo>>();
+                List<JoinableTask<ResponseInfo>> allBuildInfos = new();
+                List<JoinableTask<ResponseInfo>> latestBuildInfos = new();
 
                 foreach (var projectUrl in _lastProjectBuildTime.Keys)
                 {

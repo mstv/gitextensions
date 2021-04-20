@@ -346,7 +346,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
             var imageVerticalPadding = DpiUtil.Scale(6);
             var textHorizontalPadding = DpiUtil.Scale(4);
             var imageSize = e.CellBounds.Height - imageVerticalPadding - imageVerticalPadding;
-            var imageRect = new Rectangle(
+            Rectangle imageRect = new(
                 messageBounds.Left + offset,
                 e.CellBounds.Top + imageVerticalPadding,
                 imageSize,

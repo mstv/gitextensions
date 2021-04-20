@@ -761,7 +761,7 @@ namespace GitUI.CommandsDialogs
                 return;
             }
 
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: DiffFiles.SelectedItem.SecondRevision,
                 secondRev: DiffFiles.SelectedItem.FirstRevision,
                 item: DiffFiles.SelectedItem.Item);

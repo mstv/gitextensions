@@ -579,7 +579,7 @@ namespace GitCommands.Patches
 
         public static Chunk FromNewFile(GitModule module, string fileText, int selectionPosition, int selectionLength, bool reset, byte[] filePreamble, Encoding fileContentEncoding)
         {
-            var result = new Chunk { _startLine = 0 };
+            Chunk result = new() { _startLine = 0 };
 
             int currentPos = 0;
             string gitEol = module.GetEffectiveSetting("core.eol");

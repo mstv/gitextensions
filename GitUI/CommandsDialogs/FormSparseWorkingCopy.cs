@@ -189,12 +189,12 @@ namespace GitUI.CommandsDialogs
         private static Panel CreateViewRules(FormSparseWorkingCopyViewModel sparse, ToolTip tooltip, IGitUICommandsSource commandsSource)
         {
             // Label
-            var label1 = new Label { AutoSize = true, Text = Globalized.Strings.SpecifyTheRulesForIncludingOrExcludingFilesAndDirectories.Text, Dock = DockStyle.Top, Padding = new Padding(10, 5, 10, 0) };
-            var label2 = new Label { AutoSize = true, Text = Globalized.Strings.SpecifyTheRulesForIncludingOrExcludingFilesAndDirectoriesLine2.Text, Dock = DockStyle.Top, Padding = new Padding(25, 3, 10, 3), ForeColor = SystemColors.GrayText };
+            Label label1 = new() { AutoSize = true, Text = Globalized.Strings.SpecifyTheRulesForIncludingOrExcludingFilesAndDirectories.Text, Dock = DockStyle.Top, Padding = new Padding(10, 5, 10, 0) };
+            Label label2 = new() { AutoSize = true, Text = Globalized.Strings.SpecifyTheRulesForIncludingOrExcludingFilesAndDirectoriesLine2.Text, Dock = DockStyle.Top, Padding = new Padding(25, 3, 10, 3), ForeColor = SystemColors.GrayText };
             sparse.PropertyChanged += delegate { label1.Visible = label2.Visible = sparse.IsSparseCheckoutEnabled; };
 
             // Text editor
-            var editor = new FileViewer { Dock = DockStyle.Fill, UICommandsSource = commandsSource, IsReadOnly = false };
+            FileViewer editor = new() { Dock = DockStyle.Fill, UICommandsSource = commandsSource, IsReadOnly = false };
             editor.TextLoaded += (sender, args) => sparse.SetRulesTextAsOnDisk(editor.GetText());
             try
             {
@@ -214,7 +214,7 @@ namespace GitUI.CommandsDialogs
             Control separator = CreateViewSeparator(DockStyle.Top);
             sparse.PropertyChanged += delegate { editor.Visible = separator.Visible = sparse.IsSparseCheckoutEnabled; };
 
-            var panel = new Panel { Margin = Padding.Empty, Padding = Padding.Empty, Controls = { editor, separator, label2, label1 }, AutoSize = true, Dock = DockStyle.Fill };
+            Panel panel = new() { Margin = Padding.Empty, Padding = Padding.Empty, Controls = { editor, separator, label2, label1 }, AutoSize = true, Dock = DockStyle.Fill };
 
             return panel;
         }

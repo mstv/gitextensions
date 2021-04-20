@@ -306,7 +306,7 @@ namespace GitExtensions.Plugins.Bitbucket
 
             Validates.NotNull(_settings);
 
-            var getCommitsInBetween = new GetInBetweenCommitsRequest(
+            GetInBetweenCommitsRequest getCommitsInBetween = new(
                 (Repository)ddlRepositorySource.SelectedValue,
                 (Repository)ddlRepositoryTarget.SelectedValue,
                 (Commit)ddlBranchSource.Tag,

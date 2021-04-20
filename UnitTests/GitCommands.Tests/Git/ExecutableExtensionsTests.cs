@@ -98,7 +98,7 @@ namespace GitCommandsTests.Git
             // 9: 'reset -- '
             // 1: ' ' added after second Add in ArgumentBuilder
             var appLength = _appPath.Length + 3;
-            var builder = new ArgumentBuilder() { "reset --" };
+            ArgumentBuilder builder = new() { "reset --" };
             var len = builder.ToString().Length;
             var args = builder.BuildBatchArguments(new string[]
             {
@@ -121,7 +121,7 @@ namespace GitCommandsTests.Git
         public void RunBatchCommand_throw_when_cmd_exceed_max_length(int arg1Len, int arg2Len,
             int maxLength)
         {
-            var args = new ArgumentBuilder() { "reset --" }
+            ArgumentBuilder args = new() { "reset --" }
                 .BuildBatchArguments(new string[]
                 {
                     GenerateStringByLength(Math.Max(1, arg1Len - _appPath.Length - 4)),

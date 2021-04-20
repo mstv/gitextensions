@@ -180,7 +180,7 @@ namespace GitUI
                 statuses: commonBaseToAandB));
 
             // Add rangeDiff as a separate group (range is not the same as diff with artificial commits)
-            var statuses = new List<GitItemStatus> { new GitItemStatus(name: TranslatedStrings.DiffRange) { IsRangeDiff = true } };
+            List<GitItemStatus> statuses = new() { new GitItemStatus(name: TranslatedStrings.DiffRange) { IsRangeDiff = true } };
             var first = firstRev.ObjectId == firstRevHead ? firstRev : new GitRevision(firstRevHead);
             var selected = selectedRev.ObjectId == selectedRevHead ? selectedRev : new GitRevision(selectedRevHead);
             var (baseToFirstCount, baseToSecondCount) = module.GetCommitRangeDiffCount(first.ObjectId, selected.ObjectId);

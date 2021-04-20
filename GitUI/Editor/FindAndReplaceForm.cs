@@ -271,8 +271,7 @@ namespace GitUI
                     offset = range.Offset + range.Length;
                     count++;
 
-                    var m = new TextMarker(range.Offset, range.Length,
-                                           TextMarkerType.SolidBlock, Color.Yellow, Color.Black);
+                    TextMarker m = new(range.Offset, range.Length, TextMarkerType.SolidBlock, Color.Yellow, Color.Black);
                     group.AddMarker(m);
                 }
 

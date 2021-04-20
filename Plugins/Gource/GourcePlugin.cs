@@ -188,7 +188,7 @@ namespace GitExtensions.Plugins.Gource
             // classes throw exceptions upon error
             try
             {
-                var webClient = new WebClient { Proxy = WebRequest.DefaultWebProxy };
+                WebClient webClient = new() { Proxy = WebRequest.DefaultWebProxy };
                 webClient.Proxy.Credentials = CredentialCache.DefaultCredentials;
 
                 // Once the WebResponse object has been retrieved,
@@ -237,7 +237,7 @@ namespace GitExtensions.Plugins.Gource
         {
             try
             {
-                var webClient = new WebClient { Proxy = WebRequest.DefaultWebProxy };
+                WebClient webClient = new() { Proxy = WebRequest.DefaultWebProxy };
                 webClient.Proxy.Credentials = CredentialCache.DefaultCredentials;
                 webClient.Encoding = Encoding.UTF8;
 

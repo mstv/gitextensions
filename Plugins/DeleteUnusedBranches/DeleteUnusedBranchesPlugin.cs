@@ -42,7 +42,7 @@ namespace GitExtensions.Plugins.DeleteUnusedBranches
 
         public override bool Execute(GitUIEventArgs args)
         {
-            var settings = new DeleteUnusedBranchesFormSettings(
+            DeleteUnusedBranchesFormSettings settings = new(
                 _daysOlderThan.ValueOrDefault(Settings),
                 _mergedInBranch.ValueOrDefault(Settings),
                 _deleteRemoteBranchesFromFlag.ValueOrDefault(Settings),

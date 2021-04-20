@@ -87,7 +87,7 @@ namespace GitExtensions.Plugins.GitFlow
                 btnPull.Enabled = btnPublish.Enabled = remotes.Any();
 
                 cbType.DataSource = BranchTypes;
-                var types = new List<string> { string.Empty };
+                List<string> types = new() { string.Empty };
                 types.AddRange(BranchTypes);
                 cbManageType.DataSource = types;
 
@@ -146,7 +146,7 @@ namespace GitExtensions.Plugins.GitFlow
 
         private IReadOnlyList<string> GetBranches(string typeBranch)
         {
-            var args = new GitArgumentBuilder("flow") { typeBranch };
+            GitArgumentBuilder args = new("flow") { typeBranch };
             var result = _gitUiCommands.GitModule.GitExecutable.Execute(args);
 
             if (result.ExitCode != 0 || result.StandardOutput is null)
@@ -394,7 +394,7 @@ namespace GitExtensions.Plugins.GitFlow
 
         private void DisplayHead()
         {
-            var args = new GitArgumentBuilder("symbolic-ref") { "HEAD" };
+            GitArgumentBuilder args = new("symbolic-ref") { "HEAD" };
             var head = _gitUiCommands.GitModule.GitExecutable.GetOutput(args).Trim('*', ' ', '\n', '\r');
             lblHead.Text = head;
 

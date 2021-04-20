@@ -185,7 +185,7 @@ namespace GitCommands.Submodules
         /// <param name="noBranchText">text with no branches.</param>
         private SubmoduleInfoResult GetSuperProjectRepositorySubmodulesStructure(GitModule currentModule, string noBranchText)
         {
-            var result = new SubmoduleInfoResult { Module = currentModule, CurrentSubmoduleStatus = null };
+            SubmoduleInfoResult result = new() { Module = currentModule, CurrentSubmoduleStatus = null };
 
             IGitModule topProject = currentModule.GetTopModule();
             bool isCurrentTopProject = currentModule.SuperprojectModule is null;

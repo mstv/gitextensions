@@ -655,7 +655,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormStash(this) { ManageStashes = manageStashes };
+                using FormStash form = new(this) { ManageStashes = manageStashes };
                 form.ShowDialog(owner);
                 return true;
             }
@@ -1296,7 +1296,7 @@ namespace GitUI
             WrapRepoHostingCall(TranslatedStrings.ViewPullRequest, gitHoster,
                                 gh =>
                                 {
-                                    var frm = new ViewPullRequestsForm(this, gitHoster) { ShowInTaskbar = true };
+                                    ViewPullRequestsForm frm = new(this, gitHoster) { ShowInTaskbar = true };
                                     frm.Show(owner);
                                 });
         }

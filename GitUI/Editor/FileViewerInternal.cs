@@ -132,7 +132,7 @@ namespace GitUI.Editor
                 {
                     Color highlightColor = AppColor.HighlightAllOccurences.GetThemeColor();
 
-                    var textMarker = new TextMarker(indexMatch,
+                    TextMarker textMarker = new(indexMatch,
                         word.Length, TextMarkerType.SolidBlock, highlightColor,
                         ColorHelper.GetForeColorForBackColor(highlightColor));
 

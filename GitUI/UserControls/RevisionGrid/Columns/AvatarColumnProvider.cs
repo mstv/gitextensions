@@ -76,7 +76,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                     .FileAndForget();
             }
 
-            var rect = new Rectangle(
+            Rectangle rect = new(
                 e.CellBounds.Left + padding,
                 e.CellBounds.Top + padding,
                 imageSize,

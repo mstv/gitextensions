@@ -92,7 +92,7 @@ namespace GitExtensions.Plugins.JiraCommitHintPlugin
             _jqlQuerySettings.CustomControl = new TextBox();
             yield return _jqlQuerySettings;
 
-            var queryHelperLink = new LinkLabel { Text = QueryHelperLinkText.Text };
+            LinkLabel queryHelperLink = new() { Text = QueryHelperLinkText.Text };
             queryHelperLink.Click += QueryHelperLink_Click;
             yield return new PseudoSetting(queryHelperLink);
 

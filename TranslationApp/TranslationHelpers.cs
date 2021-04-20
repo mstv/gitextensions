@@ -60,7 +60,7 @@ namespace TranslationApp
 
         public static IDictionary<string, List<TranslationItemWithCategory>> GetItemsDictionary(IDictionary<string, TranslationFile> translations)
         {
-            var items = new Dictionary<string, List<TranslationItemWithCategory>>();
+            Dictionary<string, List<TranslationItemWithCategory>> items = new();
             foreach (var (key, file) in translations)
             {
                 var list = from item in file.TranslationCategories

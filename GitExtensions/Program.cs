@@ -269,7 +269,7 @@ namespace GitExtensions
                                 if (DialogResult.OK.Equals(MessageBox.Show(string.Format("Files have been deleted.{0}{0}Would you like to attempt to restart Git Extensions?", Environment.NewLine), "Configuration Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Question)))
                                 {
                                     var args = Environment.GetCommandLineArgs();
-                                    var p = new System.Diagnostics.Process { StartInfo = { FileName = args[0] } };
+                                    Process p = new() { StartInfo = { FileName = args[0] } };
                                     if (args.Length > 1)
                                     {
                                         args[0] = "";

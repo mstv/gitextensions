@@ -31,7 +31,7 @@ namespace GitUI
             var backgroundHeight = textSize.Height + paddingTopBottom + paddingTopBottom - 1;
             var outerMarginTopBottom = (bounds.Height - backgroundHeight) / 2;
 
-            var rect = new Rectangle(
+            Rectangle rect = new(
                 bounds.X + offset,
                 bounds.Y + outerMarginTopBottom,
                 Math.Min(bounds.Width - offset, textSize.Width + arrowWidth + paddingLeftRight + paddingLeftRight - 1),
@@ -49,7 +49,7 @@ namespace GitUI
                 rect,
                 radius: 3, arrowType, dashedLine);
 
-            var textBounds = new Rectangle(
+            Rectangle textBounds = new(
                 rect.X + arrowWidth + paddingLeftRight,
                 rect.Y + paddingTopBottom - 1,
                 Math.Min(bounds.Width - offset - paddingLeftRight - paddingLeftRight, textSize.Width),

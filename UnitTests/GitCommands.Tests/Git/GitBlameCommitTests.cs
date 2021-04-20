@@ -27,7 +27,7 @@ namespace GitCommandsTests.Git
             str.AppendLine();
             str.Append("FileName: fileName.txt");
 
-            var commit = new GitBlameCommit(
+            GitBlameCommit commit = new(
                 commitHash,
                 "Author",
                 "author@authormail.com",

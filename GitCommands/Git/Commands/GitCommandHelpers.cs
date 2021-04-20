@@ -520,7 +520,7 @@ namespace GitCommands.Git.Commands
 
         public static ArgumentString GetAllChangedFilesCmd(bool excludeIgnoredFiles, UntrackedFilesMode untrackedFiles, IgnoreSubmodulesMode ignoreSubmodules = IgnoreSubmodulesMode.None, bool noLocks = false)
         {
-            var args = new GitArgumentBuilder("status", gitOptions:
+            GitArgumentBuilder args = new("status", gitOptions:
                 noLocks && GitVersion.Current.SupportNoOptionalLocks
                     ? (ArgumentString)"--no-optional-locks"
                     : default)

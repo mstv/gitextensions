@@ -90,14 +90,14 @@ namespace GitExtensions.Plugins.Bitbucket
             catch (JsonReaderException)
             {
                 MessageBox.Show(jsonString, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                var errorResponse = new BitbucketResponse<T> { Success = false };
+                BitbucketResponse<T> errorResponse = new() { Success = false };
                 return errorResponse;
             }
 
             if (json["errors"] is not null)
             {
                 List<string> messages = new();
-                var errorResponse = new BitbucketResponse<T> { Success = false };
+                BitbucketResponse<T> errorResponse = new() { Success = false };
                 foreach (var error in json["errors"])
                 {
                     StringBuilder sb = new();

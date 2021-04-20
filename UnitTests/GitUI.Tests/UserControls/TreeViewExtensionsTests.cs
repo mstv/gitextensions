@@ -80,7 +80,7 @@ namespace GitUITests.UserControls
         [Test]
         public void RestoreExpandedNodesState_should_restore_one_node()
         {
-            var expandedNodes = new HashSet<string> { @"Root\B" };
+            HashSet<string> expandedNodes = new() { @"Root\B" };
             _root.RestoreExpandedNodesState(expandedNodes);
 
             var expandedNodesPost = _root.GetExpandedNodesState();
