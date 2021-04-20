@@ -117,11 +117,11 @@ namespace GitUITests
             var threadCount = Math.Max(2, logicalProcessorCount);
 
             using CancellationTokenSequence sequence = new();
-            using var barrier = new Barrier(threadCount);
-            using var countdown = new CountdownEvent(loopCount * threadCount);
+            using Barrier barrier = new(threadCount);
+            using CountdownEvent countdown = new(loopCount * threadCount);
             var completedCount = 0;
 
-            var completionTokenSource = new CancellationTokenSource();
+            CancellationTokenSource completionTokenSource = new();
             var completionToken = completionTokenSource.Token;
             var winnerByIndex = new int[threadCount];
 

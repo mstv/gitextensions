@@ -268,7 +268,7 @@ namespace GitUI.SpellChecker
 
                 ContextMenuStrip toolStripDropDown = new();
 
-                var noDicToolStripMenuItem = new ToolStripMenuItem("None");
+                ToolStripMenuItem noDicToolStripMenuItem = new("None");
                 noDicToolStripMenuItem.Click += DicToolStripMenuItemClick;
                 if (Settings.Dictionary == "None")
                 {

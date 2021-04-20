@@ -1662,13 +1662,13 @@ namespace GitUI
             SetEnabled(bisectSeparator, inTheMiddleOfBisect);
 
             ContextMenuStrip deleteTagDropDown = new();
-            var deleteBranchDropDown = new ContextMenuStrip();
-            var checkoutBranchDropDown = new ContextMenuStrip();
-            var mergeBranchDropDown = new ContextMenuStrip();
-            var renameDropDown = new ContextMenuStrip();
+            ContextMenuStrip deleteBranchDropDown = new();
+            ContextMenuStrip checkoutBranchDropDown = new();
+            ContextMenuStrip mergeBranchDropDown = new();
+            ContextMenuStrip renameDropDown = new();
 
             var revision = LatestSelectedRevision;
-            var gitRefListsForRevision = new GitRefListsForRevision(revision);
+            GitRefListsForRevision gitRefListsForRevision = new(revision);
             _rebaseOnTopOf = null;
 
             foreach (var head in gitRefListsForRevision.AllTags)

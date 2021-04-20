@@ -153,7 +153,7 @@ namespace GitUI.BuildServerIntegration
                             byte[] unprotectedData = ProtectedData.Unprotect(protectedData, null,
                                 DataProtectionScope.CurrentUser);
                             using MemoryStream memoryStream = new(unprotectedData);
-                            var credentialsConfig = new ConfigFile("", false);
+                            ConfigFile credentialsConfig = new("", false);
 
                             using (var textReader = new StreamReader(memoryStream, Encoding.UTF8))
                             {

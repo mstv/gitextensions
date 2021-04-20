@@ -490,7 +490,7 @@ namespace GitUI.BranchTreePanel
 
                 // Now build the tree
                 DummyNode rootNode = new();
-                var nodesInTree = new HashSet<Node>();
+                HashSet<Node> nodesInTree = new();
                 foreach (var node in submoduleNodes)
                 {
                     Node parentNode = rootNode;

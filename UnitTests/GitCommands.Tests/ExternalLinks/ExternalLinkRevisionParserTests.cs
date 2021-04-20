@@ -137,8 +137,8 @@ namespace GitCommandsTests.ExternalLinks
         private static IReadOnlyList<ExternalLinkDefinition> Parse(string xml)
         {
             XmlSerializer serializer = new(typeof(List<ExternalLinkDefinition>));
-            using var stringReader = new StringReader(xml);
-            using var xmlReader = new XmlTextReader(stringReader);
+            using StringReader stringReader = new(xml);
+            using XmlTextReader xmlReader = new(stringReader);
             return serializer.Deserialize(xmlReader) as List<ExternalLinkDefinition>;
         }
 

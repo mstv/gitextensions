@@ -190,7 +190,7 @@ namespace GitExtensions.Plugins.Bitbucket
             Validates.NotNull(_settings);
 
             List<string> list = new();
-            var getBranches = new GetBranchesRequest(selectedRepo, _settings);
+            GetBranchesRequest getBranches = new(selectedRepo, _settings);
             var result = await getBranches.SendAsync().ConfigureAwait(false);
             if (result.Success)
             {

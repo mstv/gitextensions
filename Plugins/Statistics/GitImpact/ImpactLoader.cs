@@ -230,7 +230,7 @@ namespace GitExtensions.Plugins.GitImpact
             {
                 // Determine first and last commit week of each author
                 DateTime start = new();
-                var end = new DateTime();
+                DateTime end = new();
                 var startFound = false;
 
                 foreach (var (weekDate, weekDataByAuthor) in impact)

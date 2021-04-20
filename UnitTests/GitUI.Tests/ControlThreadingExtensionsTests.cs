@@ -94,7 +94,7 @@ namespace GitUITests
         public async Task TokenCancelledBeforeSwitchOnMainThread()
         {
             Form form = new();
-            var cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource cancellationTokenSource = new();
             cancellationTokenSource.Cancel();
 
             Assert.True(ThreadHelper.JoinableTaskContext.IsOnMainThread);
@@ -133,7 +133,7 @@ namespace GitUITests
         public async Task TokenCancelledAfterSwitchOnMainThread()
         {
             Form form = new();
-            var cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource cancellationTokenSource = new();
 
             var awaitable = form.SwitchToMainThreadAsync(cancellationTokenSource.Token);
 

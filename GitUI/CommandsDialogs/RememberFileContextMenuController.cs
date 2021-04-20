@@ -31,7 +31,7 @@ namespace GitUI.CommandsDialogs
         public FileStatusItem CreateFileStatusItem(string name, GitRevision rev)
         {
             GitItemStatus gis = new(name) { IsNew = true };
-            var fsi = new FileStatusItem(null, rev, gis);
+            FileStatusItem fsi = new(null, rev, gis);
             return fsi;
         }
 

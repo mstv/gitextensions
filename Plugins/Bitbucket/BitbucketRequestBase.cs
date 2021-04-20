@@ -100,7 +100,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 var errorResponse = new BitbucketResponse<T> { Success = false };
                 foreach (var error in json["errors"])
                 {
-                    var sb = new StringBuilder();
+                    StringBuilder sb = new();
                     sb.AppendLine(error["message"].ToString());
                     if (error["reviewerErrors"] is not null)
                     {

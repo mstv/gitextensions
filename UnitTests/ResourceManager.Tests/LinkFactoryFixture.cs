@@ -90,7 +90,7 @@ namespace ResourceManagerTests
         public void ParseInternalScheme_None(string link)
         {
             LinkFactory linkFactory = new();
-            var uri = new Uri(link);
+            Uri uri = new(link);
             Assert.False(linkFactory.ParseInternalScheme(uri, out var actualCommandEventArgs));
             Assert.That(actualCommandEventArgs, Is.Null);
         }
@@ -106,7 +106,7 @@ namespace ResourceManagerTests
         public void ParseInternalScheme(string link, string expectedCommand, string expectedData)
         {
             LinkFactory linkFactory = new();
-            var uri = new Uri(link);
+            Uri uri = new(link);
             Assert.True(linkFactory.ParseInternalScheme(uri, out var actualCommandEventArgs));
             Assert.That(actualCommandEventArgs.Command, Is.EqualTo(expectedCommand));
             Assert.That(actualCommandEventArgs.Data, Is.EqualTo(expectedData));

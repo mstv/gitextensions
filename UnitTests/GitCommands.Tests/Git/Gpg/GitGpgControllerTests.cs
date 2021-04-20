@@ -43,7 +43,7 @@ namespace GitCommandsTests.Git.Gpg
             var objectId = ObjectId.Random();
 
             GitRevision revision = new(objectId);
-            var args = new GitArgumentBuilder("log")
+            GitArgumentBuilder args = new("log")
             {
                 "--pretty=\"format:%G?\"",
                 "-1",
@@ -98,8 +98,8 @@ namespace GitCommandsTests.Git.Gpg
 
             GitRef gitRef = new(_module, objectId, "refs/tags/FirstTag^{}");
 
-            var revision = new GitRevision(objectId) { Refs = new[] { gitRef } };
-            var args = new GitArgumentBuilder("verify-tag")
+            GitRevision revision = new(objectId) { Refs = new[] { gitRef } };
+            GitArgumentBuilder args = new("verify-tag")
             {
                 "--raw",
                 gitRef.LocalName
@@ -117,7 +117,7 @@ namespace GitCommandsTests.Git.Gpg
         {
             var objectId = ObjectId.Random();
             GitRevision revision = new(objectId);
-            var args = new GitArgumentBuilder("log")
+            GitArgumentBuilder args = new("log")
             {
                 "--pretty=\"format:%GG\"",
                 "-1",
@@ -158,7 +158,7 @@ namespace GitCommandsTests.Git.Gpg
                 case 0:
                     {
                         // Tag but not dereference
-                        var gitRef = new GitRef(_module, objectId, "refs/tags/TagName");
+                        GitRef gitRef = new(_module, objectId, "refs/tags/TagName");
                         revision.Refs = new[] { gitRef };
 
                         var args = new GitArgumentBuilder("verify-tag") { gitRef.LocalName };

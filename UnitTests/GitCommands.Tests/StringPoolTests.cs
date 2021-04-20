@@ -136,7 +136,7 @@ namespace GitCommandsTests
         public void AnalyzeHashFunctionDistribution()
         {
             HashSet<int> seenHashes = new();
-            var collisions = new List<int>();
+            List<int> collisions = new();
 
             const int hashCount = 200_000;
             const int sourceWidth = 40;

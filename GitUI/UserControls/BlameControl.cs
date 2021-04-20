@@ -346,7 +346,7 @@ namespace GitUI.Blame
             StringBuilder lineBuilder = new(lineLength + 2);
             var gutter = new StringBuilder(capacity: lineBuilder.Capacity * _blame.Lines.Count);
             string emptyLine = new(' ', lineLength);
-            var cacheAvatars = new Dictionary<string, Image?>();
+            Dictionary<string, Image?> cacheAvatars = new();
             var noAuthorImage = (Image)new Bitmap(Images.User80, avatarSize, avatarSize);
             for (var index = 0; index < _blame.Lines.Count; index++)
             {

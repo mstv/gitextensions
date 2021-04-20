@@ -307,7 +307,7 @@ namespace NetSpell.SpellChecker.Dictionary
         public List<string> ExpandWord(Word word)
         {
             List<string> suffixWords = new();
-            var words = new List<string>();
+            List<string> words = new();
 
             suffixWords.Add(word.Text);
             string prefixKeys = "";

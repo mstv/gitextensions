@@ -22,7 +22,7 @@ namespace GitUITests.GitUICommandsTests
         public void NormalizeFileNameTest(string fileName, string expected)
         {
             GitModule module = new(@"c:\working\dir");
-            var commands = new GitUICommands(module);
+            GitUICommands commands = new(module);
 
             commands.GetTestAccessor().NormalizeFileName(fileName).Should().Be(expected);
         }

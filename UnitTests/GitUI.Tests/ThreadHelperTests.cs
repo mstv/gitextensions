@@ -30,7 +30,7 @@ namespace GitUITests
         public async Task FileAndForgetReportsThreadException()
         {
             using ThreadExceptionHelper helper = new();
-            var ex = new Exception();
+            Exception ex = new();
 
             ThrowExceptionAsync(ex).FileAndForget();
 
@@ -42,7 +42,7 @@ namespace GitUITests
         public async Task FileAndForgetIgnoresCancellationExceptions()
         {
             using ThreadExceptionHelper helper = new();
-            var form = new Form();
+            Form form = new();
             form.Dispose();
 
             YieldOntoControlMainThreadAsync(form).FileAndForget();
@@ -55,7 +55,7 @@ namespace GitUITests
         public async Task FileAndForgetFilterCanAllowExceptions()
         {
             using ThreadExceptionHelper helper = new();
-            var ex = new Exception();
+            Exception ex = new();
 
             ThrowExceptionAsync(ex).FileAndForget(fileOnlyIf: e => e == ex);
 
@@ -67,7 +67,7 @@ namespace GitUITests
         public async Task FileAndForgetFilterCanIgnoreExceptions()
         {
             using ThreadExceptionHelper helper = new();
-            var ex = new Exception();
+            Exception ex = new();
 
             ThrowExceptionAsync(ex).FileAndForget(fileOnlyIf: e => e != ex);
 
@@ -79,7 +79,7 @@ namespace GitUITests
         public async Task FileAndForgetFilterIgnoresCancellationExceptions()
         {
             using ThreadExceptionHelper helper = new();
-            var form = new Form();
+            Form form = new();
             form.Dispose();
 
             YieldOntoControlMainThreadAsync(form).FileAndForget(fileOnlyIf: ex => true);
@@ -146,7 +146,7 @@ namespace GitUITests
         public void CompletedResultThrowsIfFaulted()
         {
             TaskCompletionSource<int> tcs = new();
-            var ex = new Exception();
+            Exception ex = new();
             tcs.SetException(ex);
             var actual = Assert.Throws<AggregateException>(() => tcs.Task.CompletedResult());
             Assert.AreSame(ex, actual.InnerException);
@@ -181,7 +181,7 @@ namespace GitUITests
         public void CompletedOrDefaultThrowsIfFaulted()
         {
             TaskCompletionSource<int> tcs = new();
-            var ex = new Exception();
+            Exception ex = new();
             tcs.SetException(ex);
             var actual = Assert.Throws<AggregateException>(() => tcs.Task.CompletedOrDefault());
             Assert.AreSame(ex, actual.InnerException);

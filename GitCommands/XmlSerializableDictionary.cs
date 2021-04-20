@@ -31,7 +31,7 @@ namespace GitCommands
         public void ReadXml(XmlReader reader)
         {
             XmlSerializer keySerializer = new(typeof(TKey));
-            var valueSerializer = new XmlSerializer(typeof(TValue));
+            XmlSerializer valueSerializer = new(typeof(TValue));
             var wasEmpty = reader.IsEmptyElement;
 
             reader.Read();
@@ -73,7 +73,7 @@ namespace GitCommands
         public void WriteXml(XmlWriter writer)
         {
             XmlSerializer keySerializer = new(typeof(TKey));
-            var valueSerializer = new XmlSerializer(typeof(TValue));
+            XmlSerializer valueSerializer = new(typeof(TValue));
 
             foreach (var (key, value) in this.OrderBy(pair => pair.Key))
             {

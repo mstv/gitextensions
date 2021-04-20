@@ -50,10 +50,10 @@ namespace GitUITests.UserControls.RevisionGrid
                 Task loadRevisionsTask = new(() => LoadRandomRevisions());
 
                 // Simulate thread that caches the rows in the background
-                var buildCacheTask = new Task(() => BuildCache());
+                Task buildCacheTask = new(() => BuildCache());
 
                 // Simulate thread that renders
-                var renderTask = new Task(() => Render());
+                Task renderTask = new(() => Render());
 
                 loadRevisionsTask.Start();
                 buildCacheTask.Start();

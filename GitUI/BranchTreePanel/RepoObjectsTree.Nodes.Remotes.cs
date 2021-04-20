@@ -75,9 +75,9 @@ namespace GitUI.BranchTreePanel
             private async Task<Nodes> FillBranchTreeAsync(IReadOnlyList<IGitRef> branches, CancellationToken token)
             {
                 Nodes nodes = new(this);
-                var pathToNodes = new Dictionary<string, BaseBranchNode>();
+                Dictionary<string, BaseBranchNode> pathToNodes = new();
 
-                var enabledRemoteRepoNodes = new List<RemoteRepoNode>();
+                List<RemoteRepoNode> enabledRemoteRepoNodes = new();
                 var remoteByName = (await Module.GetRemotesAsync().ConfigureAwaitRunInline()).ToDictionary(r => r.Name);
 
                 ConfigFileRemoteSettingsManager remotesManager = new(() => Module);

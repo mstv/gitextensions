@@ -1901,7 +1901,7 @@ namespace GitUI.CommandsDialogs
         private void PopulateFavouriteRepositoriesMenu(ToolStripDropDownItem container, in IList<Repository> repositoryHistory)
         {
             List<RecentRepoInfo> mostRecentRepos = new();
-            var lessRecentRepos = new List<RecentRepoInfo>();
+            List<RecentRepoInfo> lessRecentRepos = new();
 
             using (var graphics = CreateGraphics())
             {
@@ -1942,7 +1942,7 @@ namespace GitUI.CommandsDialogs
         private void PopulateRecentRepositoriesMenu(ToolStripDropDownItem container)
         {
             List<RecentRepoInfo> mostRecentRepos = new();
-            var lessRecentRepos = new List<RecentRepoInfo>();
+            List<RecentRepoInfo> lessRecentRepos = new();
 
             var repositoryHistory = ThreadHelper.JoinableTaskFactory.Run(() => RepositoryHistoryManager.Locals.LoadRecentHistoryAsync());
             if (repositoryHistory.Count < 1)

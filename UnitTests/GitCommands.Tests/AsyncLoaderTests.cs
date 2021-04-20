@@ -33,7 +33,7 @@ namespace GitCommandsTests
             ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 SemaphoreSlim loadSignal = new(0);
-                var completeSignal = new SemaphoreSlim(0);
+                SemaphoreSlim completeSignal = new(0);
 
                 var started = 0;
                 var completed = 0;
@@ -90,7 +90,7 @@ namespace GitCommandsTests
             ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 SemaphoreSlim loadSignal = new(0);
-                var completeSignal = new SemaphoreSlim(0);
+                SemaphoreSlim completeSignal = new(0);
 
                 var started = 0;
                 var completed = 0;
@@ -156,7 +156,7 @@ namespace GitCommandsTests
             ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 SemaphoreSlim loadSignal = new(0);
-                var completeSignal = new SemaphoreSlim(0);
+                SemaphoreSlim completeSignal = new(0);
 
                 var started = 0;
                 var completed = 0;

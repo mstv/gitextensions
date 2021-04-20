@@ -129,7 +129,7 @@ namespace GitUI.BranchTreePanel
             private Nodes FillTagTree(IReadOnlyList<IGitRef> tags, CancellationToken token)
             {
                 Nodes nodes = new(this);
-                var pathToNodes = new Dictionary<string, BaseBranchNode>();
+                Dictionary<string, BaseBranchNode> pathToNodes = new();
                 foreach (IGitRef tag in tags)
                 {
                     token.ThrowIfCancellationRequested();

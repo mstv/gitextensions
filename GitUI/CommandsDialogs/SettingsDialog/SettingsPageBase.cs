@@ -174,7 +174,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog
         {
             List<string> texts = new();
 
-            var queue = new Queue<Control>();
+            Queue<Control> queue = new();
             queue.Enqueue(control);
 
             while (queue.Count != 0)

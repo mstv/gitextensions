@@ -9,8 +9,8 @@ namespace GitCommands
         public static string Parse(string input)
         {
             StringBuilder sb = new();
-            var currentWord = new StringBuilder();
-            var currentSurroundingText = new StringBuilder();
+            StringBuilder currentWord = new();
+            StringBuilder currentSurroundingText = new();
             bool readingWord = false;
             bool hasSeenAtLeastOneWord = false;
             int wordQuestionMarkCount = 0;

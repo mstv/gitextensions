@@ -101,15 +101,15 @@ namespace GitUI.Script
 
             IReadOnlyList<GitRevision> allSelectedRevisions = Array.Empty<GitRevision>();
             List<IGitRef> selectedLocalBranches = new();
-            var selectedRemoteBranches = new List<IGitRef>();
-            var selectedRemotes = new List<string>();
-            var selectedBranches = new List<IGitRef>();
-            var selectedTags = new List<IGitRef>();
-            var currentLocalBranches = new List<IGitRef>();
-            var currentRemoteBranches = new List<IGitRef>();
+            List<IGitRef> selectedRemoteBranches = new();
+            List<string> selectedRemotes = new();
+            List<IGitRef> selectedBranches = new();
+            List<IGitRef> selectedTags = new();
+            List<IGitRef> currentLocalBranches = new();
+            List<IGitRef> currentRemoteBranches = new();
             var currentRemote = "";
-            var currentBranches = new List<IGitRef>();
-            var currentTags = new List<IGitRef>();
+            List<IGitRef> currentBranches = new();
+            List<IGitRef> currentTags = new();
 
             foreach (string option in Options)
             {

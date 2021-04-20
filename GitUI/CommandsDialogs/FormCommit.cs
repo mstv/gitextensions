@@ -1009,7 +1009,7 @@ namespace GitUI.CommandsDialogs
                 : Array.Empty<GitItemStatus>();
 
             List<GitItemStatus> unstagedFiles = new();
-            var stagedFiles = new List<GitItemStatus>();
+            List<GitItemStatus> stagedFiles = new();
 
             foreach (var fileStatus in allChangedFiles)
             {
@@ -2101,8 +2101,8 @@ namespace GitUI.CommandsDialogs
 
                 var deleteNewFiles = _currentFilesList.SelectedItems.Any(item => item.Item.IsNew) && (resetType == FormResetChanges.ActionEnum.ResetAndDelete);
                 List<string> filesInUse = new();
-                var filesToReset = new List<string>();
-                var output = new StringBuilder();
+                List<string> filesToReset = new();
+                StringBuilder output = new();
                 foreach (var item in _currentFilesList.SelectedItems)
                 {
                     if (item.Item.IsNew)

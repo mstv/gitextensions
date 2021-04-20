@@ -117,7 +117,7 @@ namespace GitCommands
             }
 
             MemoryStream outputBuffer = new();
-            var errorBuffer = new MemoryStream();
+            MemoryStream errorBuffer = new();
             var outputTask = process.StandardOutput.BaseStream.CopyToAsync(outputBuffer);
             var errorTask = process.StandardError.BaseStream.CopyToAsync(errorBuffer);
             var exitTask = process.WaitForExitAsync();
@@ -357,7 +357,7 @@ namespace GitCommands
 
             using var process = executable.Start(arguments, createWindow: false, redirectInput: writeInput is not null, redirectOutput: true, outputEncoding);
             MemoryStream outputBuffer = new();
-            var errorBuffer = new MemoryStream();
+            MemoryStream errorBuffer = new();
             var outputTask = process.StandardOutput.BaseStream.CopyToAsync(outputBuffer);
             var errorTask = process.StandardError.BaseStream.CopyToAsync(errorBuffer);
 

@@ -34,7 +34,7 @@ namespace GitUITests.CommandsDialogs
 
             const string path = "";
             const string caption = "CAPTION";
-            var repository = new Repository(path);
+            Repository repository = new(path);
 
             _controller.AddRecentRepositories(containerMenu, repository, caption, (s, e) => { });
 
@@ -48,7 +48,7 @@ namespace GitUITests.CommandsDialogs
 
             const string path = "";
             const string caption = "CAPTION";
-            var repository = new Repository(path);
+            Repository repository = new(path);
 
             _controller.AddRecentRepositories(containerMenu, repository, caption, (s, e) => { });
 
@@ -70,7 +70,7 @@ namespace GitUITests.CommandsDialogs
 
             const string path = "somepath";
             const string caption = "CAPTION";
-            var repository = new Repository(path);
+            Repository repository = new(path);
 
             _controller.AddRecentRepositories(containerMenu, repository, caption, (s, e) => { });
 
@@ -85,7 +85,7 @@ namespace GitUITests.CommandsDialogs
 
             const string path = "";
             const string caption = "CAPTION";
-            var repository = new Repository(path);
+            Repository repository = new(path);
 
             _controller.AddRecentRepositories(containerMenu, repository, caption, (s, e) => { });
 

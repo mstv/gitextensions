@@ -192,7 +192,7 @@ namespace GitUITests.CommandsDialogs
             GitRevision rev = new(id);
             const string newName = "newName";
             const string oldName = "oldName";
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: rev,
                 item: new GitItemStatus(name: newName)
@@ -210,7 +210,7 @@ namespace GitUITests.CommandsDialogs
             var id = ObjectId.Random();
             GitRevision rev = new(id);
             const string newName = "newName";
-            var item = new FileStatusItem(
+            FileStatusItem item = new(
                 firstRev: rev,
                 secondRev: rev,
                 item: new GitItemStatus(name: newName));

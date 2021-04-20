@@ -38,7 +38,7 @@ namespace GitUI.Hotkey
         public static HotkeyCommand[] LoadHotkeys(string name)
         {
             HotkeySettings settings = new();
-            var scriptKeys = new HotkeySettings();
+            HotkeySettings scriptKeys = new();
             var allSettings = LoadSettings();
 
             UpdateUsedKeys(allSettings);
@@ -101,7 +101,7 @@ namespace GitUI.Hotkey
                 UpdateUsedKeys(settings);
 
                 StringBuilder str = new();
-                using var writer = new StringWriter(str);
+                using StringWriter writer = new(str);
                 Serializer.Serialize(writer, settings);
                 AppSettings.SerializedHotkeys = str.ToString();
             }

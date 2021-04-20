@@ -59,9 +59,9 @@ namespace GitCommands.UserRepositoryHistory
             try
             {
                 RepositoryHistorySurrogate surrogate = new(repositories);
-                using var sw = new StringWriter();
-                var serializer = new XmlSerializer(typeof(RepositoryHistorySurrogate));
-                var ns = new XmlSerializerNamespaces();
+                using StringWriter sw = new();
+                XmlSerializer serializer = new(typeof(RepositoryHistorySurrogate));
+                XmlSerializerNamespaces ns = new();
                 ns.Add(string.Empty, string.Empty);
                 serializer.Serialize(sw, surrogate, ns);
                 return sw.ToString();

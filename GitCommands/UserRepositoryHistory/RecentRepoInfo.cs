@@ -68,7 +68,7 @@ namespace GitCommands.UserRepositoryHistory
         {
             var orderedRepos = new SortedList<string, List<RecentRepoInfo>>();
             List<RecentRepoInfo> mostRecentRepos = new();
-            var lessRecentRepos = new List<RecentRepoInfo>();
+            List<RecentRepoInfo> lessRecentRepos = new();
 
             var middleDot = ShorteningStrategy == ShorteningRecentRepoPathStrategy.MiddleDots;
             var signDir = ShorteningStrategy == ShorteningRecentRepoPathStrategy.MostSignDir;

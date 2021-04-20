@@ -199,7 +199,7 @@ namespace GitUI.Help
             // apply size to control
             var form = TopLevelControl as Form;
             Size s = new();
-            var ms = new Size();
+            Size ms = new();
             if (form is not null)
             {
                 s = form.Size;

@@ -56,8 +56,8 @@ namespace GitCommands.ExternalLinks
                     }
 
                     StringWriter sw = new();
-                    var serializer = new XmlSerializer(typeof(List<ExternalLinkDefinition>));
-                    var ns = new XmlSerializerNamespaces();
+                    XmlSerializer serializer = new(typeof(List<ExternalLinkDefinition>));
+                    XmlSerializerNamespaces ns = new();
                     ns.Add(string.Empty, string.Empty);
                     serializer.Serialize(sw, definitions.OrderBy(x => x.Name).ToList(), ns);
                     xml = sw.ToString();
@@ -82,8 +82,8 @@ namespace GitCommands.ExternalLinks
             try
             {
                 XmlSerializer serializer = new(typeof(List<ExternalLinkDefinition>));
-                using var stringReader = new StringReader(xmlString);
-                using var xmlReader = new XmlTextReader(stringReader);
+                using StringReader stringReader = new(xmlString);
+                using XmlTextReader xmlReader = new(stringReader);
                 return serializer.Deserialize(xmlReader) as List<ExternalLinkDefinition>;
             }
             catch (Exception ex)

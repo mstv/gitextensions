@@ -685,7 +685,7 @@ namespace GitCommands
             filename = filename.ToPosixPath();
 
             List<ConflictData> list = new();
-            var args = new GitArgumentBuilder("ls-files")
+            GitArgumentBuilder args = new("ls-files")
             {
                 "-z",
                 "--unmerged",
@@ -1771,7 +1771,7 @@ namespace GitCommands
         public bool BatchUnstageFiles(IEnumerable<GitItemStatus> selectedItems, Action<BatchProgressEventArgs>? action = null)
         {
             List<GitItemStatus> files = new();
-            var filesToRemove = new List<string>();
+            List<string> filesToRemove = new();
             var shouldRescanChanges = false;
             foreach (var item in selectedItems)
             {
@@ -2983,7 +2983,7 @@ namespace GitCommands
             var matches = regex.Matches(refList);
 
             List<IGitRef> gitRefs = new();
-            var headByRemote = new Dictionary<string, GitRef>();
+            Dictionary<string, GitRef> headByRemote = new();
 
             foreach (Match match in matches)
             {
@@ -3281,7 +3281,7 @@ namespace GitCommands
             // is a blank line, and third is an introductory paragraph about the project.
 
             Dictionary<ObjectId, GitBlameCommit> commitByObjectId = new();
-            var lines = new List<GitBlameLine>(capacity: 256);
+            List<GitBlameLine> lines = new(capacity: 256);
 
             var headerRegex = new Regex(@"^(?<objectid>[0-9a-f]{40}) (?<origlinenum>\d+) (?<finallinenum>\d+)", RegexOptions.Compiled);
 

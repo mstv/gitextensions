@@ -465,7 +465,7 @@ namespace GitUI.BranchTreePanel
             List<TreeNode> SearchTree(string text, IEnumerable<TreeNode> nodes)
             {
                 Queue<TreeNode> queue = new(nodes);
-                var ret = new List<TreeNode>();
+                List<TreeNode> ret = new();
 
                 while (queue.Count != 0)
                 {

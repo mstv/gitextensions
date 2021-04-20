@@ -21,7 +21,7 @@ namespace GitCommandsTests.Git.Commands
         public void Validate_should_throw_if_tag_name_invalid(string tagName)
         {
             GitCreateTagArgs args = new(tagName, Revision);
-            var cmd = new GitCreateTagCmd(args, TagMessageFile);
+            GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             Assert.Throws<ArgumentException>(() => cmd.Validate());
         }
@@ -30,7 +30,7 @@ namespace GitCommandsTests.Git.Commands
         public void Validate_should_throw_if_tag_revision_invalid()
         {
             GitCreateTagArgs args = new(TagName, null);
-            var cmd = new GitCreateTagCmd(args, TagMessageFile);
+            GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             Assert.Throws<ArgumentException>(() => cmd.Validate());
         }
@@ -50,7 +50,7 @@ namespace GitCommandsTests.Git.Commands
         public void ToLine_should_throw_if_operation_not_supported()
         {
             GitCreateTagArgs args = new(TagName, Revision, (TagOperation)10);
-            var cmd = new GitCreateTagCmd(args, TagMessageFile);
+            GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             Assert.Throws<NotSupportedException>(() => _ = cmd.Arguments);
         }
@@ -74,7 +74,7 @@ namespace GitCommandsTests.Git.Commands
         public void ToLine_should_render_different_operations(TagOperation operation, string expected)
         {
             GitCreateTagArgs args = new(TagName, Revision, operation, signKeyId: KeyId, force: true);
-            var cmd = new GitCreateTagCmd(args, TagMessageFile);
+            GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             var actualCmdLine = cmd.Arguments;
 
