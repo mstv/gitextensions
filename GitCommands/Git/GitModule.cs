@@ -2914,9 +2914,11 @@ namespace GitCommands
             // Assume that all GetRefs() are done in the background, which may not be correct in the future.
             const bool noLocks = true;
 
-            var cmd = GitCommandHelpers.GetRefsCmd(getRef, noLocks, AppSettings.RefsSortBy, AppSettings.RefsSortOrder);
-            var refList = _gitExecutable.GetOutput(cmd);
-            return ParseRefs(refList);
+            ArgumentString cmd = GitCommandHelpers.GetRefsCmd(getRef, noLocks, AppSettings.RefsSortBy, AppSettings.RefsSortOrder);
+            ExecutionResult exec = _gitExecutable.Execute(cmd, throwOnErrorOutput: false);
+            return exec.ExitedSuccessfully
+                ? ParseRefs(exec.StandardOutput)
+                : new List<IGitRef>();
         }
 
         public async Task<string[]> GetMergedBranchesAsync(bool includeRemote = false, bool fullRefname = false, string? commit = null)
