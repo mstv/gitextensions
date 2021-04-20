@@ -1970,8 +1970,8 @@ namespace GitCommands
                     continue;
                 }
 
-                var patchFile =
-                    new PatchFile
+                PatchFile patchFile =
+                    new()
                     {
                         Name = file,
                         FullName = fullFileName,

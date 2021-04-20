@@ -181,7 +181,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
                 ? $"{toolName}|{diffMergeToolConfig.ExeFileName}"
                 : "*.exe;*.cmd;*.bat|*.exe;*.cmd;*.bat";
 
-            using var dialog = new OpenFileDialog
+            using OpenFileDialog dialog = new()
             {
                 Filter = filter,
                 InitialDirectory = initialDirectory,

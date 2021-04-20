@@ -165,7 +165,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
 
         private void mnuSaveToFile_Click(object sender, EventArgs e)
         {
-            using var fileDialog = new SaveFileDialog
+            using SaveFileDialog fileDialog = new()
             {
                 Title = Name,
                 DefaultExt = ".txt",

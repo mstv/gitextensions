@@ -28,7 +28,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
                 return new ToolStripSeparator();
             }
 
-            var toolStripMenuItem = new ToolStripMenuItem
+            ToolStripMenuItem toolStripMenuItem = new()
             {
                 Name = menuCommand.Name,
                 Text = menuCommand.Text,

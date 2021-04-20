@@ -158,7 +158,7 @@ namespace GitUITests
                 Assert.Inconclusive("The test must be run at 96dpi");
             }
 
-            using var owner = new Form
+            using Form owner = new()
             {
                 Location = new Point(ownerFormTop, ownerFormLeft),
                 Size = new Size(800, 600)

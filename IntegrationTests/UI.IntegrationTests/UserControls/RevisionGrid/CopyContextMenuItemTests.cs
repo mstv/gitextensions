@@ -72,7 +72,7 @@ namespace GitExtensions.UITests.UserControls.RevisionGrid
         public void Should_show_info_if_commit_has_defined_branches()
         {
             var revision = new GitRevision(ObjectId.Random());
-            var refs = new List<IGitRef>
+            List<IGitRef> refs = new()
             {
                 new GitRef(null, revision.ObjectId, "refs/heads/branch1"),
                 new GitRef(null, revision.ObjectId, "refs/heads/branch2")
@@ -98,7 +98,7 @@ namespace GitExtensions.UITests.UserControls.RevisionGrid
         public void Should_show_info_if_commit_has_defined_tags()
         {
             var revision = new GitRevision(ObjectId.Random());
-            var refs = new List<IGitRef>
+            List<IGitRef> refs = new()
             {
                 new GitRef(null, revision.ObjectId, "refs/tags/tag1"),
                 new GitRef(null, revision.ObjectId, "refs/tags/tag2")
@@ -124,7 +124,7 @@ namespace GitExtensions.UITests.UserControls.RevisionGrid
         public void Should_show_info_if_commit_has_defined_branches_and_tags()
         {
             var revision = new GitRevision(ObjectId.Random());
-            var refs = new List<IGitRef>
+            List<IGitRef> refs = new()
             {
                 new GitRef(null, revision.ObjectId, "refs/tags/tag1"),
                 new GitRef(null, revision.ObjectId, "refs/heads/branch1"),

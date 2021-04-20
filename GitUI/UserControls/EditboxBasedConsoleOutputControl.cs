@@ -108,7 +108,7 @@ namespace GitUI.UserControls
 
                 // process used to execute external commands
                 var outputEncoding = GitModule.SystemEncoding;
-                var startInfo = new ProcessStartInfo
+                ProcessStartInfo startInfo = new()
                 {
                     UseShellExecute = false,
                     ErrorDialog = false,

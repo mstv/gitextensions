@@ -83,7 +83,7 @@ namespace GitUI
                     {
                         // Allow disabling for difftools
                         menu.MenuItem.DropDown.Items.Add(new ToolStripSeparator());
-                        var disableItem = new ToolStripMenuItem
+                        ToolStripMenuItem disableItem = new()
                         {
                             Text = ResourceManager.TranslatedStrings.DisableMenuItem
                         };

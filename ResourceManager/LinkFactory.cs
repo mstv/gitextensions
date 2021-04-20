@@ -132,7 +132,7 @@ namespace ResourceManager
                 return;
             }
 
-            using var process = new Process
+            using Process process = new()
             {
                 EnableRaisingEvents = false,
                 StartInfo = { FileName = uri.AbsoluteUri }

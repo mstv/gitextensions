@@ -172,7 +172,7 @@ Detail of the error:");
 
                             TaskDialogButton btnOpenSettings = new("btnOpenSettings", "Open settings");
                             var btnIgnore = new TaskDialogButton("btnIgnoreError", "Ignore");
-                            using var errorDialog = new TaskDialog
+                            using TaskDialog errorDialog = new()
                             {
                                 InstructionText = errorMessage,
                                 Icon = TaskDialogStandardIcon.Error,
@@ -286,7 +286,7 @@ Detail of the error:");
 
             Validates.NotNull(buildDetail.SourceVersion);
 
-            var buildInfo = new BuildInfo
+            BuildInfo buildInfo = new()
             {
                 Id = buildDetail.BuildNumber,
                 StartDate = buildDetail.StartTime ?? DateTime.MinValue,

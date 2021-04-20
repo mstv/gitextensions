@@ -130,7 +130,7 @@ namespace GitUI.CommandsDialogs
                 filenameSuggestion += "_" + textBoxPaths.Lines[0].Trim().Replace(".", "_");
             }
 
-            using var saveFileDialog = new SaveFileDialog
+            using SaveFileDialog saveFileDialog = new()
             {
                 Filter = string.Format("{0}|*.{1}", fileFilterCaption, fileFilterEnding),
                 Title = _saveFileDialogCaption.Text,

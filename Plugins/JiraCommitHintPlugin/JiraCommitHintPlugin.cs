@@ -98,7 +98,7 @@ namespace GitExtensions.Plugins.JiraCommitHintPlugin
 
             yield return new PseudoSetting(_jiraFields, JiraFieldsLabel.Text, DpiUtil.Scale(55));
 
-            var txtTemplate = new TextBox
+            TextBox txtTemplate = new()
             {
                 Height = DpiUtil.Scale(75),
                 Multiline = true,

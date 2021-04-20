@@ -385,7 +385,7 @@ namespace GitUI.CommandsDialogs
                     bool? messageBoxResult = AppSettings.AutoPopStashAfterCheckoutBranch;
                     if (messageBoxResult is null)
                     {
-                        using var dialog = new TaskDialog
+                        using TaskDialog dialog = new()
                         {
                             OwnerWindowHandle = Handle,
                             Text = _applyStashedItemsAgain.Text,

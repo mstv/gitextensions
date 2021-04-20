@@ -61,7 +61,7 @@ namespace GitCommandsTests.ExternalLinks
             // 3 come from the distributed
             manager.GetEffectiveSettings().Count.Should().Be(4);
 
-            var definition = new ExternalLinkDefinition
+            ExternalLinkDefinition definition = new()
             {
                 Name = "test",
                 SearchPattern = "pattern"
@@ -91,7 +91,7 @@ namespace GitCommandsTests.ExternalLinks
             // 1 comes from the local
             manager.GetEffectiveSettings().Count.Should().Be(5);
 
-            var definition = new ExternalLinkDefinition
+            ExternalLinkDefinition definition = new()
             {
                 Name = "test",
                 SearchPattern = "pattern"
@@ -123,7 +123,7 @@ namespace GitCommandsTests.ExternalLinks
             // 1 comes from the local
             manager.GetEffectiveSettings().Count.Should().Be(5);
 
-            var definition = new ExternalLinkDefinition
+            ExternalLinkDefinition definition = new()
             {
                 Name = "Stash",
                 SearchPattern = "pattern"

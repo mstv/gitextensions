@@ -236,7 +236,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             {
                 try
                 {
-                    var pi = new ProcessStartInfo
+                    ProcessStartInfo pi = new()
                     {
                         FileName = "regsvr32",
                         Arguments = path.Quote(),

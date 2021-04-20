@@ -91,7 +91,7 @@ namespace GitUITests.UserControls
         [Test]
         public void RestoreExpandedNodesState_should_restore_all_nodes()
         {
-            var expandedNodes = new HashSet<string>
+            HashSet<string> expandedNodes = new()
             {
                 $"{_root.GetFullNamePath()}",
                 $"{_a.GetFullNamePath()}",

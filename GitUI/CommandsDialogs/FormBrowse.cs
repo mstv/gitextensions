@@ -947,7 +947,7 @@ namespace GitUI.CommandsDialogs
                         continue;
                     }
 
-                    var item = new ToolStripMenuItem
+                    ToolStripMenuItem item = new()
                     {
                         Text = plugin.Name,
                         Image = plugin.Icon,
@@ -1182,7 +1182,7 @@ namespace GitUI.CommandsDialogs
 
                 foreach (var script in scripts)
                 {
-                    var button = new ToolStripButton
+                    ToolStripButton button = new()
                     {
                         // store scriptname
                         Text = script.Name,
@@ -1268,7 +1268,7 @@ namespace GitUI.CommandsDialogs
 
             List<RecentRepoInfo> mostRecentRepos = new();
             using var graphics = CreateGraphics();
-            var splitter = new RecentRepoSplitter
+            RecentRepoSplitter splitter = new()
             {
                 MeasureFont = _NO_TRANSLATE_WorkingDir.Font,
                 Graphics = graphics
@@ -1905,7 +1905,7 @@ namespace GitUI.CommandsDialogs
 
             using (var graphics = CreateGraphics())
             {
-                var splitter = new RecentRepoSplitter
+                RecentRepoSplitter splitter = new()
                 {
                     MeasureFont = container.Font,
                     Graphics = graphics
@@ -1952,7 +1952,7 @@ namespace GitUI.CommandsDialogs
 
             using (var graphics = CreateGraphics())
             {
-                var splitter = new RecentRepoSplitter
+                RecentRepoSplitter splitter = new()
                 {
                     MeasureFont = container.Font,
                     Graphics = graphics
@@ -3028,7 +3028,7 @@ namespace GitUI.CommandsDialogs
                 }
 
                 // Create the terminal
-                var startInfo = new ConEmuStartInfo
+                ConEmuStartInfo startInfo = new()
                 {
                     StartupDirectory = Module.WorkingDir,
                     WhenConsoleProcessExits = WhenConsoleProcessExits.CloseConsoleEmulator

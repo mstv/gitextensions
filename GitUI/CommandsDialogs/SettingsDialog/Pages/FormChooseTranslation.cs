@@ -28,7 +28,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             translations.Sort();
             translations.Insert(0, "English");
 
-            var imageList = new ImageList
+            ImageList imageList = new()
             {
                 ColorDepth = ColorDepth.Depth32Bit,
                 ImageSize = DpiUtil.Scale(new Size(150, 75)),

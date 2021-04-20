@@ -312,7 +312,7 @@ namespace GitExtensions
         {
             int dialogResult = -1;
 
-            using var dialog1 = new TaskDialog
+            using TaskDialog dialog1 = new()
             {
                 InstructionText = ResourceManager.TranslatedStrings.GitExecutableNotFound,
                 Icon = TaskDialogStandardIcon.Error,
@@ -339,7 +339,7 @@ namespace GitExtensions
             {
                 case 0:
                     {
-                        using var dialog = new OpenFileDialog
+                        using OpenFileDialog dialog = new()
                         {
                             Filter = @"git.exe|git.exe|git.cmd|git.cmd",
                         };

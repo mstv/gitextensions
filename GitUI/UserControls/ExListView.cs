@@ -58,7 +58,7 @@ namespace GitUI.UserControls
 
         public ListViewGroupHitInfo? GetGroupHitInfo(Point location)
         {
-            var info = new LVHITTESTINFO
+            LVHITTESTINFO info = new()
             {
                 pt = location
             };

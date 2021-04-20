@@ -598,7 +598,7 @@ namespace GitUI.Editor
                 }
 
                 // store the previous view position
-                var currentViewPosition = new ViewPosition
+                ViewPosition currentViewPosition = new()
                 {
                     ActiveLineNum = null,
                     FirstLine = _viewer.GetLineText(0),

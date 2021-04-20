@@ -93,7 +93,7 @@ namespace GitUI
 
         public static bool ConfirmUpdateSubmodules(IWin32Window? owner)
         {
-            using var dialog = new TaskDialog
+            using TaskDialog dialog = new()
             {
                 OwnerWindowHandle = owner?.Handle ?? IntPtr.Zero,
                 Text = Instance._updateSubmodulesToo.Text,

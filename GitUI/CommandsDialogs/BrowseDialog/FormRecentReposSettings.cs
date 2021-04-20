@@ -108,7 +108,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
             List<RecentRepoInfo> mostRecentRepos = new();
             var lessRecentRepos = new List<RecentRepoInfo>();
 
-            var splitter = new RecentRepoSplitter
+            RecentRepoSplitter splitter = new()
             {
                 MaxRecentRepositories = (int)_NO_TRANSLATE_maxRecentRepositories.Value,
                 ShorteningStrategy = GetShorteningStrategy(),

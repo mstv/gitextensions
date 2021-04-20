@@ -116,7 +116,7 @@ namespace GitUI
             {
                 const int rowHeight = 18;
 
-                var list = new ImageList
+                ImageList list = new()
                 {
                     ColorDepth = ColorDepth.Depth32Bit,
                     ImageSize = DpiUtil.Scale(new Size(16, rowHeight)), // Scale ImageSize and images scale automatically
@@ -166,7 +166,7 @@ namespace GitUI
 
             ToolStripMenuItem CreateOpenSubmoduleMenuItem()
             {
-                var item = new ToolStripMenuItem
+                ToolStripMenuItem item = new()
                 {
                     Name = "openSubmoduleMenuItem",
                     Tag = "1",
@@ -179,7 +179,7 @@ namespace GitUI
 
             ToolStripMenuItem CreateOpenInVisualStudioMenuItem()
             {
-                var item = new ToolStripMenuItem
+                ToolStripMenuItem item = new()
                 {
                     Name = "openInVisualStudioMenuItem",
                     Text = TranslatedStrings.OpenInVisualStudio,

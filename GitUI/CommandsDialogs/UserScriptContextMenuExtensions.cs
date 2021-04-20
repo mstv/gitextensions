@@ -37,7 +37,7 @@ namespace GitUI.CommandsDialogs
 
             foreach (var script in scripts)
             {
-                var item = new ToolStripMenuItem
+                ToolStripMenuItem item = new()
                 {
                     Text = script.Name,
                     Name = $"{script.Name}{ScriptNameSuffix}",

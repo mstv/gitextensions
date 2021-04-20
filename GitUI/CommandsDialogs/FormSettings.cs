@@ -259,7 +259,7 @@ namespace GitUI.CommandsDialogs
             }
             catch (SaveSettingsException ex) when (ex.InnerException is not null)
             {
-                using var dialog = new TaskDialog
+                using TaskDialog dialog = new()
                 {
                     OwnerWindowHandle = Handle,
                     Text = ex.InnerException.Message,

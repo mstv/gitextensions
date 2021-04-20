@@ -116,7 +116,7 @@ namespace GitExtensions.Plugins.GitImpact
             var authorName = RespectMailmap ? "%aN" : "%an";
             var command = $"log --pretty=tformat:\"--- %ad --- {authorName}\" --numstat --date=iso -C --all --no-merges";
 
-            var tasks = new List<JoinableTask>
+            List<JoinableTask> tasks = new()
             {
                 ThreadHelper.JoinableTaskFactory.RunAsync(
                     async () =>

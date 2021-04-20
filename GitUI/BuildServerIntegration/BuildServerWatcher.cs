@@ -93,7 +93,7 @@ namespace GitUI.BuildServerIntegration
                 buildServerAdapter.GetFinishedBuildsSince(scheduler, nowFrozen)
                             .Finally(() => shouldLookForNewlyFinishedBuilds = false));
 
-            var cancellationToken = new CompositeDisposable
+            CompositeDisposable cancellationToken = new()
                     {
                         fullDayObservable.OnErrorResumeNext(fullObservable)
                                          .OnErrorResumeNext(Observable.Empty<BuildInfo>()

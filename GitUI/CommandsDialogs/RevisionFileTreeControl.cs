@@ -723,8 +723,8 @@ See the changes in the commit form.");
             if (tvGitTree.SelectedNode?.Tag is GitItem { ObjectType: GitObjectType.Blob } gitItem)
             {
                 var fullName = _fullPathResolver.Resolve(gitItem.FileName);
-                using var fileDialog =
-                    new SaveFileDialog
+                using SaveFileDialog fileDialog =
+                    new()
                     {
                         InitialDirectory = Path.GetDirectoryName(fullName),
                         FileName = Path.GetFileName(fullName),

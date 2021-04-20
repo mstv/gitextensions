@@ -28,7 +28,7 @@ namespace GitUI
 
             foreach (var avatarProvider in EnumHelper.GetValues<AvatarProvider>())
             {
-                var item = new ToolStripMenuItem
+                ToolStripMenuItem item = new()
                 {
                     CheckOnClick = true,
                     Tag = avatarProvider,
@@ -47,7 +47,7 @@ namespace GitUI
 
             foreach (var defaultImageType in EnumHelper.GetValues<AvatarFallbackType>())
             {
-                var item = new ToolStripMenuItem
+                ToolStripMenuItem item = new()
                 {
                     CheckOnClick = true,
                     Tag = defaultImageType,

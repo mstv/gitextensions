@@ -69,7 +69,7 @@ namespace GitCommandsTests.UserRepositoryHistory.Legacy
         [Test]
         public void Verify_backwards_compatibility_of_object_graph()
         {
-            var surrogate = new List<RepositoryCategory>
+            List<RepositoryCategory> surrogate = new()
             {
                 new RepositoryCategory
                 {

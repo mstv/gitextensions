@@ -979,8 +979,8 @@ namespace GitUI.CommandsDialogs
             }
 
             var fullName = _fullPathResolver.Resolve(item.Item.Name);
-            using var fileDialog =
-                new SaveFileDialog
+            using SaveFileDialog fileDialog =
+                new()
                 {
                     InitialDirectory = Path.GetDirectoryName(fullName),
                     FileName = Path.GetFileName(fullName),

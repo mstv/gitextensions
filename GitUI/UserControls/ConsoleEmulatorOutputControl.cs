@@ -95,7 +95,7 @@ namespace GitUI.UserControls
                 var commandLine = new ArgumentBuilder { command.Quote(), arguments }.ToString();
                 var outputProcessor = new ConsoleCommandLineOutputProcessor(commandLine.Length, FireDataReceived);
 
-                var startInfo = new ConEmuStartInfo
+                ConEmuStartInfo startInfo = new()
                 {
                     ConsoleProcessCommandLine = commandLine,
                     IsEchoingConsoleCommandLine = true,

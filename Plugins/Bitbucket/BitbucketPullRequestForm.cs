@@ -149,7 +149,7 @@ namespace GitExtensions.Plugins.Bitbucket
                     return;
                 }
 
-                var info = new PullRequestInfo
+                PullRequestInfo info = new()
                 {
                     Title = txtTitle.Text,
                     Description = txtDescription.Text,
@@ -358,7 +358,7 @@ namespace GitExtensions.Plugins.Bitbucket
         {
             if (lbxPullRequests.SelectedItem is PullRequest curItem)
             {
-                var mergeInfo = new MergeRequestInfo
+                MergeRequestInfo mergeInfo = new()
                 {
                     Id = curItem.Id,
                     Version = curItem.Version,
@@ -389,7 +389,7 @@ namespace GitExtensions.Plugins.Bitbucket
         {
             if (lbxPullRequests.SelectedItem is PullRequest curItem)
             {
-                var mergeInfo = new MergeRequestInfo
+                MergeRequestInfo mergeInfo = new()
                 {
                     Id = curItem.Id,
                     Version = curItem.Version,

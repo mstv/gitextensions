@@ -464,7 +464,7 @@ namespace GitUI.Blame
             {
                 var relativeTicks = Math.Max(0, blame.Commit.AuthorTime.Ticks - lessRecentDate);
                 var ageBucketIndex = Math.Min((int)(relativeTicks / intervalSize), AgeBucketGradientColors.Count - 1);
-                var gitBlameDisplay = new GitBlameEntry
+                GitBlameEntry gitBlameDisplay = new()
                 {
                     AgeBucketIndex = ageBucketIndex,
                     AgeBucketColor = AgeBucketGradientColors[ageBucketIndex]

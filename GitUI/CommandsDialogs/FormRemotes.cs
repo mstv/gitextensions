@@ -495,7 +495,7 @@ Inactive remote is completely invisible to git.");
 
         private void SshBrowseClick(object sender, EventArgs e)
         {
-            using var dialog = new OpenFileDialog
+            using OpenFileDialog dialog = new()
             {
                 Filter = _sshKeyOpenFilter.Text + @"|*.ppk",
                 InitialDirectory = ".",

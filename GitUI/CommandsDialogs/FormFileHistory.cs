@@ -484,7 +484,7 @@ namespace GitUI.CommandsDialogs
                 }
 
                 fullName = fullName.ToNativePath();
-                using var fileDialog = new SaveFileDialog
+                using SaveFileDialog fileDialog = new()
                 {
                     InitialDirectory = Path.GetDirectoryName(fullName),
                     FileName = Path.GetFileName(fullName),

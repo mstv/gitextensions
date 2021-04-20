@@ -643,7 +643,7 @@ namespace GitUI.CommandsDialogs
 
                 int dialogResult = -1;
 
-                using var dialog = new TaskDialog
+                using TaskDialog dialog = new()
                 {
                     OwnerWindowHandle = owner.Handle,
                     Text = allOptions ? _pullRepositoryMergeInstruction.Text : _pullRepositoryForceInstruction.Text,

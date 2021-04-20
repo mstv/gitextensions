@@ -1295,7 +1295,7 @@ namespace GitUI.CommandsDialogs
                 {
                     int dialogResult = -1;
 
-                    using var dialog = new TaskDialog
+                    using TaskDialog dialog = new()
                     {
                         OwnerWindowHandle = Handle,
                         Text = _notOnBranch.Text,

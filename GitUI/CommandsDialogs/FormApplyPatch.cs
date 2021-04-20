@@ -150,7 +150,7 @@ namespace GitUI.CommandsDialogs
 
         private string SelectPatchFile(string initialDirectory)
         {
-            using var dialog = new OpenFileDialog
+            using OpenFileDialog dialog = new()
             {
                 Filter = _selectPatchFileFilter.Text + "|*.patch",
                 InitialDirectory = initialDirectory,

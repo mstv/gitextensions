@@ -37,7 +37,7 @@ namespace GitExtensions.Plugins.Bitbucket
             Validates.NotNull(Settings.Username);
             Validates.NotNull(Settings.Password);
 
-            var client = new RestClient
+            RestClient client = new()
             {
                 BaseUrl = new System.Uri(Settings.BitbucketUrl),
                 Authenticator = new HttpBasicAuthenticator(Settings.Username, Settings.Password)

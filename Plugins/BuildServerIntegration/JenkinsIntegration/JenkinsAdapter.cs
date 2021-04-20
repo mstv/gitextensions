@@ -443,7 +443,7 @@ namespace JenkinsIntegration
 
             var status = isRunning ? BuildInfo.BuildStatus.InProgress : ParseBuildStatus(statusValue);
             var statusText = status.ToString("G");
-            var buildInfo = new BuildInfo
+            BuildInfo buildInfo = new()
             {
                 Id = idValue,
                 StartDate = TimestampToDateTime(startDateTicks),

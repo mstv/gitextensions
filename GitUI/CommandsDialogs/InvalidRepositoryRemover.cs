@@ -25,7 +25,7 @@ namespace GitUI.CommandsDialogs
                                                                    .Count(repo => !GitModule.IsValidGitWorkingDir(repo.Path));
             int dialogResult = -1;
 
-            using var dialog = new TaskDialog
+            using TaskDialog dialog = new()
             {
                 InstructionText = TranslatedStrings.DirectoryInvalidRepository,
                 Caption = TranslatedStrings.Open,

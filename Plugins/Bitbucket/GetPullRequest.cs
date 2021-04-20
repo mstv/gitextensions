@@ -9,7 +9,7 @@ namespace GitExtensions.Plugins.Bitbucket
     {
         public static PullRequest Parse(JObject json)
         {
-            var request = new PullRequest
+            PullRequest request = new()
             {
                 Id = json["id"].ToString(),
                 Version = json["version"].ToString(),

@@ -110,7 +110,7 @@ namespace GitUI.CommandsDialogs
 
         private void AddPath_Click(object sender, EventArgs e)
         {
-            var dialog = new CommonOpenFileDialog
+            CommonOpenFileDialog dialog = new()
             {
                 InitialDirectory = Module.WorkingDir,
                 EnsurePathExists = true,

@@ -49,7 +49,7 @@ namespace GitCommands.Settings
 
         protected override void ReadSettings(string fileName)
         {
-            var readerSettings = new XmlReaderSettings
+            XmlReaderSettings readerSettings = new()
             {
                 IgnoreWhitespace = true,
                 CheckCharacters = false
