@@ -1061,7 +1061,7 @@ namespace GitUI
                     var userEmail = Module.GetEffectiveSetting(SettingKeyString.UserEmail);
 
                     // Add working directory as virtual commit
-                    var workTreeRev = new GitRevision(ObjectId.WorkTreeId)
+                    GitRevision workTreeRev = new(ObjectId.WorkTreeId)
                     {
                         Author = userName,
                         AuthorDate = DateTime.MaxValue,
@@ -1076,7 +1076,7 @@ namespace GitUI
                     _gridView.Add(workTreeRev);
 
                     // Add index as virtual commit
-                    var indexRev = new GitRevision(ObjectId.IndexId)
+                    GitRevision indexRev = new(ObjectId.IndexId)
                     {
                         Author = userName,
                         AuthorDate = DateTime.MaxValue,
@@ -1526,7 +1526,7 @@ namespace GitUI
 
             UICommands.DoActionOnRepo(() =>
             {
-                using var form = new FormCreateTag(UICommands, revision?.ObjectId);
+                using FormCreateTag form = new(UICommands, revision?.ObjectId);
                 return form.ShowDialog(ParentForm) == DialogResult.OK;
             });
         }
@@ -1565,7 +1565,7 @@ namespace GitUI
 
             UICommands.DoActionOnRepo(() =>
             {
-                using var form = new FormCreateBranch(UICommands, revision?.ObjectId);
+                using FormCreateBranch form = new(UICommands, revision?.ObjectId);
                 return form.ShowDialog(ParentForm) == DialogResult.OK;
             });
         }
@@ -1710,7 +1710,7 @@ namespace GitUI
             // if there is no branch to merge, then let user to merge selected commit into current branch
             if (mergeBranchDropDown.Items.Count == 0 && !currentBranchPointsToRevision)
             {
-                var toolStripItem = new ToolStripMenuItem(revision.Guid);
+                ToolStripMenuItem toolStripItem = new(revision.Guid);
                 toolStripItem.Click += delegate { UICommands.StartMergeBranchDialog(ParentForm, revision.Guid); };
                 mergeBranchDropDown.Items.Add(toolStripItem);
                 _rebaseOnTopOf ??= toolStripItem.Tag as string;
@@ -1857,7 +1857,7 @@ namespace GitUI
 
             ToolStripMenuItem AddBranchMenuItem(ContextMenuStrip menu, IGitRef gitRef, EventHandler action)
             {
-                var menuItem = new ToolStripMenuItem(gitRef.Name)
+                ToolStripMenuItem menuItem = new(gitRef.Name)
                 {
                     Image = gitRef.IsRemote ? Images.BranchRemote : Images.BranchLocal
                 };
@@ -2475,7 +2475,7 @@ namespace GitUI
                 return;
             }
 
-            using var form = new FormCompareToBranch(UICommands, headCommit.ObjectId);
+            using FormCompareToBranch form = new(UICommands, headCommit.ObjectId);
             if (form.ShowDialog(ParentForm) == DialogResult.OK)
             {
                 Validates.NotNull(form.BranchName);

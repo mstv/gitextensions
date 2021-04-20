@@ -262,7 +262,7 @@ namespace GitUI.CommandsDialogs
                         fileName.Quote()
                     };
 
-                    var listOfFileNames = new StringBuilder(fileName.Quote());
+                    StringBuilder listOfFileNames = new(fileName.Quote());
 
                     // keep a set of the file names already seen
                     var setOfFileNames = new HashSet<string?> { fileName };
@@ -417,7 +417,7 @@ namespace GitUI.CommandsDialogs
                     IsSubmodule = GitModule.IsValidGitWorkingDir(_fullPathResolver.Resolve(fileName))
                 };
                 var revisions = FileChanges.GetSelectedRevisions();
-                var item = new FileStatusItem(firstRev: revisions.Skip(1).LastOrDefault(), secondRev: revisions.FirstOrDefault(), file);
+                FileStatusItem item = new(firstRev: revisions.Skip(1).LastOrDefault(), secondRev: revisions.FirstOrDefault(), file);
                 Diff.ViewChangesAsync(item, defaultText: "You need to select at least one revision to view diff.");
             }
             else if (tabControl1.SelectedTab == CommitInfoTabPage)

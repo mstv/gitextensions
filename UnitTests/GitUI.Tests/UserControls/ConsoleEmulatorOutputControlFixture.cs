@@ -22,7 +22,7 @@ namespace GitUITests.UserControls
                 received += e.Text;
             }
 
-            var filter = new ConsoleCommandLineOutputProcessor(cmd.Length, FireDataReceived);
+            ConsoleCommandLineOutputProcessor filter = new(cmd.Length, FireDataReceived);
 
             string chunk1 = cmd.Substring(0, 10);
             string chunk2 = cmd.Substring(10, cmd.Length - 10) + Environment.NewLine + outputData;
@@ -44,7 +44,7 @@ namespace GitUITests.UserControls
                 received += e.Text;
             }
 
-            var filter = new ConsoleCommandLineOutputProcessor(cmd.Length, FireDataReceived);
+            ConsoleCommandLineOutputProcessor filter = new(cmd.Length, FireDataReceived);
 
             string chunk1 = cmd.Substring(0, 10);
             string chunk2 = cmd.Substring(10, cmd.Length - 10) + Environment.NewLine + outputData;
@@ -78,7 +78,7 @@ namespace GitUITests.UserControls
                 received.Add(e.Text);
             }
 
-            var filter = new ConsoleCommandLineOutputProcessor(cmd.Length, FireDataReceived);
+            ConsoleCommandLineOutputProcessor filter = new(cmd.Length, FireDataReceived);
 
             foreach (string chunk in outputData)
             {
@@ -123,7 +123,7 @@ namespace GitUITests.UserControls
                 received.Add(e.Text);
             }
 
-            var filter = new ConsoleCommandLineOutputProcessor(cmd.Length, FireDataReceived);
+            ConsoleCommandLineOutputProcessor filter = new(cmd.Length, FireDataReceived);
 
             foreach (string chunk in outputData)
             {

@@ -29,7 +29,7 @@ namespace GitCommandsTests.ExternalLinks
             using GitModuleTestHelper testHelper = new();
             var settingsFile = testHelper.CreateRepoFile(".git", "GitExtensions.settings", content);
             using GitExtSettingsCache settingsCache = new(settingsFile);
-            var settings = new RepoDistSettings(null, settingsCache, SettingLevel.Unknown);
+            RepoDistSettings settings = new(null, settingsCache, SettingLevel.Unknown);
 
             var definitions = _externalLinksStorage.Load(settings);
             definitions.Count.Should().Be(expected);

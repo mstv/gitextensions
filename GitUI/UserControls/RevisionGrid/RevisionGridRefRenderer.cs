@@ -75,7 +75,7 @@ namespace GitUI
                 }
 
                 // frame
-                using var pen = new Pen(ColorHelper.Lerp(color, SystemColors.Window, 0.5F));
+                using Pen pen = new(ColorHelper.Lerp(color, SystemColors.Window, 0.5F));
                 if (dashedLine)
                 {
                     pen.DashPattern = _dashPattern;

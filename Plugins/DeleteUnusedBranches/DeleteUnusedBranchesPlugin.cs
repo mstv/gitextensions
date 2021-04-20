@@ -53,7 +53,7 @@ namespace GitExtensions.Plugins.DeleteUnusedBranches
                 _regexInvertedFlag.ValueOrDefault(Settings),
                 _includeUnmergedBranchesFlag.ValueOrDefault(Settings));
 
-            using var frm = new DeleteUnusedBranchesForm(settings, args.GitModule, args.GitUICommands, this);
+            using DeleteUnusedBranchesForm frm = new(settings, args.GitModule, args.GitUICommands, this);
             frm.ShowDialog(args.OwnerForm);
 
             return true;

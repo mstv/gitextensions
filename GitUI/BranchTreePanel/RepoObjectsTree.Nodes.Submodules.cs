@@ -572,13 +572,13 @@ namespace GitUI.BranchTreePanel
 
             public void StashSubmodule(IWin32Window owner, SubmoduleNode node)
             {
-                var uiCmds = new GitUICommands(new GitModule(node.Info.Path));
+                GitUICommands uiCmds = new(new GitModule(node.Info.Path));
                 uiCmds.StashSave(owner, AppSettings.IncludeUntrackedFilesInManualStash);
             }
 
             public void CommitSubmodule(IWin32Window owner, SubmoduleNode node)
             {
-                var submodulCommands = new GitUICommands(node.Info.Path.EnsureTrailingPathSeparator());
+                GitUICommands submodulCommands = new(node.Info.Path.EnsureTrailingPathSeparator());
                 submodulCommands.StartCommitDialog(owner);
             }
         }

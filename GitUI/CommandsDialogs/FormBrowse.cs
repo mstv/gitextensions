@@ -617,7 +617,7 @@ namespace GitUI.CommandsDialogs
                     continue;
                 }
 
-                var toolStripMenuItem = new ToolStripMenuItem(shell.Name);
+                ToolStripMenuItem toolStripMenuItem = new(shell.Name);
                 userShell.DropDownItems.Add(toolStripMenuItem);
                 toolStripMenuItem.Tag = shell;
                 toolStripMenuItem.Image = shell.Icon;
@@ -1026,7 +1026,7 @@ namespace GitUI.CommandsDialogs
                 if (AppSettings.CheckForUpdates && AppSettings.LastUpdateCheck.AddDays(7) < DateTime.Now)
                 {
                     AppSettings.LastUpdateCheck = DateTime.Now;
-                    var updateForm = new FormUpdates(AppSettings.AppVersion);
+                    FormUpdates updateForm = new(AppSettings.AppVersion);
                     updateForm.SearchForUpdatesAndShow(ownerWindow: this, alwaysShow: false);
                 }
 
@@ -1297,7 +1297,7 @@ namespace GitUI.CommandsDialogs
         {
             _NO_TRANSLATE_WorkingDir.DropDownItems.Clear();
 
-            var tsmiCategorisedRepos = new ToolStripMenuItem(tsmiFavouriteRepositories.Text, tsmiFavouriteRepositories.Image);
+            ToolStripMenuItem tsmiCategorisedRepos = new(tsmiFavouriteRepositories.Text, tsmiFavouriteRepositories.Image);
             PopulateFavouriteRepositoriesMenu(tsmiCategorisedRepos);
             if (tsmiCategorisedRepos.DropDownItems.Count > 0)
             {
@@ -1312,7 +1312,7 @@ namespace GitUI.CommandsDialogs
             mnuOpenLocalRepository.Click += OpenToolStripMenuItemClick;
             _NO_TRANSLATE_WorkingDir.DropDownItems.Add(mnuOpenLocalRepository);
 
-            var mnuRecentReposSettings = new ToolStripMenuItem(_configureWorkingDirMenu.Text);
+            ToolStripMenuItem mnuRecentReposSettings = new(_configureWorkingDirMenu.Text);
             mnuRecentReposSettings.Click += (hs, he) =>
             {
                 using (var frm = new FormRecentReposSettings())
@@ -1511,7 +1511,7 @@ namespace GitUI.CommandsDialogs
             {
                 Validates.NotNull(shell.ExecutablePath);
 
-                var executable = new Executable(shell.ExecutablePath, Module.WorkingDir);
+                Executable executable = new(shell.ExecutablePath, Module.WorkingDir);
                 executable.Start(createWindow: true);
             }
             catch (Exception exception)
@@ -2118,7 +2118,7 @@ namespace GitUI.CommandsDialogs
 
             void AddCheckoutBranchMenuItem()
             {
-                var checkoutBranchItem = new ToolStripMenuItem(checkoutBranchToolStripMenuItem.Text, Images.BranchCheckout)
+                ToolStripMenuItem checkoutBranchItem = new(checkoutBranchToolStripMenuItem.Text, Images.BranchCheckout)
                 {
                     ShortcutKeys = checkoutBranchToolStripMenuItem.ShortcutKeys,
                     ShortcutKeyDisplayString = checkoutBranchToolStripMenuItem.ShortcutKeyDisplayString
@@ -2743,7 +2743,7 @@ namespace GitUI.CommandsDialogs
 
         private ToolStripItem CreateSubmoduleMenuItem(SubmoduleInfo info, string textFormat = "{0}")
         {
-            var item = new ToolStripMenuItem(string.Format(textFormat, info.Text))
+            ToolStripMenuItem item = new(string.Format(textFormat, info.Text))
             {
                 Width = 200,
                 Tag = info.Path,
@@ -2867,13 +2867,13 @@ namespace GitUI.CommandsDialogs
 
             newItems.Add(new ToolStripSeparator());
 
-            var mi = new ToolStripMenuItem(updateAllSubmodulesToolStripMenuItem.Text, Images.SubmodulesUpdate);
+            ToolStripMenuItem mi = new(updateAllSubmodulesToolStripMenuItem.Text, Images.SubmodulesUpdate);
             mi.Click += UpdateAllSubmodulesToolStripMenuItemClick;
             newItems.Add(mi);
 
             if (result.CurrentSubmoduleName is not null)
             {
-                var item = new ToolStripMenuItem(_updateCurrentSubmodule.Text)
+                ToolStripMenuItem item = new(_updateCurrentSubmodule.Text)
                 {
                     Width = 200,
                     Tag = Module.WorkingDir,
@@ -2958,7 +2958,7 @@ namespace GitUI.CommandsDialogs
 
         private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var updateForm = new FormUpdates(AppSettings.AppVersion);
+            FormUpdates updateForm = new(AppSettings.AppVersion);
             updateForm.SearchForUpdatesAndShow(Owner, true);
         }
 
@@ -3227,7 +3227,7 @@ namespace GitUI.CommandsDialogs
             var dialogResult = formCreateWorktree.ShowDialog(this);
             if (dialogResult == DialogResult.OK && formCreateWorktree.OpenWorktree)
             {
-                var newModule = new GitModule(formCreateWorktree.WorktreeDirectory);
+                GitModule newModule = new(formCreateWorktree.WorktreeDirectory);
                 SetGitModule(this, new GitModuleEventArgs(newModule));
             }
         }

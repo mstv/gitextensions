@@ -1234,7 +1234,7 @@ namespace GitUI.CommandsDialogs
                     dialog.Controls.Add(lnkStageAndCommit);
 
                     // Option 2: the user just wants to make an empty commmit
-                    var lnkEmptyCommit = new TaskDialogCommandLink("MakeEmptyCommit", _noFilesStagedMakeEmptyCommitOption.Text);
+                    TaskDialogCommandLink lnkEmptyCommit = new("MakeEmptyCommit", _noFilesStagedMakeEmptyCommitOption.Text);
                     lnkEmptyCommit.Click += (s, e) =>
                     {
                         dialog.Close(TaskDialogResult.Ok);
@@ -1305,19 +1305,19 @@ namespace GitUI.CommandsDialogs
                         Icon = TaskDialogStandardIcon.Error,
                         Cancelable = true,
                     };
-                    var btnCheckout = new TaskDialogCommandLink("Checkout", null, TranslatedStrings.ButtonCheckoutBranch);
+                    TaskDialogCommandLink btnCheckout = new("Checkout", null, TranslatedStrings.ButtonCheckoutBranch);
                     btnCheckout.Click += (s, e) =>
                     {
                         dialogResult = 0;
                         dialog.Close();
                     };
-                    var btnCreate = new TaskDialogCommandLink("Create", null, TranslatedStrings.ButtonCreateBranch);
+                    TaskDialogCommandLink btnCreate = new("Create", null, TranslatedStrings.ButtonCreateBranch);
                     btnCreate.Click += (s, e) =>
                     {
                         dialogResult = 1;
                         dialog.Close();
                     };
-                    var btnContinue = new TaskDialogCommandLink("Continue", null, TranslatedStrings.ButtonContinue);
+                    TaskDialogCommandLink btnContinue = new("Continue", null, TranslatedStrings.ButtonContinue);
                     btnContinue.Click += (s, e) =>
                     {
                         dialogResult = 2;
@@ -1778,7 +1778,7 @@ namespace GitUI.CommandsDialogs
                         {
                             Validates.NotNull(item.OldName);
 
-                            var clone = new GitItemStatus(item.OldName)
+                            GitItemStatus clone = new(item.OldName)
                             {
                                 IsDeleted = true,
                                 IsTracked = true,
@@ -2435,7 +2435,7 @@ namespace GitUI.CommandsDialogs
                 if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
                 {
                     sb.AppendLine("Submodule " + path + ":");
-                    var module = new GitModule(_fullPathResolver.Resolve(name.EnsureTrailingPathSeparator()));
+                    GitModule module = new(_fullPathResolver.Resolve(name.EnsureTrailingPathSeparator()));
                     args = new GitArgumentBuilder("log")
                     {
                         "--pretty=format:\"    %m %h - %s\"",
@@ -3062,7 +3062,7 @@ namespace GitUI.CommandsDialogs
         private void commitSubmoduleChanges_Click(object sender, EventArgs e)
         {
             Validates.NotNull(_currentItem);
-            var submoduleCommands = new GitUICommands(_fullPathResolver.Resolve(_currentItem.Item.Name.EnsureTrailingPathSeparator()));
+            GitUICommands submoduleCommands = new(_fullPathResolver.Resolve(_currentItem.Item.Name.EnsureTrailingPathSeparator()));
             submoduleCommands.StartCommitDialog(this);
             Initialize();
         }
@@ -3125,7 +3125,7 @@ namespace GitUI.CommandsDialogs
 
             foreach (var item in unstagedFiles.Where(it => it.IsSubmodule))
             {
-                var commands = new GitUICommands(Module.GetSubmodule(item.Name));
+                GitUICommands commands = new(Module.GetSubmodule(item.Name));
                 commands.StashSave(this, AppSettings.IncludeUntrackedFilesInManualStash);
             }
 
@@ -3176,7 +3176,7 @@ namespace GitUI.CommandsDialogs
                         return;
                     }
 
-                    var toolStripItem = new ToolStripMenuItem(item.Name, item.Icon);
+                    ToolStripMenuItem toolStripItem = new(item.Name, item.Icon);
                     toolStripItem.Click += delegate
                     {
                         try
@@ -3201,7 +3201,7 @@ namespace GitUI.CommandsDialogs
 
                 void AddSettingsItem()
                 {
-                    var settingsItem = new ToolStripMenuItem(_commitMessageSettings.Text, Images.Settings);
+                    ToolStripMenuItem settingsItem = new(_commitMessageSettings.Text, Images.Settings);
                     settingsItem.Click += delegate
                     {
                         using (var frm = new FormCommitTemplateSettings())

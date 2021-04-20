@@ -384,13 +384,13 @@ namespace GitUI.CommandsDialogs
                     Icon = TaskDialogStandardIcon.Error,
                     Cancelable = true,
                 };
-                var btnCheckout = new TaskDialogCommandLink("Checkout", null, TranslatedStrings.ButtonCheckoutBranch);
+                TaskDialogCommandLink btnCheckout = new("Checkout", null, TranslatedStrings.ButtonCheckoutBranch);
                 btnCheckout.Click += (s, e) =>
                 {
                     dialogResult = 0;
                     dialog.Close();
                 };
-                var btnContinue = new TaskDialogCommandLink("Continue", null, TranslatedStrings.ButtonContinue);
+                TaskDialogCommandLink btnContinue = new("Continue", null, TranslatedStrings.ButtonContinue);
                 btnContinue.Click += (s, e) =>
                 {
                     dialogResult = 1;
@@ -701,7 +701,7 @@ namespace GitUI.CommandsDialogs
                 }
 
                 // auto pull only if current branch was rejected
-                var isRefRemoved = new Regex(@"Your configuration specifies to .* the ref '.*'[\r]?\nfrom the remote, but no such ref was fetched.");
+                Regex isRefRemoved = new(@"Your configuration specifies to .* the ref '.*'[\r]?\nfrom the remote, but no such ref was fetched.");
 
                 if (isRefRemoved.IsMatch(form.GetOutputString()))
                 {
@@ -752,7 +752,7 @@ namespace GitUI.CommandsDialogs
                 return true;
             }
 
-            var currentBranchRemote = new Lazy<string>(() => Module.GetSetting(string.Format(SettingKeyString.BranchRemote, localBranch.Text)));
+            Lazy<string> currentBranchRemote = new(() => Module.GetSetting(string.Format(SettingKeyString.BranchRemote, localBranch.Text)));
 
             if (_branch == localBranch.Text)
             {
@@ -789,7 +789,7 @@ namespace GitUI.CommandsDialogs
                     Cancelable = false
                 };
 
-                var btnPullFrom = new TaskDialogCommandLink("PullFrom", null, string.Format(_noRemoteBranchButton.Text, remote + "/" + curLocalBranch));
+                TaskDialogCommandLink btnPullFrom = new("PullFrom", null, string.Format(_noRemoteBranchButton.Text, remote + "/" + curLocalBranch));
                 btnPullFrom.Click += (s, e) =>
                 {
                     dialogResult = 0;
@@ -834,7 +834,7 @@ namespace GitUI.CommandsDialogs
                     Cancelable = false
                 };
 
-                var btnPullFrom = new TaskDialogCommandLink("PullFrom", null, string.Format(_noRemoteBranchForFetchButton.Text, remote + "/" + curLocalBranch));
+                TaskDialogCommandLink btnPullFrom = new("PullFrom", null, string.Format(_noRemoteBranchForFetchButton.Text, remote + "/" + curLocalBranch));
                 btnPullFrom.Click += (s, e) =>
                 {
                     dialogResult = 0;

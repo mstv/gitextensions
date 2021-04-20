@@ -361,7 +361,7 @@ See the changes in the commit form.");
                     case GitObjectType.Blob:
                     case GitObjectType.Commit:
                     {
-                        var file = new GitItemStatus(name: gitItem.FileName)
+                        GitItemStatus file = new(name: gitItem.FileName)
                         {
                             IsTracked = true,
                             TreeGuid = gitItem.ObjectId,

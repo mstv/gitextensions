@@ -68,7 +68,7 @@ namespace GitExtensions.Plugins.AutoCompileSubmodules
 
             var msbuildPath = _msBuildPath.ValueOrDefault(Settings);
 
-            var workingDir = new DirectoryInfo(args.GitModule.WorkingDir);
+            DirectoryInfo workingDir = new(args.GitModule.WorkingDir);
             var solutionFiles = workingDir.GetFiles("*.sln", SearchOption.AllDirectories);
 
             for (var n = solutionFiles.Length - 1; n > 0; n--)

@@ -156,7 +156,7 @@ namespace GitUI
                 static Bitmap ScaleHeight(Bitmap input)
                 {
                     Debug.Assert(input.Height < rowHeight, "Can only increase row height");
-                    var scaled = new Bitmap(input.Width, rowHeight, input.PixelFormat);
+                    Bitmap scaled = new(input.Width, rowHeight, input.PixelFormat);
                     using var g = Graphics.FromImage(scaled);
                     g.DrawImageUnscaled(input, 0, (rowHeight - input.Height) / 2);
 
@@ -943,7 +943,7 @@ namespace GitUI
                         continue;
                     }
 
-                    var listItem = new ListViewItem(string.Empty, group);
+                    ListViewItem listItem = new(string.Empty, group);
 
                     if (!item.IsStatusOnly || !string.IsNullOrWhiteSpace(item.ErrorMessage))
                     {
@@ -1105,7 +1105,7 @@ namespace GitUI
 
             int GetWidth()
             {
-                var pathFormatter = new PathFormatter(FileStatusListView.CreateGraphics(), FileStatusListView.Font);
+                PathFormatter pathFormatter = new(FileStatusListView.CreateGraphics(), FileStatusListView.Font);
                 var controlWidth = FileStatusListView.ClientSize.Width;
 
                 var contentWidth = FileStatusListView.Items()
@@ -1274,7 +1274,7 @@ namespace GitUI
                     Name = separatorKey,
                     Visible = mayBeMultipleRevs
                 });
-                var showAllDiferencesItem = new ToolStripMenuItem(TranslatedStrings.ShowDiffForAllParentsText)
+                ToolStripMenuItem showAllDiferencesItem = new(TranslatedStrings.ShowDiffForAllParentsText)
                 {
                     Checked = AppSettings.ShowDiffForAllParents,
                     ToolTipText = TranslatedStrings.ShowDiffForAllParentsTooltip,
@@ -1329,7 +1329,7 @@ namespace GitUI
         private void FileStatusListView_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
             var item = e.Item;
-            var formatter = new PathFormatter(e.Graphics, FileStatusListView.Font);
+            PathFormatter formatter = new(e.Graphics, FileStatusListView.Font);
 
             var (image, prefix, text, suffix, prefixTextStartX, _, textMaxWidth) = FormatListViewItem(item, formatter, item.Bounds.Width);
 
@@ -1345,7 +1345,7 @@ namespace GitUI
 
             if (!string.IsNullOrEmpty(text))
             {
-                var textRect = new Rectangle(prefixTextStartX, item.Bounds.Top, textMaxWidth, item.Bounds.Height);
+                Rectangle textRect = new(prefixTextStartX, item.Bounds.Top, textMaxWidth, item.Bounds.Height);
 
                 Color grayTextColor = item.Selected
                     ? ColorHelper.GetHighlightGrayTextColor(
@@ -1490,7 +1490,7 @@ namespace GitUI
                 ListViewItem? hoveredItem;
                 try
                 {
-                    var point = new Point(e.X, e.Y);
+                    Point point = new(e.X, e.Y);
                     hoveredItem = listView.HitTest(point).Item;
                 }
                 catch (ArgumentOutOfRangeException)

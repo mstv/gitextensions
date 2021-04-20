@@ -77,7 +77,7 @@ namespace GitUI.CommandsDialogs
                 {
                     EnsurePageant(remote);
 
-                    var cmd = new GitDeleteRemoteBranchesCmd(remote, branches.Select(x => x.LocalName));
+                    GitDeleteRemoteBranchesCmd cmd = new(remote, branches.Select(x => x.LocalName));
 
                     bool success = ScriptManager.RunEventScripts(this, ScriptEvent.BeforePush);
                     if (!success)
@@ -85,7 +85,7 @@ namespace GitUI.CommandsDialogs
                         return;
                     }
 
-                    using var form = new FormRemoteProcess(UICommands, process: null, cmd.Arguments)
+                    using FormRemoteProcess form = new(UICommands, process: null, cmd.Arguments)
                     {
                         Remote = remote
                     };

@@ -186,11 +186,11 @@ namespace GitUI.CommandsDialogs
                 var headId = Module.RevParse("HEAD");
                 Validates.NotNull(headId);
                 GitRevision headRev = new(headId);
-                var indexRev = new GitRevision(ObjectId.IndexId)
+                GitRevision indexRev = new(ObjectId.IndexId)
                 {
                     ParentIds = new[] { headId }
                 };
-                var workTreeRev = new GitRevision(ObjectId.WorkTreeId)
+                GitRevision workTreeRev = new(ObjectId.WorkTreeId)
                 {
                     ParentIds = new[] { ObjectId.IndexId }
                 };

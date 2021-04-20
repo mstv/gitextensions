@@ -40,7 +40,7 @@ namespace GitExtensions.UITests.UserControls.CommitInfo
             _gitExecutable = new MockExecutable();
             typeof(GitModule).GetField("_gitExecutable", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(_commands.Module, _gitExecutable);
-            var cmdRunner = new GitCommandRunner(_gitExecutable, () => GitModule.SystemEncoding);
+            GitCommandRunner cmdRunner = new(_gitExecutable, () => GitModule.SystemEncoding);
             typeof(GitModule).GetField("_gitCommandRunner", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(_commands.Module, cmdRunner);
         }

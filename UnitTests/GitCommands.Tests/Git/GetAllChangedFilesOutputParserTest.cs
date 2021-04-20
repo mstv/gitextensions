@@ -24,7 +24,7 @@ namespace GitCommandsTests.Git.Commands
         public void TestGetStatusChangedFilesFromString(string testName, string statusString)
         {
             // TODO produce a valid working directory
-            var module = new GitModule(Path.GetTempPath());
+            GitModule module = new(Path.GetTempPath());
             GetAllChangedFilesOutputParser getAllChangedFilesOutputParser = new(() => module);
 
             using (ApprovalResults.ForScenario(testName.Replace(' ', '_')))

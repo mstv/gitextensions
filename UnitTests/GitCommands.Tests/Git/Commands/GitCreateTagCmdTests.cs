@@ -40,7 +40,7 @@ namespace GitCommandsTests.Git.Commands
         [TestCase("  ")]
         public void Validate_should_throw_for_SignWithSpecificKey_if_tag_keyId_invalid(string signKeyId)
         {
-            var args = new GitCreateTagArgs(TagName, Revision, TagOperation.SignWithSpecificKey, signKeyId: signKeyId);
+            GitCreateTagArgs args = new(TagName, Revision, TagOperation.SignWithSpecificKey, signKeyId: signKeyId);
             GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             Assert.Throws<ArgumentException>(() => cmd.Validate());
@@ -59,7 +59,7 @@ namespace GitCommandsTests.Git.Commands
         [TestCase(false, "tag -s -F \"c:/.git/TAGMESSAGE\" \"bla\" -- 0123456789012345678901234567890123456789")]
         public void ToLine_should_render_force_flag(bool force, string expected)
         {
-            var args = new GitCreateTagArgs(TagName, Revision, TagOperation.SignWithDefaultKey, TagMessage, KeyId, force);
+            GitCreateTagArgs args = new(TagName, Revision, TagOperation.SignWithDefaultKey, TagMessage, KeyId, force);
             GitCreateTagCmd cmd = new(args, TagMessageFile);
 
             var cmdLine = cmd.Arguments;

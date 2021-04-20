@@ -96,7 +96,7 @@ namespace GitUI.CommandsDialogs
                     return;
                 }
 
-                var cmd = new GitDeleteBranchCmd(selectedBranches, ForceDelete.Checked);
+                GitDeleteBranchCmd cmd = new(selectedBranches, ForceDelete.Checked);
                 UICommands.StartCommandLineProcessDialog(this, cmd);
             }
             catch (Exception ex)

@@ -95,7 +95,7 @@ namespace GitUI.UserControls
         /// </remarks>
         public void SetGroups(IReadOnlyList<ListViewGroup> groups, StringComparer nameComparer)
         {
-            var groupNames = new HashSet<string>(groups.Select(g => g.Name), nameComparer);
+            HashSet<string> groupNames = new(groups.Select(g => g.Name), nameComparer);
 
             BeginGroupInsertion();
 

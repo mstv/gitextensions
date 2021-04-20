@@ -150,7 +150,7 @@ namespace GitUI.CommandsDialogs.WorktreeDialog
 
                 try
                 {
-                    var directoryInfo = new DirectoryInfo(newWorktreeDirectory.Text);
+                    DirectoryInfo directoryInfo = new(newWorktreeDirectory.Text);
                     return !directoryInfo.Exists || (!directoryInfo.EnumerateFiles().Any() && !directoryInfo.EnumerateDirectories().Any());
                 }
                 catch

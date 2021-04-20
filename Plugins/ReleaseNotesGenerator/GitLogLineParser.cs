@@ -26,7 +26,7 @@ namespace GitExtensions.Plugins.ReleaseNotesGenerator
                 return null;
             }
 
-            var logLine = new LogLine(m.Groups[1].Value, m.Groups[2].Value);
+            LogLine logLine = new(m.Groups[1].Value, m.Groups[2].Value);
             return logLine;
         }
 

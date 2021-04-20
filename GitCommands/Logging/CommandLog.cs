@@ -162,7 +162,7 @@ namespace GitCommands.Logging
         {
             const int MaxEntryCount = 500;
 
-            var entry = new CommandLogEntry(fileName, arguments, workDir, DateTime.Now, ThreadHelper.JoinableTaskContext.IsOnMainThread);
+            CommandLogEntry entry = new(fileName, arguments, workDir, DateTime.Now, ThreadHelper.JoinableTaskContext.IsOnMainThread);
 
             if (CaptureCallStacks)
             {

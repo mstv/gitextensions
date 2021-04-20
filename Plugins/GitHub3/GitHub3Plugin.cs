@@ -117,7 +117,7 @@ namespace GitExtensions.Plugins.GitHub3
         {
             if (string.IsNullOrEmpty(GitHubLoginInfo.OAuthToken))
             {
-                var authorizationApiUrl = new Uri(new Uri(GitHubApiEndpoint), GitHubAuthorizationRelativeUrl).ToString();
+                Uri authorizationApiUrl = new(new Uri(GitHubApiEndpoint), GitHubAuthorizationRelativeUrl).ToString();
                 using GitHubCredentialsPrompt gitHubCredentialsPrompt = new(authorizationApiUrl);
 
                 gitHubCredentialsPrompt.ShowDialog(args.OwnerForm);
@@ -234,7 +234,7 @@ namespace GitExtensions.Plugins.GitHub3
                 return;
             }
 
-            var toolStripMenuItem = new ToolStripMenuItem(string.Format(_viewInWebSite.Text, Name), Icon);
+            ToolStripMenuItem toolStripMenuItem = new(string.Format(_viewInWebSite.Text, Name), Icon);
             contextMenu.Items.Add(toolStripMenuItem);
             toolStripMenuItem.Click += (s, e) => Process.Start(_hostedRemotesForModule.First().Data);
 

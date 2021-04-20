@@ -30,7 +30,7 @@ namespace ResourceManager
         /// <see href="http://stackoverflow.com/questions/11/how-do-i-calculate-relative-time"/>
         public static string GetRelativeDateString(DateTime originDate, DateTime previousDate, bool displayWeeks = true)
         {
-            var ts = new TimeSpan(RoundDateTime(originDate).Ticks - RoundDateTime(previousDate).Ticks);
+            TimeSpan ts = new(RoundDateTime(originDate).Ticks - RoundDateTime(previousDate).Ticks);
             double delta = Math.Abs(ts.TotalSeconds);
 
             if (delta < 60)

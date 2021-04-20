@@ -40,7 +40,7 @@ namespace GitCommands.ExternalLinks
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var cachedSettings = new RepoDistSettings(null, settings.SettingsCache, SettingLevel.Unknown);
+            RepoDistSettings cachedSettings = new(null, settings.SettingsCache, SettingLevel.Unknown);
             IEnumerable<ExternalLinkDefinition>? effective = _externalLinksStorage.Load(cachedSettings);
 
             Validates.NotNull(effective);

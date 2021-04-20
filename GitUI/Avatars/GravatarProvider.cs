@@ -38,7 +38,7 @@ namespace GitUI.Avatars
             var fallback = SerializeFallbackType(_fallback) ?? "404";
             var hash = ComputeHash(email);
 
-            var uri = new UriBuilder("https", "www.gravatar.com")
+            UriBuilder uri = new("https", "www.gravatar.com")
             {
                 Path = $"/avatar/{hash}",
                 Query = $"s={imageSize}&r={_rating}&d={fallback}"

@@ -77,7 +77,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -206,7 +206,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -269,7 +269,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -510,7 +510,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -687,7 +687,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -867,7 +867,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1047,7 +1047,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1227,7 +1227,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1318,7 +1318,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1446,7 +1446,7 @@ namespace GitCommandsTests.Settings
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            RepoDistSettings container = new(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {

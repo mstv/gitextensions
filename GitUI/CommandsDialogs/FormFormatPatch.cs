@@ -212,14 +212,14 @@ namespace GitUI.CommandsDialogs
 
                 string to = MailTo.Text;
 
-                using var mail = new MailMessage(from, to, MailSubject.Text, MailBody.Text);
+                using MailMessage mail = new(from, to, MailSubject.Text, MailBody.Text);
                 foreach (string file in Directory.GetFiles(dir, "*.patch"))
                 {
                     Attachment attachment = new(file);
                     mail.Attachments.Add(attachment);
                 }
 
-                var smtpClient = new SmtpClient(AppSettings.SmtpServer)
+                SmtpClient smtpClient = new(AppSettings.SmtpServer)
                 {
                     Port = AppSettings.SmtpPort,
                     EnableSsl = AppSettings.SmtpUseSsl

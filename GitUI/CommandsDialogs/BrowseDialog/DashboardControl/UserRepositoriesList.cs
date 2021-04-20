@@ -556,12 +556,12 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
                 e.DrawBackground();
             }
 
-            var pointImage = new PointF(e.Bounds.Left + spacing4, e.Bounds.Top + (spacing2 * 4));
+            PointF pointImage = new(e.Bounds.Left + spacing4, e.Bounds.Top + (spacing2 * 4));
 
             // render anchor icon
             if (!string.IsNullOrWhiteSpace((e.Item.Tag as Repository)?.Category))
             {
-                var pointImage1 = new PointF(pointImage.X + imageList1.ImageSize.Width - 12, e.Bounds.Top + spacing2);
+                PointF pointImage1 = new(pointImage.X + imageList1.ImageSize.Width - 12, e.Bounds.Top + spacing2);
                 e.Graphics.DrawImage(Images.Star, pointImage1.X, pointImage1.Y, 16, 16);
             }
 
@@ -569,12 +569,12 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
             e.Graphics.DrawImage(imageList1.Images[e.Item.ImageIndex], pointImage);
 
             // render path
-            var textPadding = new PointF(e.Bounds.Left + spacing4, e.Bounds.Top + spacing6);
-            var pointPath = new PointF(textPadding.X + textOffset, textPadding.Y);
+            PointF textPadding = new(e.Bounds.Left + spacing4, e.Bounds.Top + spacing6);
+            PointF pointPath = new(textPadding.X + textOffset, textPadding.Y);
             var pathBounds = DrawText(e.Graphics, e.Item.Text, AppSettings.Font, _foreColorBrush, textWidth, pointPath, spacing4 * 2);
 
             // render branch
-            var pointBranch = new PointF(pointPath.X, pointPath.Y + pathBounds.Height + spacing1);
+            PointF pointBranch = new(pointPath.X, pointPath.Y + pathBounds.Height + spacing1);
             var branchBounds = DrawText(e.Graphics, e.Item.SubItems[1].Text, _secondaryFont, _branchNameColorBrush, textWidth, pointBranch, spacing4 * 2);
 
             // render category
@@ -590,7 +590,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
             {
                 var textBounds = TextRenderer.MeasureText(text, font);
                 var minWidth = Math.Min(textBounds.Width + spacing, maxTextWidth);
-                var bounds = new RectangleF(location, new SizeF(minWidth, textBounds.Height));
+                RectangleF bounds = new(location, new SizeF(minWidth, textBounds.Height));
                 var text1 = Math.Abs(maxTextWidth - minWidth) < float.Epsilon ? ShortenText(text, font, minWidth) : text;
                 g.DrawString(text1, font, brush, bounds, StringFormat.GenericTypographic);
 

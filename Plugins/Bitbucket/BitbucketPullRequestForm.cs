@@ -89,7 +89,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 Validates.NotNull(_settings.RepoSlug);
 
                 List<Repository> list = new();
-                var getDefaultRepo = new GetRepoRequest(_settings.ProjectKey, _settings.RepoSlug, _settings);
+                GetRepoRequest getDefaultRepo = new(_settings.ProjectKey, _settings.RepoSlug, _settings);
                 var defaultRepo = await getDefaultRepo.SendAsync().ConfigureAwait(false);
                 if (defaultRepo.Success)
                 {
@@ -124,7 +124,7 @@ namespace GitExtensions.Plugins.Bitbucket
                 Validates.NotNull(_settings.RepoSlug);
 
                 List<PullRequest> list = new();
-                var getPullRequests = new GetPullRequest(_settings.ProjectKey, _settings.RepoSlug, _settings);
+                GetPullRequest getPullRequests = new(_settings.ProjectKey, _settings.RepoSlug, _settings);
                 var result = await getPullRequests.SendAsync().ConfigureAwait(false);
                 if (result.Success)
                 {

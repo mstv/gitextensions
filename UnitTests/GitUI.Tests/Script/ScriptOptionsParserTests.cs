@@ -109,7 +109,7 @@ namespace GitUITests.Script
         [Test]
         public void GetCurrentRevision_should_return_expected_if_current_revision_has_no_refs()
         {
-            var revision = new GitRevision(ObjectId.IndexId);
+            GitRevision revision = new(ObjectId.IndexId);
             _module.GetRevision(shortFormat: true, loadRefs: true).Returns(x => revision);
 
             var result = ScriptOptionsParser.GetTestAccessor()
@@ -153,7 +153,7 @@ namespace GitUITests.Script
         public void Parse_should_parse_c_arguments()
         {
             const string Subject = "line1";
-            var revision = new GitRevision(ObjectId.IndexId)
+            GitRevision revision = new(ObjectId.IndexId)
             {
                 Subject = Subject,
                 Body = $"{Subject}\n\nline3"
@@ -172,7 +172,7 @@ namespace GitUITests.Script
         public void Parse_should_parse_s_arguments()
         {
             const string Subject = "line1";
-            var revision = new GitRevision(ObjectId.IndexId)
+            GitRevision revision = new(ObjectId.IndexId)
             {
                 Subject = Subject,
                 Body = $"{Subject}\n\nline3"

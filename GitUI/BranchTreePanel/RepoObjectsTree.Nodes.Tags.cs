@@ -135,7 +135,7 @@ namespace GitUI.BranchTreePanel
                     token.ThrowIfCancellationRequested();
 
                     bool isVisible = !IsFiltering.Value || (tag.ObjectId is not null && _refsSource.Contains(tag.ObjectId));
-                    var tagNode = new TagNode(this, tag.ObjectId, tag.Name, isVisible);
+                    TagNode tagNode = new(this, tag.ObjectId, tag.Name, isVisible);
                     var parent = tagNode.CreateRootNode(pathToNodes, (tree, parentPath) => new BasePathNode(tree, parentPath));
                     if (parent is not null)
                     {

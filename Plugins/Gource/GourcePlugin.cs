@@ -113,7 +113,7 @@ namespace GitExtensions.Plugins.Gource
                 }
             }
 
-            using var gourceStart = new GourceStart(pathToGource, args, _gourceArguments.ValueOrDefault(Settings));
+            using GourceStart gourceStart = new(pathToGource, args, _gourceArguments.ValueOrDefault(Settings));
             gourceStart.ShowDialog(args.OwnerForm);
             Settings.SetValue(_gourceArguments.Name, gourceStart.GourceArguments, s => s);
             Settings.SetValue(_gourcePath.Name, gourceStart.PathToGource, s => s);
@@ -245,7 +245,7 @@ namespace GitExtensions.Plugins.Gource
 
                 // find http://gource.googlecode.com/files/gource-0.26b.win32.zip
                 // find http://gource.googlecode.com/files/gource-0.34-rc2.win32.zip
-                var regEx = new Regex(@"(?:<a .*href="")(.*gource-.{3,15}win32\.zip)""");
+                Regex regEx = new(@"(?:<a .*href="")(.*gource-.{3,15}win32\.zip)""");
 
                 var matches = regEx.Matches(response);
 

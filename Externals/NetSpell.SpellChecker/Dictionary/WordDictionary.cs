@@ -374,7 +374,7 @@ namespace NetSpell.SpellChecker.Dictionary
             TryCharacters = "";
 
             // the following is used to split a line by white space
-            var spaceRegex = new Regex(@"[^\s]+", RegexOptions.Compiled);
+            Regex spaceRegex = new(@"[^\s]+", RegexOptions.Compiled);
 
             string currentSection = "";
             AffixRule currentRule = null;

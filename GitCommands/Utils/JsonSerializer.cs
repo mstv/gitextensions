@@ -16,7 +16,7 @@ namespace GitCommands.Utils
         public static T? Deserialize<T>(string myString) where T : class
         {
             var json = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(myString));
+            MemoryStream stream = new(Encoding.UTF8.GetBytes(myString));
             return (T?)json.ReadObject(stream);
         }
     }

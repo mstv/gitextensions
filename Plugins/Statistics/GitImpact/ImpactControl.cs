@@ -257,7 +257,7 @@ namespace GitExtensions.Plugins.GitImpact
                 foreach (var (point, size) in _lineLabels[author])
                 {
                     SizeF sz = g.MeasureString(size.ToString(), font);
-                    var pt = new PointF(point.X - (sz.Width / 2), point.Y - (sz.Height / 2));
+                    PointF pt = new(point.X - (sz.Width / 2), point.Y - (sz.Height / 2));
                     g.DrawString(size.ToString(), font, brush, pt);
                 }
             }
@@ -273,7 +273,7 @@ namespace GitExtensions.Plugins.GitImpact
                 foreach (var (point, date) in _weekLabels)
                 {
                     SizeF sz = g.MeasureString(date.ToString("dd. MMM yy"), font);
-                    var pt = new PointF(point.X - (sz.Width / 2), point.Y + (sz.Height / 2));
+                    PointF pt = new(point.X - (sz.Width / 2), point.Y + (sz.Height / 2));
                     g.DrawString(date.ToString("dd. MMM yy"), font, brush, pt);
                 }
             }
@@ -346,7 +346,7 @@ namespace GitExtensions.Plugins.GitImpact
                 {
                     var (point, date) = _weekLabels[i];
 
-                    var adjustedPoint = new PointF(point.X, point.Y * (float)height_factor);
+                    PointF adjustedPoint = new(point.X, point.Y * (float)height_factor);
 
                     _weekLabels[i] = (adjustedPoint, date);
                 }
@@ -378,7 +378,7 @@ namespace GitExtensions.Plugins.GitImpact
 
                         if (rect.Height > LinesFontSize * 1.5)
                         {
-                            var adjustedPoint = new PointF(rect.Left + (BlockWidth / 2), rect.Top + (rect.Height / 2));
+                            PointF adjustedPoint = new(rect.Left + (BlockWidth / 2), rect.Top + (rect.Height / 2));
 
                             _lineLabels[author].Add((adjustedPoint, num));
                         }

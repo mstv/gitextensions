@@ -39,7 +39,7 @@ namespace GitCommandsTests.Git
         {
             var firstSelected = new[] { ObjectId.IndexId, ObjectId.Random() };
 
-            var selectedRevision = new GitRevision(ObjectId.WorkTreeId)
+            GitRevision selectedRevision = new(ObjectId.WorkTreeId)
             {
                 ParentIds = new[] { ObjectId.IndexId }
             };
@@ -59,7 +59,7 @@ namespace GitCommandsTests.Git
                 parent2
             };
 
-            var selectedRevision2 = new GitRevision(ObjectId.Random())
+            GitRevision selectedRevision2 = new(ObjectId.Random())
             {
                 ParentIds = new[] { parent1, parent2 }
             };

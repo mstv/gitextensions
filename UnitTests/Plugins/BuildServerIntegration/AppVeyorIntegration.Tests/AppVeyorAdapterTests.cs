@@ -25,7 +25,7 @@ namespace AppVeyorIntegrationTests
         [Test]
         public void Should_return_no_build_Info_When_Api_Json_is_empty()
         {
-            var buildInfo = new AppVeyorAdapter().ExtractBuildInfo(_projectId, string.Empty);
+            AppVeyorAdapter buildInfo = new().ExtractBuildInfo(_projectId, string.Empty);
 
             buildInfo.Should().HaveCount(0);
         }

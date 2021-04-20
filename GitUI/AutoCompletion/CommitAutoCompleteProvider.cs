@@ -136,7 +136,7 @@ namespace GitUI.AutoCompletion
                 var regexStr = line.Substring(i + 1).Trim();
 
                 var extensions = extensionStr.LazySplit(',').Select(s => s.Trim()).Distinct();
-                var regex = new Regex(regexStr, RegexOptions.Compiled);
+                Regex regex = new(regexStr, RegexOptions.Compiled);
 
                 foreach (var extension in extensions)
                 {

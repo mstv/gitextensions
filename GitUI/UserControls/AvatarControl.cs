@@ -122,7 +122,7 @@ namespace GitUI
             await this.SwitchToMainThreadAsync();
 
             // resize our control (I'm not using AutoSize for a reason)
-            var size = new Size(AppSettings.AuthorImageSizeInCommitInfo, AppSettings.AuthorImageSizeInCommitInfo);
+            Size size = new(AppSettings.AuthorImageSizeInCommitInfo, AppSettings.AuthorImageSizeInCommitInfo);
 
             DpiUtil.Scale(ref size);
 

@@ -467,7 +467,7 @@ namespace GitUI.UserControls.RevisionGrid
                     CancellationToken backgroundOperationCancellation;
                     try
                     {
-                        using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+                        using CancellationTokenSource timeoutTokenSource = new(TimeSpan.FromMilliseconds(200));
                         using var linkedCancellation = timeoutTokenSource.Token.CombineWith(cancellationToken);
                         timeoutToken = timeoutTokenSource.Token;
                         (backgroundOperation, backgroundOperationCancellation) = await _backgroundQueue.DequeueAsync(linkedCancellation.Token);

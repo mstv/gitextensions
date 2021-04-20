@@ -452,7 +452,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormCommit(this, CommitKind.Squash, revision);
+                using FormCommit form = new(this, CommitKind.Squash, revision);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -464,7 +464,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormCommit(this, CommitKind.Fixup, revision);
+                using FormCommit form = new(this, CommitKind.Fixup, revision);
                 form.ShowDialog(owner);
                 return true;
             }
@@ -856,7 +856,7 @@ namespace GitUI
         {
             bool Action()
             {
-                using var form = new FormCreateTag(this, revision?.ObjectId);
+                using FormCreateTag form = new(this, revision?.ObjectId);
                 return form.ShowDialog(owner) == DialogResult.OK;
             }
 

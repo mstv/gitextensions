@@ -100,7 +100,7 @@ namespace GitUI.CommandsDialogs
 
             static ToolStripItem CreateItem(ToolStrip senderToolStrip)
             {
-                var toolStripItem = new ToolStripMenuItem(senderToolStrip.Text)
+                ToolStripMenuItem toolStripItem = new(senderToolStrip.Text)
                 {
                     Checked = senderToolStrip.Visible,
                     CheckOnClick = true,

@@ -24,7 +24,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
         {
             base.OnLoad(e);
 
-            var translations = new List<string>(Translator.GetAllTranslations());
+            List<string> translations = new(Translator.GetAllTranslations());
             translations.Sort();
             translations.Insert(0, "English");
 

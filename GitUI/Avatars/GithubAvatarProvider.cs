@@ -94,8 +94,8 @@ namespace GitUI.Avatars
                         return null;
                     }
 
-                    var builder = new UriBuilder(userProfile.AvatarUrl);
-                    var query = new StringBuilder(builder.Query.TrimStart('?'));
+                    UriBuilder builder = new(userProfile.AvatarUrl);
+                    StringBuilder query = new(builder.Query.TrimStart('?'));
                     query.Append(query.Length == 0 ? "?" : "&");
                     query.Append("s=").Append(imageSize);
                     builder.Query = query.ToString();

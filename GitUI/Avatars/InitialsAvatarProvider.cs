@@ -104,7 +104,7 @@ namespace GitUI.Avatars
             lock (_avatarColors)
             {
                 var fontSizeEstimation = size / 4.0f;
-                var font = new Font(AppSettings.CommitFont.FontFamily, fontSizeEstimation);
+                Font font = new(AppSettings.CommitFont.FontFamily, fontSizeEstimation);
 
                 SizeF textSize = _graphics.MeasureString(text, font);
 

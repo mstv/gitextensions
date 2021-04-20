@@ -93,7 +93,7 @@ namespace GitUI.BranchTreePanel
                     var remoteName = branch.Name.SubstringUntil('/');
                     if (remoteByName.TryGetValue(remoteName, out Remote remote))
                     {
-                        var remoteBranchNode = new RemoteBranchNode(this, branch.ObjectId, branch.Name, isVisible);
+                        RemoteBranchNode remoteBranchNode = new(this, branch.ObjectId, branch.Name, isVisible);
 
                         var parent = remoteBranchNode.CreateRootNode(
                             pathToNodes,
@@ -129,11 +129,11 @@ namespace GitUI.BranchTreePanel
                     List<RemoteRepoNode> disabledRemoteRepoNodes = new();
                     foreach (var remote in disabledRemotes.OrderBy(remote => remote.Name))
                     {
-                        var node = new RemoteRepoNode(this, remote.Name, remotesManager, remote, false);
+                        RemoteRepoNode node = new(this, remote.Name, remotesManager, remote, false);
                         disabledRemoteRepoNodes.Add(node);
                     }
 
-                    var disabledFolderNode = new RemoteRepoFolderNode(this, TranslatedStrings.Inactive);
+                    RemoteRepoFolderNode disabledFolderNode = new(this, TranslatedStrings.Inactive);
                     disabledRemoteRepoNodes
                         .OrderBy(node => node.FullPath)
                         .ForEach(node => disabledFolderNode.Nodes.AddNode(node));

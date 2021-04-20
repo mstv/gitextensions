@@ -548,7 +548,7 @@ namespace GitUI.CommandsDialogs
 
             // if push was rejected, offer force push and for current branch also pull/merge
             // Note that the Git output contains color codes etc too
-            var isRejected = new Regex($"! \\[rejected\\] .* ((?<currBranch>{Regex.Escape(_currentBranchName)})|.*) -> ");
+            Regex isRejected = new($"! \\[rejected\\] .* ((?<currBranch>{Regex.Escape(_currentBranchName)})|.*) -> ");
             Match match = isRejected.Match(form.GetOutputString());
             if (match.Success && !Module.IsBareRepository())
             {
@@ -662,19 +662,19 @@ namespace GitUI.CommandsDialogs
                     dialogResult = 0;
                     dialog.Close();
                 };
-                var btnPullRebase = new TaskDialogCommandLink("PullRebase", null, _pullRebaseButton.Text);
+                TaskDialogCommandLink btnPullRebase = new("PullRebase", null, _pullRebaseButton.Text);
                 btnPullRebase.Click += (s, e) =>
                 {
                     dialogResult = 1;
                     dialog.Close();
                 };
-                var btnPullMerge = new TaskDialogCommandLink("PullMerge", null, _pullMergeButton.Text);
+                TaskDialogCommandLink btnPullMerge = new("PullMerge", null, _pullMergeButton.Text);
                 btnPullMerge.Click += (s, e) =>
                 {
                     dialogResult = 2;
                     dialog.Close();
                 };
-                var btnPushForce = new TaskDialogCommandLink("PushForce", null, _pushForceButton.Text);
+                TaskDialogCommandLink btnPushForce = new("PushForce", null, _pushForceButton.Text);
                 btnPushForce.Click += (s, e) =>
                 {
                     dialogResult = 3;
@@ -910,7 +910,7 @@ namespace GitUI.CommandsDialogs
                 // Solution: when pushing a branch that doesn't exist on the remote, ask what to do
                 Validates.NotNull(_currentBranchName);
                 Validates.NotNull(_selectedRemote.Name);
-                var currentBranch = new GitRef(Module, null, _currentBranchName, _selectedRemote.Name);
+                GitRef currentBranch = new(Module, null, _currentBranchName, _selectedRemote.Name);
                 _NO_TRANSLATE_Branch.Items.Add(currentBranch);
                 _NO_TRANSLATE_Branch.SelectedItem = currentBranch;
             }

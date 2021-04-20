@@ -93,7 +93,7 @@ namespace GitCommands
             }
 
             // Turn ssh://user@host/path into user@host:path, which works better
-            var uri = new Uri(inputUrl, UriKind.Absolute);
+            Uri uri = new(inputUrl, UriKind.Absolute);
 
             StringBuilder fixedUrl = new();
 

@@ -35,7 +35,7 @@ namespace GitCommands
             {
                 if (_current is null || _current.IsUnknown)
                 {
-                    var output = new Executable(AppSettings.GitCommand).GetOutput("--version");
+                    Executable output = new(AppSettings.GitCommand).GetOutput("--version");
                     _current = new GitVersion(output);
                 }
 

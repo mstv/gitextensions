@@ -73,11 +73,11 @@ namespace GitExtUtils.GitUI.Theming
             KnownColor highlightColorName,
             float degreeOfGrayness = 1f)
         {
-            var grayTextHsl = new HslColor(ThemeSettings.InvariantTheme.GetNonEmptyColor(KnownColor.GrayText));
-            var textHsl = new HslColor(ThemeSettings.InvariantTheme.GetNonEmptyColor(textColorName));
-            var highlightTextHsl = new HslColor(ThemeSettings.InvariantTheme.GetNonEmptyColor(KnownColor.HighlightText));
-            var backgroundHsl = new HslColor(ThemeSettings.InvariantTheme.GetNonEmptyColor(backgroundColorName));
-            var highlightBackgroundHsl = new HslColor(ThemeSettings.InvariantTheme.GetNonEmptyColor(highlightColorName));
+            HslColor grayTextHsl = new(ThemeSettings.InvariantTheme.GetNonEmptyColor(KnownColor.GrayText));
+            HslColor textHsl = new(ThemeSettings.InvariantTheme.GetNonEmptyColor(textColorName));
+            HslColor highlightTextHsl = new(ThemeSettings.InvariantTheme.GetNonEmptyColor(KnownColor.HighlightText));
+            HslColor backgroundHsl = new(ThemeSettings.InvariantTheme.GetNonEmptyColor(backgroundColorName));
+            HslColor highlightBackgroundHsl = new(ThemeSettings.InvariantTheme.GetNonEmptyColor(highlightColorName));
 
             double grayTextL = textHsl.L + (degreeOfGrayness * (grayTextHsl.L - textHsl.L));
 
@@ -96,8 +96,8 @@ namespace GitExtUtils.GitUI.Theming
         /// </summary>
         public static Color GetGrayTextColor(KnownColor textColorName, float degreeOfGrayness = 1f)
         {
-            var grayTextHsl = new HslColor(ThemeSettings.InvariantTheme.GetNonEmptyColor(KnownColor.GrayText));
-            var textHsl = new HslColor(ThemeSettings.InvariantTheme.GetNonEmptyColor(textColorName));
+            HslColor grayTextHsl = new(ThemeSettings.InvariantTheme.GetNonEmptyColor(KnownColor.GrayText));
+            HslColor textHsl = new(ThemeSettings.InvariantTheme.GetNonEmptyColor(textColorName));
 
             double grayTextL = textHsl.L + (degreeOfGrayness * (grayTextHsl.L - textHsl.L));
             var highlightGrayTextHsl = grayTextHsl.WithLuminosity(grayTextL);

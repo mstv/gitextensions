@@ -46,7 +46,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static IntPtr BeginUpdate(this RichTextBox rtb)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             return BeginUpdate(handleRef);
         }
 
@@ -71,7 +71,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void EndUpdate(this RichTextBox rtb, IntPtr oldEventMask)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             EndUpdate(handleRef, oldEventMask);
         }
 
@@ -441,7 +441,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static PARAFORMAT GetParaFormat(this RichTextBox rtb)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             return GetParaFormat(handleRef);
         }
 
@@ -457,7 +457,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void SetParaFormat(this RichTextBox rtb, PARAFORMAT value)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             SetParaFormat(handleRef, value);
         }
 
@@ -476,7 +476,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static PARAFORMAT GetDefaultParaFormat(this RichTextBox rtb)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             return GetDefaultParaFormat(handleRef);
         }
 
@@ -492,7 +492,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void SetDefaultParaFormat(this RichTextBox rtb, PARAFORMAT value)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             SetDefaultParaFormat(handleRef, value);
         }
 
@@ -511,7 +511,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static CHARFORMAT GetCharFormat(this RichTextBox rtb)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             return GetCharFormat(handleRef);
         }
 
@@ -527,7 +527,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void SetCharFormat(this RichTextBox rtb, CHARFORMAT value)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             SetCharFormat(handleRef, value);
         }
 
@@ -552,7 +552,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static CHARFORMAT GetDefaultCharFormat(this RichTextBox rtb)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             return GetDefaultCharFormat(handleRef);
         }
 
@@ -568,7 +568,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void SetDefaultCharFormat(this RichTextBox rtb, CHARFORMAT value)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             SetDefaultCharFormat(handleRef, value);
         }
 
@@ -587,7 +587,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static Point GetScrollPoint(this RichTextBox rtb)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             return GetScrollPoint(handleRef);
         }
 
@@ -598,7 +598,7 @@ namespace GitUI.Editor.RichTextBoxExtension
 
         public static void SetScrollPoint(this RichTextBox rtb, Point scrollPoint)
         {
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             SetScrollPoint(handleRef, scrollPoint);
         }
 
@@ -1230,7 +1230,7 @@ namespace GitUI.Editor.RichTextBoxExtension
             rtb.Clear();
             RTFCurrentState cs = new();
 
-            var handleRef = new HandleRef(rtb, rtb.Handle);
+            HandleRef handleRef = new(rtb, rtb.Handle);
             cs.cf = GetDefaultCharFormat(handleRef); // to apply character formatting
             cs.pf = GetDefaultParaFormat(handleRef); // to apply paragraph formatting
 
@@ -1257,7 +1257,7 @@ namespace GitUI.Editor.RichTextBoxExtension
             }
 
             // apply links style
-            var ncf = new CHARFORMAT(CFM.LINK, CFE.LINK);
+            CHARFORMAT ncf = new(CFM.LINK, CFE.LINK);
             ncf.cbSize = Marshal.SizeOf(ncf);
             foreach (var (start, length) in cs.links)
             {

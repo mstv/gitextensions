@@ -236,7 +236,7 @@ namespace GitUITests.Editor
 
             if (scanRegion.Start != default || scanRegion.End != default)
             {
-                var selection = new DefaultSelection(_textEditorControl.Document, scanRegion.Start, scanRegion.End);
+                DefaultSelection selection = new(_textEditorControl.Document, scanRegion.Start, scanRegion.End);
                 _textEditorControl.ActiveTextAreaControl.SelectionManager.SetSelection(selection);
                 _textEditorControl.ActiveTextAreaControl.Caret.Position = scanRegion.End;
                 _testAccessor.Search.SetScanRegion(selection);

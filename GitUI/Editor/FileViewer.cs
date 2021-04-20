@@ -635,7 +635,7 @@ namespace GitUI.Editor
                 }
 
                 using var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using var reader = new StreamReader(stream, Module.FilesEncoding);
+                using StreamReader reader = new(stream, Module.FilesEncoding);
                 var content = reader.ReadToEnd();
                 FilePreamble = reader.CurrentEncoding.GetPreamble();
                 return content;
@@ -1529,7 +1529,7 @@ namespace GitUI.Editor
             if (EnvUtils.RunningOnWindows())
             {
                 // remove file mode warnings
-                var regEx = new Regex("warning: .*has type .* expected .*", RegexOptions.Compiled);
+                Regex regEx = new("warning: .*has type .* expected .*", RegexOptions.Compiled);
                 output = output.RemoveLines(regEx.IsMatch);
             }
 

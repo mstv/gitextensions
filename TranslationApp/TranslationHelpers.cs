@@ -162,12 +162,12 @@ namespace TranslationApp
 
             foreach (var (key, translateItems) in items)
             {
-                var foreignTranslation = new TranslationFile(GitCommands.AppSettings.ProductVersion, "en", targetLanguageCode);
+                TranslationFile foreignTranslation = new(GitCommands.AppSettings.ProductVersion, "en", targetLanguageCode);
                 foreach (var translateItem in translateItems)
                 {
                     var item = translateItem.GetTranslationItem();
 
-                    var ti = new TranslationItem(item.Name, item.Property, item.Source, item.Value);
+                    TranslationItem ti = new(item.Name, item.Property, item.Source, item.Value);
                     ti.Value ??= string.Empty;
                     foreignTranslation.FindOrAddTranslationCategory(translateItem.Category)
                         .Body.AddTranslationItem(ti);

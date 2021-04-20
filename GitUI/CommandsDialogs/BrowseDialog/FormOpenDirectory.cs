@@ -55,7 +55,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
 
             if (!Strings.IsNullOrWhiteSpace(currentModule?.WorkingDir))
             {
-                var di = new DirectoryInfo(currentModule.WorkingDir);
+                DirectoryInfo di = new(currentModule.WorkingDir);
                 if (di.Parent is not null)
                 {
                     directories.Add(di.Parent.FullName.EnsureTrailingPathSeparator());
@@ -124,7 +124,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
         {
             try
             {
-                var currentDirectory = new DirectoryInfo(_NO_TRANSLATE_Directory.Text);
+                DirectoryInfo currentDirectory = new(_NO_TRANSLATE_Directory.Text);
                 if (currentDirectory.Parent is null)
                 {
                     return;
@@ -146,7 +146,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
         {
             try
             {
-                var currentDirectory = new DirectoryInfo(_NO_TRANSLATE_Directory.Text);
+                DirectoryInfo currentDirectory = new(_NO_TRANSLATE_Directory.Text);
                 folderGoUpButton.Enabled = currentDirectory.Exists && currentDirectory.Parent is not null;
             }
             catch
@@ -162,7 +162,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
                 return null;
             }
 
-            var chosenModule = new GitModule(path.EnsureTrailingPathSeparator());
+            GitModule chosenModule = new(path.EnsureTrailingPathSeparator());
             if (!chosenModule.IsValidGitWorkingDir())
             {
                 return null;

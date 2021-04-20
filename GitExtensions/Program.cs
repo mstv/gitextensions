@@ -143,7 +143,7 @@ namespace GitExtensions
                     if (AppSettings.CheckSettings)
                     {
                         GitUICommands uiCommands = new("");
-                        var commonLogic = new CommonLogic(uiCommands.Module);
+                        CommonLogic commonLogic = new(uiCommands.Module);
                         CheckSettingsLogic checkSettingsLogic = new(commonLogic);
                         SettingsPageHostMock fakePageHost = new(checkSettingsLogic);
                         using var checklistSettingsPage = SettingsPageBase.Create<ChecklistSettingsPage>(fakePageHost);
@@ -319,13 +319,13 @@ namespace GitExtensions
                 StandardButtons = TaskDialogStandardButtons.Cancel,
                 Cancelable = true,
             };
-            var btnFindGitExecutable = new TaskDialogCommandLink("FindGitExecutable", null, ResourceManager.TranslatedStrings.FindGitExecutable);
+            TaskDialogCommandLink btnFindGitExecutable = new("FindGitExecutable", null, ResourceManager.TranslatedStrings.FindGitExecutable);
             btnFindGitExecutable.Click += (s, e) =>
             {
                 dialogResult = 0;
                 dialog1.Close();
             };
-            var btnInstallGitInstructions = new TaskDialogCommandLink("InstallGitInstructions", null, ResourceManager.TranslatedStrings.InstallGitInstructions);
+            TaskDialogCommandLink btnInstallGitInstructions = new("InstallGitInstructions", null, ResourceManager.TranslatedStrings.InstallGitInstructions);
             btnInstallGitInstructions.Click += (s, e) =>
             {
                 dialogResult = 1;

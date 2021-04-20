@@ -406,7 +406,7 @@ namespace GitCommandsTests
         [Test]
         public void RevParse_should_return_ObjectId_if_revisionExpression_is_valid_hash()
         {
-            var revisionExpression = new string('1', ObjectId.Sha1CharCount);
+            string revisionExpression = new('1', ObjectId.Sha1CharCount);
             _gitModule.RevParse(revisionExpression).Should().Be(ObjectId.WorkTreeId);
         }
 
@@ -465,7 +465,7 @@ namespace GitCommandsTests
         public void GetDiffChangedFilesFromString(string testName, StagedStatus stagedStatus, string statusString)
         {
             // TODO produce a valid working directory
-            var module = new GitModule(Path.GetTempPath());
+            GitModule module = new(Path.GetTempPath());
             using (ApprovalResults.ForScenario(testName.Replace(' ', '_')))
             {
                 // git diff -M -C -z --name-status
@@ -967,7 +967,7 @@ namespace GitCommandsTests
 
             typeof(GitModule).GetField("_gitExecutable", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(module, executable);
-            var cmdRunner = new GitCommandRunner(executable, () => GitModule.SystemEncoding);
+            GitCommandRunner cmdRunner = new(executable, () => GitModule.SystemEncoding);
             typeof(GitModule).GetField("_gitCommandRunner", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(module, cmdRunner);
 

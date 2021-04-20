@@ -143,7 +143,7 @@ namespace GitUI.BranchTreePanel
 
                 Image Pad(Image image)
                 {
-                    var padded = new Bitmap(image.Width, image.Height + rowPadding + rowPadding, PixelFormat.Format32bppArgb);
+                    Bitmap padded = new(image.Width, image.Height + rowPadding + rowPadding, PixelFormat.Format32bppArgb);
                     using var g = Graphics.FromImage(padded);
                     g.DrawImageUnscaled(image, 0, rowPadding);
                     return padded;
@@ -329,7 +329,7 @@ namespace GitUI.BranchTreePanel
 
         private void CreateBranches()
         {
-            var rootNode = new TreeNode(TranslatedStrings.Branches)
+            TreeNode rootNode = new(TranslatedStrings.Branches)
             {
                 Name = TranslatedStrings.Branches,
                 ImageKey = nameof(Images.BranchLocalRoot),
@@ -340,7 +340,7 @@ namespace GitUI.BranchTreePanel
 
         private void CreateRemotes()
         {
-            var rootNode = new TreeNode(TranslatedStrings.Remotes)
+            TreeNode rootNode = new(TranslatedStrings.Remotes)
             {
                 Name = TranslatedStrings.Remotes,
                 ImageKey = nameof(Images.BranchRemoteRoot),
@@ -357,7 +357,7 @@ namespace GitUI.BranchTreePanel
 
         private void CreateTags()
         {
-            var rootNode = new TreeNode(TranslatedStrings.Tags)
+            TreeNode rootNode = new(TranslatedStrings.Tags)
             {
                 Name = TranslatedStrings.Tags,
                 ImageKey = nameof(Images.TagHorizontal),
@@ -368,7 +368,7 @@ namespace GitUI.BranchTreePanel
 
         private void CreateSubmodules()
         {
-            var rootNode = new TreeNode(TranslatedStrings.Submodules)
+            TreeNode rootNode = new(TranslatedStrings.Submodules)
             {
                 Name = TranslatedStrings.Submodules,
                 ImageKey = nameof(Images.FolderSubmodule),

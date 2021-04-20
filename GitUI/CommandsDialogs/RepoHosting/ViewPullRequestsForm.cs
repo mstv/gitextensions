@@ -377,7 +377,7 @@ namespace GitUI.CommandsDialogs.RepoHosting
                     return;
                 }
 
-                var gis = new GitItemStatus(name: match.Groups[2].Value.Trim())
+                GitItemStatus gis = new(name: match.Groups[2].Value.Trim())
                 {
                     IsChanged = true,
                     IsNew = false,

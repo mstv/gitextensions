@@ -177,7 +177,7 @@ namespace GitUI.CommandsDialogs
 
         private void btnChooseRevision_Click(object sender, EventArgs e)
         {
-            using var chooseForm = new FormChooseCommit(UICommands, SelectedRevision?.Guid);
+            using FormChooseCommit chooseForm = new(UICommands, SelectedRevision?.Guid);
             if (chooseForm.ShowDialog(this) == DialogResult.OK && chooseForm.SelectedRevision is not null)
             {
                 SelectedRevision = chooseForm.SelectedRevision;
@@ -195,7 +195,7 @@ namespace GitUI.CommandsDialogs
 
         private void btnDiffChooseRevision_Click(object sender, EventArgs e)
         {
-            using var chooseForm = new FormChooseCommit(UICommands, DiffSelectedRevision is not null ? DiffSelectedRevision.Guid : string.Empty);
+            using FormChooseCommit chooseForm = new(UICommands, DiffSelectedRevision is not null ? DiffSelectedRevision.Guid : string.Empty);
             if (chooseForm.ShowDialog(this) == DialogResult.OK && chooseForm.SelectedRevision is not null)
             {
                 DiffSelectedRevision = chooseForm.SelectedRevision;

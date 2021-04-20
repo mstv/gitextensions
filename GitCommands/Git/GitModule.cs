@@ -103,7 +103,7 @@ namespace GitCommands
                 if (!Strings.IsNullOrEmpty(superprojectPath) && currentPath.ToPosixPath().StartsWith(superprojectPath.ToPosixPath()))
                 {
                     var submodulePath = currentPath.Substring(superprojectPath.Length).ToPosixPath();
-                    var configFile = new ConfigFile(Path.Combine(superprojectPath, ".gitmodules"), local: true);
+                    ConfigFile configFile = new(Path.Combine(superprojectPath, ".gitmodules"), local: true);
 
                     foreach (var configSection in configFile.ConfigSections)
                     {
@@ -930,7 +930,7 @@ namespace GitCommands
             // TODO improve parsing to reduce temporary string (see similar code in RevisionReader)
             string[] lines = revInfo.Split(Delimiters.LineFeed);
 
-            var revision = new GitRevision(ObjectId.Parse(lines[0]))
+            GitRevision revision = new(ObjectId.Parse(lines[0]))
             {
                 TreeGuid = ObjectId.Parse(lines[1]),
                 ParentIds = lines[2].LazySplit(' ', StringSplitOptions.RemoveEmptyEntries).Select(line => ObjectId.Parse(line)).ToList(),
@@ -1390,7 +1390,7 @@ namespace GitCommands
 
         public static void StartPageantWithKey(string? sshKeyFile)
         {
-            var pageantExecutable = new Executable(AppSettings.Pageant);
+            Executable pageantExecutable = new(AppSettings.Pageant);
 
             // ensure pageant is loaded, so we can wait for loading a key in the next command
             // otherwise we'll stuck there waiting until pageant exits
@@ -1576,7 +1576,7 @@ namespace GitCommands
 
             foreach (var file in files)
             {
-                using var fs = new FileStream(file, FileMode.Open);
+                using FileStream fs = new(file, FileMode.Open);
                 fs.CopyTo(process.StandardInput.BaseStream);
             }
 
@@ -2252,7 +2252,7 @@ namespace GitCommands
             var args = GetStashesCmd(noLocks);
             var lines = _gitExecutable.GetOutput(args).Split(Delimiters.LineFeed);
 
-            var stashes = new List<GitStash>(lines.Length);
+            List<GitStash> stashes = new(lines.Length);
 
             foreach (var line in lines)
             {
@@ -2978,7 +2978,7 @@ namespace GitCommands
             //
             // Lines may also use \t as a column delimiter, such as output of "ls-remote --heads origin".
 
-            var regex = new Regex(@"^(?<objectid>[0-9a-f]{40})[ \t](?<refname>.+)$", RegexOptions.Multiline | RegexOptions.Compiled);
+            Regex regex = new(@"^(?<objectid>[0-9a-f]{40})[ \t](?<refname>.+)$", RegexOptions.Multiline | RegexOptions.Compiled);
 
             var matches = regex.Matches(refList);
 
@@ -3283,7 +3283,7 @@ namespace GitCommands
             Dictionary<ObjectId, GitBlameCommit> commitByObjectId = new();
             List<GitBlameLine> lines = new(capacity: 256);
 
-            var headerRegex = new Regex(@"^(?<objectid>[0-9a-f]{40}) (?<origlinenum>\d+) (?<finallinenum>\d+)", RegexOptions.Compiled);
+            Regex headerRegex = new(@"^(?<objectid>[0-9a-f]{40}) (?<origlinenum>\d+) (?<finallinenum>\d+)", RegexOptions.Compiled);
 
             bool hasCommitHeader;
             ObjectId? objectId;
@@ -3798,7 +3798,7 @@ namespace GitCommands
 
             // Get processes by "ps" command.
             var cmd = Path.Combine(AppSettings.GitBinDir, "ps");
-            var lines = new Executable(cmd).GetOutput("x").Split(Delimiters.LineFeed);
+            Executable lines = new(cmd).GetOutput("x").Split(Delimiters.LineFeed);
 
             if (lines.Length <= 2)
             {
@@ -3886,7 +3886,7 @@ namespace GitCommands
                 return null;
             }
 
-            var resultBuilder = new StringBuilder(s.Length);
+            StringBuilder resultBuilder = new(s.Length);
 
             for (int i = 0; i < s.Length; i++)
             {
@@ -4170,7 +4170,7 @@ namespace GitCommands
             Dictionary<string, int> countByName = new();
             var totalCommits = 0;
 
-            var regex = new Regex(@"^\s*(?<count>\d+)\s+(?<name>.*)$");
+            Regex regex = new(@"^\s*(?<count>\d+)\s+(?<name>.*)$");
             GitArgumentBuilder args = new("shortlog")
             {
                 "--all",

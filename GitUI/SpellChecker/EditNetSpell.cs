@@ -263,7 +263,7 @@ namespace GitUI.SpellChecker
         {
             try
             {
-                var dictionaryToolStripMenuItem = new ToolStripMenuItem(_dictionaryText.Text);
+                ToolStripMenuItem dictionaryToolStripMenuItem = new(_dictionaryText.Text);
                 SpellCheckContextMenu.Items.Add(dictionaryToolStripMenuItem);
 
                 ContextMenuStrip toolStripDropDown = new();
@@ -532,7 +532,7 @@ namespace GitUI.SpellChecker
 
             AddContextMenuSeparator();
 
-            var mi = new ToolStripMenuItem(_markIllFormedLinesText.Text)
+            ToolStripMenuItem mi = new(_markIllFormedLinesText.Text)
             {
                 Checked = AppSettings.MarkIllFormedLinesInCommitMsg
             };
