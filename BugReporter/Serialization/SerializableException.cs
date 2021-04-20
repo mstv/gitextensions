@@ -165,7 +165,7 @@ namespace BugReporter.Serialization
         public string ToXmlString()
         {
             XmlSerializer serializer = new(typeof(SerializableException));
-            using var stream = new MemoryStream();
+            using MemoryStream stream = new();
             stream.SetLength(0);
             serializer.Serialize(stream, this);
             stream.Position = 0;
