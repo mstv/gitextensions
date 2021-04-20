@@ -481,8 +481,7 @@ namespace GitUI.CommandsDialogs
 
             if (lostObject.ObjectType == LostObjectType.Blob)
             {
-                using SaveFileDialog fileDialog =
-                    new()
+                using SaveFileDialog fileDialog = new()
                     {
                         InitialDirectory = Module.WorkingDir,
                         FileName = "LOST_FOUND.txt",

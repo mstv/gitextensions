@@ -133,8 +133,7 @@ namespace GitExtensions.Plugins.Gource
 
         private void GourceBrowseClick(object sender, EventArgs e)
         {
-            using OpenFileDialog fileDialog =
-                new()
+            using OpenFileDialog fileDialog = new()
                 {
                     Filter = "Gource (gource.exe)|gource.exe",
                     FileName = GourcePath.Text
