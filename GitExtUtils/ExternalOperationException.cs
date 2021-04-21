@@ -12,16 +12,23 @@ namespace GitExtUtils
         /// Initializes a new instance of the <see cref="ExternalOperationException"/> class with a specified parameters
         /// and a reference to the inner exception that is the cause of this exception.
         /// </summary>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
         /// <param name="command">The command that led to the exception.</param>
         /// <param name="arguments">The command arguments.</param>
-        /// <param name="workingDirectory">The working directory.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public ExternalOperationException(string? command, string? arguments, string workingDirectory, Exception? innerException)
+        /// <param name="directory">The directory of the operation, e.g. the working directory or the git repo.</param>
+        /// <param name="exitCode">The exit code of an executed process.</param>
+        public ExternalOperationException(
+            Exception? innerException = null,
+            string? command = null,
+            string? arguments = null,
+            string? directory = null,
+            int? exitCode = null)
             : base(innerException?.Message, innerException)
         {
             Command = command;
             Arguments = arguments;
-            WorkingDirectory = workingDirectory;
+            Directory = directory;
+            ExitCode = exitCode;
         }
 
         /// <summary>
@@ -35,8 +42,13 @@ namespace GitExtUtils
         public string? Arguments { get; }
 
         /// <summary>
-        /// The working directory.
+        /// The directory of the operation, e.g. the working directory or the git repo.
         /// </summary>
-        public string WorkingDirectory { get; }
+        public string? Directory { get; }
+
+        /// <summary>
+        /// The exit code of an executed process.
+        /// </summary>
+        public int? ExitCode { get; }
     }
 }

@@ -1512,7 +1512,7 @@ namespace GitUI.CommandsDialogs
                 Validates.NotNull(shell.ExecutablePath);
 
                 Executable executable = new(shell.ExecutablePath, Module.WorkingDir);
-                executable.Start(createWindow: true);
+                executable.Start(createWindow: true, throwOnErrorOutput: false); // throwOnErrorOutput would redirect the output
             }
             catch (Exception exception)
             {
@@ -2090,9 +2090,8 @@ namespace GitUI.CommandsDialogs
             }
             catch (FileDeleteException ex)
             {
-                ThreadHelper.AssertOnUIThread();
                 throw new UserExternalOperationException(_indexLockCantDelete.Text,
-                    new ExternalOperationException(command: null, arguments: ex.FileName, Module.WorkingDir, ex));
+                    new ExternalOperationException(ex, arguments: ex.FileName, directory: Module.WorkingDir));
             }
         }
 

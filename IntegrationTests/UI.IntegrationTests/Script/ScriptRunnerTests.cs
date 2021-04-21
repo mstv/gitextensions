@@ -89,7 +89,7 @@ namespace GitExtensions.UITests.Script
             ex.And.Context.Should().Be($"Unable to find script: '{invalidScriptKey}'");
             ex.And.Command.Should().BeNull();
             ex.And.Arguments.Should().BeNull();
-            ex.And.WorkingDirectory.Should().Be(_module.WorkingDir);
+            ex.And.Directory.Should().Be(_module.WorkingDir);
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace GitExtensions.UITests.Script
             ex.And.Context.Should().Be($"Script: '{_keyOfExampleScript}'\r\nA valid revision is required to substitute the argument options");
             ex.And.Command.Should().Be(_exampleScript.Command);
             ex.And.Arguments.Should().Be(_exampleScript.Arguments);
-            ex.And.WorkingDirectory.Should().Be(_module.WorkingDir);
+            ex.And.Directory.Should().Be(_module.WorkingDir);
         }
 
         [Test]
@@ -165,7 +165,7 @@ namespace GitExtensions.UITests.Script
             ex.And.Context.Should().Be($"Script: '{_keyOfExampleScript}'\r\n'sHash' option is only supported when invoked from the revision grid");
             ex.And.Command.Should().Be(_exampleScript.Command);
             ex.And.Arguments.Should().Be(_exampleScript.Arguments);
-            ex.And.WorkingDirectory.Should().Be(_module.WorkingDir);
+            ex.And.Directory.Should().Be(_module.WorkingDir);
         }
 
         [Test]
@@ -185,7 +185,7 @@ namespace GitExtensions.UITests.Script
                 ex.And.Context.Should().Be($"Script: '{_keyOfExampleScript}'\r\nA valid revision is required to substitute the argument options");
                 ex.And.Command.Should().Be(_exampleScript.Command);
                 ex.And.Arguments.Should().Be(_exampleScript.Arguments);
-                ex.And.WorkingDirectory.Should().Be(_module.WorkingDir);
+                ex.And.Directory.Should().Be(_module.WorkingDir);
             });
         }
 
