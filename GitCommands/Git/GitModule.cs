@@ -2138,10 +2138,17 @@ namespace GitCommands
 
         public async Task<IReadOnlyList<Remote>> GetRemotesAsync()
         {
-            return ParseRemotes(await _gitExecutable.GetOutputLinesAsync("remote -v"));
+            ExecutionResult result = await _gitExecutable.ExecuteAsync("remote -v", throwOnErrorOutput: false);
+            return result.ExitedSuccessfully
+                ? ParseRemotes(result.StandardOutput)
+                : new List<Remote>();
 
-            IReadOnlyList<Remote> ParseRemotes(IEnumerable<string> lines)
+            IReadOnlyList<Remote> ParseRemotes(string output)
             {
+                IEnumerable<string> lines = output
+                    .LazySplit('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Concat(result.StandardError
+                    .LazySplit('\n', StringSplitOptions.RemoveEmptyEntries));
                 var remotes = new List<Remote>();
 
                 // See tests for explanation of the format
