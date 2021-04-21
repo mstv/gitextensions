@@ -142,7 +142,7 @@ namespace GitUI.Theming
 
             var editorHandle = new ICSharpCode.TextEditor.TextEditorControl().Handle;
             var listViewHandle = new NativeListView().Handle;
-            var treeViewHandle = new NativeListView().Handle;
+            var treeViewHandle = new NativeTreeView().Handle;
             _scrollBarRenderer.AddThemeData(editorHandle);
             _scrollBarRenderer.AddThemeData(listViewHandle);
             _headerRenderer.AddThemeData(listViewHandle);
