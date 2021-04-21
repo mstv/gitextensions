@@ -34,7 +34,7 @@ namespace GitUI.CommandsDialogs
         {
             using (WaitCursorScope.Enter())
             {
-                diffViewer.ViewChangesAsync(DiffFiles.SelectedItem);
+                _ = diffViewer.ViewChangesAsync(DiffFiles.SelectedItem);
             }
         }
 

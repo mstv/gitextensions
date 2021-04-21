@@ -227,7 +227,7 @@ namespace GitUI.CommandsDialogs
 
         private void StashedSelectedIndexChanged(object sender, EventArgs e)
         {
-            View.ViewChangesAsync(Stashed.SelectedItem);
+            _ = View.ViewChangesAsync(Stashed.SelectedItem);
             EnablePartialStash();
         }
 
