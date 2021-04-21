@@ -25,7 +25,7 @@ namespace AppVeyorIntegrationTests
         [Test]
         public void Should_return_no_build_Info_When_Api_Json_is_empty()
         {
-            AppVeyorAdapter buildInfo = new().ExtractBuildInfo(_projectId, string.Empty);
+            var buildInfo = new AppVeyorAdapter().ExtractBuildInfo(_projectId, string.Empty);
 
             buildInfo.Should().HaveCount(0);
         }
@@ -58,7 +58,7 @@ namespace AppVeyorIntegrationTests
 
         private string YamlSerialize(List<AppVeyorBuildInfo> buildInfo)
         {
-            SerializerBuilder serializer = new()
+            var serializer = new SerializerBuilder()
                 .WithTypeConverter(new CommitsYamlTypeConverter())
                 .Build();
 

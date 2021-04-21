@@ -337,7 +337,7 @@ namespace GitCommandsTests
         public void BuildBatchArguments_builder_work_as_expected(string command, string[] arguments, int maxLength, string[] expected, int[] expectedCounts,
             int baseLength = 0)
         {
-            GitArgumentBuilder batch = new(command)
+            var batch = new GitArgumentBuilder(command)
                 .BuildBatchArguments(arguments, baseLength, maxLength);
 
             var args = batch.Select(item => item.Argument.ToString()).ToArray();

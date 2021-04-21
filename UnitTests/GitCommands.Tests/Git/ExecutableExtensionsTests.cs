@@ -121,7 +121,7 @@ namespace GitCommandsTests.Git
         public void RunBatchCommand_throw_when_cmd_exceed_max_length(int arg1Len, int arg2Len,
             int maxLength)
         {
-            ArgumentBuilder args = new() { "reset --" }
+            var args = new ArgumentBuilder() { "reset --" }
                 .BuildBatchArguments(new string[]
                 {
                     GenerateStringByLength(Math.Max(1, arg1Len - _appPath.Length - 4)),

@@ -15,7 +15,7 @@ namespace GitUITests.CommandsDialogs.Settings
         [TestCase("git@github.com/owner/repo.git")]
         public void Should_get_link_definitions(string url)
         {
-            GitHubExternalLinkDefinitionExtractor externalLinkDefinitions = new().GetDefinitions(url);
+            var externalLinkDefinitions = new GitHubExternalLinkDefinitionExtractor().GetDefinitions(url);
             externalLinkDefinitions.Should().HaveCount(3);
             foreach (ExternalLinkDefinition externalLinkDefinition in externalLinkDefinitions)
             {
@@ -30,7 +30,7 @@ namespace GitUITests.CommandsDialogs.Settings
         [Test]
         public void Should_get_link_definitions_When_no_remote_url_provided()
         {
-            GitHubExternalLinkDefinitionExtractor externalLinkDefinitions = new().GetDefinitions(null);
+            var externalLinkDefinitions = new GitHubExternalLinkDefinitionExtractor().GetDefinitions(null);
             externalLinkDefinitions.Should().HaveCount(3);
             foreach (ExternalLinkDefinition externalLinkDefinition in externalLinkDefinitions)
             {

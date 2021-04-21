@@ -14,7 +14,7 @@ namespace GitUITests.CommandsDialogs.Settings
         [TestCase("owner@vs-ssh.visualstudio.com:v3/owner/project/repo")]
         public void Should_get_link_definitions_When_successfuly_parsing_remote_url(string url)
         {
-            AzureDevopsExternalLinkDefinitionExtractor externalLinkDefinitions = new().GetDefinitions(url);
+            var externalLinkDefinitions = new AzureDevopsExternalLinkDefinitionExtractor().GetDefinitions(url);
             externalLinkDefinitions.Should().HaveCount(2);
             foreach (ExternalLinkDefinition externalLinkDefinition in externalLinkDefinitions)
             {
@@ -29,7 +29,7 @@ namespace GitUITests.CommandsDialogs.Settings
         [Test]
         public void Should_get_link_definitions_When_no_remote_url_provided()
         {
-            AzureDevopsExternalLinkDefinitionExtractor externalLinkDefinitions = new().GetDefinitions(null);
+            var externalLinkDefinitions = new AzureDevopsExternalLinkDefinitionExtractor().GetDefinitions(null);
             externalLinkDefinitions.Should().HaveCount(2);
             foreach (ExternalLinkDefinition externalLinkDefinition in externalLinkDefinitions)
             {

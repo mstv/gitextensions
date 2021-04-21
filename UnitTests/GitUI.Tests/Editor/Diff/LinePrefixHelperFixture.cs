@@ -26,7 +26,7 @@ namespace GitUITests.Editor.Diff
             var beginIndex = 0;
             var found = false;
 
-            LinePrefixHelper lines = new(lineSegmentGetter)
+            var lines = new LinePrefixHelper(lineSegmentGetter)
                 .GetLinesStartingWith(doc, ref beginIndex, "+", ref found);
 
             lines.Count.Should().Be(2);
@@ -49,7 +49,7 @@ namespace GitUITests.Editor.Diff
             var beginIndex = 0;
             var found = false;
 
-            LinePrefixHelper lines = new(lineSegmentGetter)
+            var lines = new LinePrefixHelper(lineSegmentGetter)
                 .GetLinesStartingWith(doc, ref beginIndex, "-", ref found);
 
             lines.Count.Should().Be(2);

@@ -184,7 +184,7 @@ namespace GitCommandsTests.Git.Gpg
                         // Two tag that's also IsDereference == true
                         GitRef gitRef1 = new(_module, objectId, "refs/tags/FirstTag^{}");
 
-                        vaGitArgumentBuilderr args = new("verify-tag") { gitRef1.LocalName };
+                        var args = new GitArgumentBuilder("verify-tag") { gitRef1.LocalName };
                         _executable.StageOutput(args.ToString(), gitRef1.LocalName);
 
                         GitRef gitRef2 = new(_module, objectId, "refs/tags/SecondTag^{}");
