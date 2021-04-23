@@ -2128,6 +2128,12 @@ namespace GitCommands
 
         public IReadOnlyList<string> GetRemoteNames()
         {
+            if (string.IsNullOrWhiteSpace(WorkingDir))
+            {
+                ////throw new ArgumentException("Git working directory is not set");
+                return new List<string>();
+            }
+
             return _gitExecutable
                 .GetOutputLines("remote")
                 .Where(r => !string.IsNullOrWhiteSpace(r))
