@@ -1120,7 +1120,7 @@ namespace GitCommands
                 $"{startRev}..{endRev}"
             };
 
-            return _gitExecutable.GetOutputLines(args).Any();
+            return _gitExecutable.GetOutputLines(args, throwOnErrorOutput: false).Any();
         }
 
         public ConfigFile GetSubmoduleConfigFile()
