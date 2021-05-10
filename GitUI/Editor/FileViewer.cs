@@ -1440,7 +1440,7 @@ namespace GitUI.Editor
                 { !stage, "--reverse" }
             };
 
-            string output = Module.GitExecutable.GetOutput(args, patch);
+            string output = Module.GitExecutable.GetOutput(args, patch, throwOnErrorOutput: false);
             ProcessApplyOutput(output, patch, patchUpdateDiff: true);
         }
 
@@ -1510,7 +1510,7 @@ namespace GitUI.Editor
                 { currentItemStaged, "--reverse --index" }
             };
 
-            string output = Module.GitExecutable.GetOutput(args, patch);
+            string output = Module.GitExecutable.GetOutput(args, patch, throwOnErrorOutput: false);
             if (EnvUtils.RunningOnWindows())
             {
                 // remove file mode warnings
@@ -1567,7 +1567,7 @@ namespace GitUI.Editor
                 "--whitespace=nowarn"
             };
 
-            string output = Module.GitExecutable.GetOutput(args, patch);
+            string output = Module.GitExecutable.GetOutput(args, patch, throwOnErrorOutput: false);
             ProcessApplyOutput(output, patch);
         }
 
