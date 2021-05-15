@@ -62,6 +62,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(CreateCases))]
+        [NonParallelizable]
         public void Should_create_setting<T>(T settingDefault)
             where T : struct
         {
@@ -85,6 +86,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(SaveCases))]
+        [NonParallelizable]
         public void Should_save_setting<T>(T settingDefault, T value)
             where T : struct
         {
@@ -124,6 +126,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(SaveCases))]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_setting<T>(T settingDefault, T value)
             where T : struct
         {
@@ -156,6 +159,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(SaveCases))]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_setting<T>(T settingDefault, T value)
             where T : struct
         {
@@ -190,6 +194,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(CreateCases))]
+        [NonParallelizable]
         public void Should_return_default_value_for_setting_if_value_not_exist<T>(T settingDefault)
             where T : struct
         {
@@ -214,6 +219,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(CreateCases))]
+        [NonParallelizable]
         public void Should_return_default_value_for_setting_if_value_is_incorrect<T>(T settingDefault)
             where T : struct
         {
@@ -257,6 +263,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(CreateStringCases))]
+        [NonParallelizable]
         public void Should_create_string_setting(string settingDefault)
         {
             // Arrange
@@ -279,6 +286,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(SaveStringCases))]
+        [NonParallelizable]
         public void Should_save_string_setting(string settingDefault, string value)
         {
             // Arrange
@@ -316,6 +324,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(SaveStringCases))]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_string_setting(string settingDefault, string value)
         {
             // Arrange
@@ -347,6 +356,7 @@ namespace GitCommandsTests.Settings
 
         [Test]
         [TestCaseSource(nameof(SaveStringCases))]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_string_setting(string settingDefault, string value)
         {
             // Arrange
@@ -383,6 +393,7 @@ namespace GitCommandsTests.Settings
         #region Bool Setting
 
         [Test]
+        [NonParallelizable]
         public void Should_create_nullable_bool_setting()
         {
             // Arrange
@@ -407,6 +418,7 @@ namespace GitCommandsTests.Settings
         [TestCase(null)]
         [TestCase(false)]
         [TestCase(true)]
+        [NonParallelizable]
         public void Should_save_nullable_bool_setting(bool? value)
         {
             // Arrange
@@ -432,6 +444,7 @@ namespace GitCommandsTests.Settings
         [Test]
         [TestCase(false)]
         [TestCase(true)]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_nullable_bool_setting(bool? value)
         {
             // Arrange
@@ -465,6 +478,7 @@ namespace GitCommandsTests.Settings
         [TestCase(null)]
         [TestCase(false)]
         [TestCase(true)]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_nullable_bool_setting(bool? value)
         {
             // Arrange
@@ -497,6 +511,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_bool_setting_if_value_not_exist()
         {
             // Arrange
@@ -519,6 +534,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_bool_setting_if_value_is_incorrect()
         {
             // Arrange
@@ -560,6 +576,7 @@ namespace GitCommandsTests.Settings
         #region Char Setting
 
         [Test]
+        [NonParallelizable]
         public void Should_create_nullable_char_setting()
         {
             // Arrange
@@ -584,6 +601,7 @@ namespace GitCommandsTests.Settings
         [TestCase(null)]
         [TestCase(char.MinValue)]
         [TestCase(' ')]
+        [NonParallelizable]
         public void Should_save_nullable_char_setting(char? value)
         {
             // Arrange
@@ -609,6 +627,7 @@ namespace GitCommandsTests.Settings
         [Test]
         [TestCase(char.MinValue)]
         [TestCase(' ')]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_nullable_char_setting(char? value)
         {
             // Arrange
@@ -642,6 +661,7 @@ namespace GitCommandsTests.Settings
         [TestCase(null)]
         [TestCase(char.MinValue)]
         [TestCase(' ')]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_nullable_char_setting(char? value)
         {
             // Arrange
@@ -674,6 +694,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_char_setting_if_value_not_exist()
         {
             // Arrange
@@ -696,6 +717,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_char_setting_if_value_is_incorrect()
         {
             // Arrange
@@ -737,6 +759,7 @@ namespace GitCommandsTests.Settings
         #region Byte Setting
 
         [Test]
+        [NonParallelizable]
         public void Should_create_nullable_byte_setting()
         {
             // Arrange
@@ -762,6 +785,7 @@ namespace GitCommandsTests.Settings
         [TestCase(byte.MinValue)]
         [TestCase(byte.MaxValue)]
         [TestCase(0)]
+        [NonParallelizable]
         public void Should_save_nullable_byte_setting(byte? value)
         {
             // Arrange
@@ -788,6 +812,7 @@ namespace GitCommandsTests.Settings
         [TestCase(byte.MinValue)]
         [TestCase(byte.MaxValue)]
         [TestCase(0)]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_nullable_byte_setting(byte? value)
         {
             // Arrange
@@ -822,6 +847,7 @@ namespace GitCommandsTests.Settings
         [TestCase(byte.MinValue)]
         [TestCase(byte.MaxValue)]
         [TestCase(0)]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_nullable_byte_setting(byte? value)
         {
             // Arrange
@@ -854,6 +880,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_byte_setting_if_value_not_exist()
         {
             // Arrange
@@ -876,6 +903,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_byte_setting_if_value_is_incorrect()
         {
             // Arrange
@@ -917,6 +945,7 @@ namespace GitCommandsTests.Settings
         #region Int Setting
 
         [Test]
+        [NonParallelizable]
         public void Should_create_nullable_int_setting()
         {
             // Arrange
@@ -942,6 +971,7 @@ namespace GitCommandsTests.Settings
         [TestCase(int.MinValue)]
         [TestCase(int.MaxValue)]
         [TestCase(0)]
+        [NonParallelizable]
         public void Should_save_nullable_int_setting(int? value)
         {
             // Arrange
@@ -968,6 +998,7 @@ namespace GitCommandsTests.Settings
         [TestCase(int.MinValue)]
         [TestCase(int.MaxValue)]
         [TestCase(0)]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_nullable_int_setting(int? value)
         {
             // Arrange
@@ -1002,6 +1033,7 @@ namespace GitCommandsTests.Settings
         [TestCase(int.MinValue)]
         [TestCase(int.MaxValue)]
         [TestCase(0)]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_nullable_int_setting(int? value)
         {
             // Arrange
@@ -1034,6 +1066,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_int_setting_if_value_not_exist()
         {
             // Arrange
@@ -1056,6 +1089,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_int_setting_if_value_is_incorrect()
         {
             // Arrange
@@ -1097,6 +1131,7 @@ namespace GitCommandsTests.Settings
         #region Float Setting
 
         [Test]
+        [NonParallelizable]
         public void Should_create_nullable_float_setting()
         {
             // Arrange
@@ -1122,6 +1157,7 @@ namespace GitCommandsTests.Settings
         [TestCase(float.MinValue)]
         [TestCase(float.MaxValue)]
         [TestCase(0f)]
+        [NonParallelizable]
         public void Should_save_nullable_float_setting(float? value)
         {
             // Arrange
@@ -1148,6 +1184,7 @@ namespace GitCommandsTests.Settings
         [TestCase(float.MinValue)]
         [TestCase(float.MaxValue)]
         [TestCase(0f)]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_nullable_float_setting(float? value)
         {
             // Arrange
@@ -1182,6 +1219,7 @@ namespace GitCommandsTests.Settings
         [TestCase(float.MinValue)]
         [TestCase(float.MaxValue)]
         [TestCase(0f)]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_nullable_float_setting(float? value)
         {
             // Arrange
@@ -1214,6 +1252,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_float_setting_if_value_not_exist()
         {
             // Arrange
@@ -1236,6 +1275,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_float_setting_if_value_is_incorrect()
         {
             // Arrange
@@ -1277,6 +1317,7 @@ namespace GitCommandsTests.Settings
         #region Enum Setting
 
         [Test]
+        [NonParallelizable]
         public void Should_create_nullable_enum_setting()
         {
             // Arrange
@@ -1301,6 +1342,7 @@ namespace GitCommandsTests.Settings
         [TestCase(null)]
         [TestCase(TestEnum.First)]
         [TestCase(TestEnum.Second)]
+        [NonParallelizable]
         public void Should_save_nullable_enum_setting(TestEnum? value)
         {
             // Arrange
@@ -1327,6 +1369,7 @@ namespace GitCommandsTests.Settings
         [TestCase(null)]
         [TestCase(TestEnum.First)]
         [TestCase(TestEnum.Second)]
+        [NonParallelizable]
         public void Should_save_nullable_enum_setting_as_string(TestEnum? value)
         {
             // Arrange
@@ -1368,6 +1411,7 @@ namespace GitCommandsTests.Settings
         [Test]
         [TestCase(TestEnum.First)]
         [TestCase(TestEnum.Second)]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_nullable_enum_setting(TestEnum? value)
         {
             // Arrange
@@ -1401,6 +1445,7 @@ namespace GitCommandsTests.Settings
         [TestCase(null)]
         [TestCase(TestEnum.First)]
         [TestCase(TestEnum.Second)]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_nullable_enum_setting(TestEnum? value)
         {
             // Arrange
@@ -1433,6 +1478,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_enum_setting_if_value_not_exist()
         {
             // Arrange
@@ -1455,6 +1501,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_return_default_value_for_nullable_enum_setting_if_value_is_incorrect()
         {
             // Arrange
@@ -1502,6 +1549,7 @@ namespace GitCommandsTests.Settings
         #region Struct Setting
 
         [Test]
+        [NonParallelizable]
         public void Should_create_nullable_struct_setting()
         {
             // Arrange
@@ -1523,6 +1571,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_save_nullable_struct_setting()
         {
             // Arrange
@@ -1554,6 +1603,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_trigger_updated_event_for_nullable_struct_setting()
         {
             // Arrange
@@ -1593,6 +1643,7 @@ namespace GitCommandsTests.Settings
         }
 
         [Test]
+        [NonParallelizable]
         public void Should_not_trigger_updated_event_for_nullable_struct_setting()
         {
             // Arrange
