@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using CommonTestUtils;
 using FluentAssertions;
 using GitCommands;
 using GitCommands.Settings;
@@ -52,7 +53,9 @@ namespace GitCommandsTests.Settings
                     .GetProperty(nameof(ISetting<string>.Value));
             }
 
-            var filePath = Path.GetTempFileName();
+            using TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
+            tempFileDeleter.Add(filePath + ".backup");
 
             File.WriteAllText(filePath, SettingsFileContent);
 
@@ -85,7 +88,9 @@ namespace GitCommandsTests.Settings
                     .GetProperty(nameof(ISetting<string>.Value));
             }
 
-            var filePath = Path.GetTempFileName();
+            using TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
+            tempFileDeleter.Add(filePath + ".backup");
 
             File.WriteAllText(filePath, SettingsFileContent);
 

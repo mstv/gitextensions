@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CommonTestUtils;
 using GitCommands;
 using GitCommands.Settings;
 using GitUIPluginInterfaces;
@@ -13,6 +14,7 @@ namespace GitCommandsTests.Settings
     {
         private const string SettingsFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?><dictionary />";
 
+        private static readonly TempFileDeleter _tempFileDeleter = new();
         private static string _settingFilePath;
         private static GitExtSettingsCache _gitExtSettingsCache;
         private static RepoDistSettings _settingContainer;
@@ -20,7 +22,8 @@ namespace GitCommandsTests.Settings
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _settingFilePath = Path.GetTempFileName();
+            _settingFilePath = _tempFileDeleter.GetTempFileName();
+            _tempFileDeleter.Add(_settingFilePath + ".backup");
 
             File.WriteAllText(_settingFilePath, SettingsFileContent);
 
@@ -32,6 +35,7 @@ namespace GitCommandsTests.Settings
         public void OneTimeTearDown()
         {
             _gitExtSettingsCache.Dispose();
+            _tempFileDeleter.DeleteAll();
         }
 
         #region Setting
@@ -81,7 +85,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -210,7 +215,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -273,7 +279,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -514,7 +521,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -691,7 +699,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -871,7 +880,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1051,7 +1061,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1231,7 +1242,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1322,7 +1334,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1450,7 +1463,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
+            string filePath = tempFileDeleter.GetTempFileName();
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
