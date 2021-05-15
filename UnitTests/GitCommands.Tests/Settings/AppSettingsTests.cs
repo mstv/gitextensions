@@ -16,6 +16,21 @@ namespace GitCommandsTests.Settings
     {
         private const string SettingsFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?><dictionary />";
 
+        private string _settingsFilePath;
+
+        [TearDown]
+        public void TearDown()
+        {
+            try
+            {
+                File.Delete(_settingsFilePath);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
         [TestCase(null, "https://git-extensions-documentation.readthedocs.org/en/main/")]
         [TestCase("", "https://git-extensions-documentation.readthedocs.org/en/main/")]
         [TestCase("\t", "https://git-extensions-documentation.readthedocs.org/en/main/")]
@@ -52,11 +67,11 @@ namespace GitCommandsTests.Settings
                     .GetProperty(nameof(ISetting<string>.Value));
             }
 
-            var filePath = Path.GetTempFileName();
+            _settingsFilePath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, SettingsFileContent);
+            File.WriteAllText(_settingsFilePath, SettingsFileContent);
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsFilePath), SettingLevel.Unknown);
             object storedValue = null;
 
             // Act
@@ -84,11 +99,11 @@ namespace GitCommandsTests.Settings
                     .GetProperty(nameof(ISetting<string>.Value));
             }
 
-            var filePath = Path.GetTempFileName();
+            _settingsFilePath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, SettingsFileContent);
+            File.WriteAllText(_settingsFilePath, SettingsFileContent);
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsFilePath), SettingLevel.Unknown);
             object storedValue = null;
 
             // Act

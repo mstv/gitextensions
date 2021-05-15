@@ -13,17 +13,49 @@ namespace GitCommandsTests.Settings
     {
         private const string SettingsFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?><dictionary />";
 
-        private string _settingFilePath;
+        private string _settingsFilePath;
+        private string _settingsContainerPath;
         private RepoDistSettings _settingContainer;
 
         [SetUp]
         public void SetUp()
         {
-            _settingFilePath = Path.GetTempFileName();
+            _settingsFilePath = Path.GetTempFileName();
 
-            File.WriteAllText(_settingFilePath, SettingsFileContent);
+            File.WriteAllText(_settingsFilePath, SettingsFileContent);
 
-            _settingContainer = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingFilePath), SettingLevel.Unknown);
+            _settingContainer = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsFilePath), SettingLevel.Unknown);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            try
+            {
+                File.Delete(_settingsFilePath);
+            }
+            catch
+            {
+                // ignore
+            }
+
+            try
+            {
+                File.Delete(_settingsFilePath + ".backup");
+            }
+            catch
+            {
+                // ignore
+            }
+
+            try
+            {
+                File.Delete(_settingsContainerPath);
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         #region Setting
@@ -73,11 +105,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -202,11 +234,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -265,11 +297,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -506,11 +538,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -683,11 +715,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -863,11 +895,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1043,11 +1075,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1223,11 +1255,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1314,11 +1346,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
@@ -1442,11 +1474,11 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            var filePath = Path.GetTempFileName();
+            _settingsContainerPath = Path.GetTempFileName();
 
-            File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
+            File.WriteAllText(_settingsContainerPath, File.ReadAllText(_settingsFilePath));
 
-            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(filePath), SettingLevel.Unknown);
+            var container = new RepoDistSettings(null, GitExtSettingsCache.Create(_settingsContainerPath), SettingLevel.Unknown);
 
             AppSettings.UsingContainer(container, () =>
             {
