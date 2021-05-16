@@ -149,6 +149,7 @@ namespace GitUI
         private string _branchFilter = "";
         private SuperProjectInfo? _superprojectCurrentCheckout;
         private int _latestSelectedRowIndex;
+        private DataGridView.HitTestInfo _latestLeftClickedRow;
 
         // NOTE internal properties aren't serialised by the WinForms designer
 
@@ -1295,6 +1296,24 @@ namespace GitUI
         private void OnGridViewSelectionChanged(object sender, EventArgs e)
         {
             _parentChildNavigationHistory.RevisionsSelectionChanged();
+            if (_gridView.SelectedRows.Count > 1 && _latestLeftClickedRow is not null)
+            {
+                if (_latestLeftClickedRow.Type != DataGridViewHitTestType.None && _latestLeftClickedRow.RowIndex == _gridView.SelectedRows[_gridView.SelectedRows.Count - 1].Index)
+                {
+                    // Selected with Shift-Click, items are reversed
+                    var sel = _gridView.SelectedRows;
+                    _gridView.SelectionChanged -= OnGridViewSelectionChanged;
+                    _gridView.ClearSelection();
+                    foreach (DataGridViewRow r in sel)
+                    {
+                        r.Selected = true;
+                    }
+
+                    _gridView.SelectionChanged += OnGridViewSelectionChanged;
+                }
+            }
+
+            _latestLeftClickedRow = null;
 
             if (_gridView.SelectedRows.Count > 0)
             {
@@ -1406,6 +1425,15 @@ namespace GitUI
 
         private void OnGridViewMouseDown(object sender, MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Left)
+            {
+                _latestLeftClickedRow = _gridView.HitTest(e.X, e.Y);
+            }
+            else
+            {
+                _latestLeftClickedRow = null;
+            }
+
             switch (e.Button)
             {
                 case MouseButtons.XButton1: NavigateBackward(); break;
