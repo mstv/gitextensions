@@ -1,7 +1,7 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
-using CommonTestUtils;
 using GitCommands;
 using GitCommands.Settings;
 using GitUIPluginInterfaces;
@@ -14,7 +14,7 @@ namespace GitCommandsTests.Settings
     {
         private const string SettingsFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?><dictionary />";
 
-        private static readonly TempFileDeleter _tempFileDeleter = new();
+        private static readonly TempFileCollection _tempFiles = new();
         private static string _settingFilePath;
         private static GitExtSettingsCache _gitExtSettingsCache;
         private static RepoDistSettings _settingContainer;
@@ -22,8 +22,8 @@ namespace GitCommandsTests.Settings
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _settingFilePath = _tempFileDeleter.GetTempFileName();
-            _tempFileDeleter.Add(_settingFilePath + ".backup");
+            _settingFilePath = _tempFiles.AddExtension(".settings");
+            _tempFiles.AddFile(_settingFilePath + ".backup", keepFile: false);
 
             File.WriteAllText(_settingFilePath, SettingsFileContent);
 
@@ -35,7 +35,7 @@ namespace GitCommandsTests.Settings
         public void OneTimeTearDown()
         {
             _gitExtSettingsCache.Dispose();
-            _tempFileDeleter.DeleteAll();
+            ((IDisposable)_tempFiles).Dispose();
         }
 
         #region Setting
@@ -85,8 +85,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -215,8 +215,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -279,8 +279,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -521,8 +521,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -699,8 +699,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -880,8 +880,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1061,8 +1061,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1242,8 +1242,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1334,8 +1334,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
@@ -1463,8 +1463,8 @@ namespace GitCommandsTests.Settings
                 AppSettings.SaveSettings();
             });
 
-            using CommonTestUtils.TempFileDeleter tempFileDeleter = new();
-            string filePath = tempFileDeleter.GetTempFileName();
+            using TempFileCollection tempFiles = new();
+            string filePath = tempFiles.AddExtension(".settings");
 
             File.WriteAllText(filePath, File.ReadAllText(_settingFilePath));
 
