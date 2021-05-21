@@ -880,7 +880,7 @@ namespace GitCommands
                 { !string.IsNullOrWhiteSpace(fileName), "--" },
                 fileName.ToPosixPath().QuoteNE()
             };
-            using var process = _gitExecutable.Start(args, createWindow: true, throwOnErrorOutput: false);
+            using var process = _gitExecutable.Start(args, createWindow: true, throwOnErrorOutput: true);
             process.WaitForExit();
         }
 
