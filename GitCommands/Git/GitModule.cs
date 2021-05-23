@@ -694,7 +694,7 @@ namespace GitCommands
             };
 
             var unmerged = (await _gitExecutable
-                .GetOutputAsync(args)
+                .GetOutputAsync(args, throwOnErrorOutput: false) // ignore non-zero exit code, e.g. in case of missing submodule
                 .ConfigureAwait(false))
                 .Split(Delimiters.NullAndLineFeed, StringSplitOptions.RemoveEmptyEntries);
 
