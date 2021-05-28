@@ -33,28 +33,29 @@ namespace GitCommands
 
     public sealed class RevisionReader : IDisposable
     {
-        private const string EndOfBody = "1DEA7CC4-FB39-450A-8DDF-762FCEA28B05";
         private const string FullFormat =
 
-              // These header entries can all be decoded from the bytes directly.
-              // Each hash is 20 bytes long.
+            // These header entries can all be decoded from the bytes directly.
+            // Each hash is 20 bytes long.
 
-              /* Object ID       */ "%H" +
-              /* Tree ID         */ "%T" +
-              /* Parent IDs      */ "%P%n" +
-              /* Author date     */ "%at%n" +
-              /* Commit date     */ "%ct%n" +
-              /* Encoding        */ "%e%n" +
-              /*
-               Items below here must be decoded as strings to support non-ASCII.
-               */
-              /* Author name     */ "%aN%n" +
-              /* Author email    */ "%aE%n" +
-              /* Committer name  */ "%cN%n" +
-              /* Committer email */ "%cE%n" +
-              /* Commit subject  */ "%s%n%n" +
-              /* Commit body     */ "%b" + EndOfBody;
+            /* Object ID       */ "%H" +
+            /* Tree ID         */ "%T" +
+            /* Parent IDs      */ "%P%n" +
+            /* Author date     */ "%at%n" +
+            /* Commit date     */ "%ct%n" +
+            /* Encoding        */ "%e%n" +
 
+            // Items below here must be decoded as strings to support non-ASCII.
+            /* Author name     */ "%aN%n" +
+            /* Author email    */ "%aE%n" +
+            /* Committer name  */ "%cN%n" +
+            /* Committer email */ "%cE%n" +
+
+            // Raw body, followed by additional data if path filter
+            /* Commit raw body */ "%B";
+
+        // Separate commit message body and filtered file names
+        private const string EndOfBody = "1DEA7CC4-FB39-450A-8DDF-762FCEA28B05";
         private readonly CancellationTokenSequence _cancellationTokenSequence = new();
 
         public void Execute(
@@ -108,7 +109,8 @@ namespace GitCommands
 
             token.ThrowIfCancellationRequested();
 
-            var arguments = BuildArguments(refFilterOptions, branchFilter, revisionFilter, pathFilter);
+            bool hasPathFilter = !string.IsNullOrWhiteSpace(pathFilter);
+            var arguments = BuildArguments(refFilterOptions, branchFilter, revisionFilter, pathFilter, hasPathFilter);
 
 #if TRACE
             var sw = Stopwatch.StartNew();
@@ -131,21 +133,10 @@ namespace GitCommands
                 {
                     token.ThrowIfCancellationRequested();
 
-                    if (TryParseRevision(module, chunk, stringPool, logOutputEncoding, out var revision))
+                    if (TryParseRevision(module, chunk, stringPool, logOutputEncoding, hasPathFilter, out var revision))
                     {
                         if (revisionPredicate is null || revisionPredicate(revision))
                         {
-                            // The full commit message body is used initially in InMemFilter, after which it isn't
-                            // strictly needed and can be re-populated asynchronously.
-                            //
-                            // We keep full multiline message bodies within the last six months.
-                            // Commits earlier than that have their properties set to null and the
-                            // memory will be GCd.
-                            if (DateTime.Now - revision.AuthorDate > TimeSpan.FromDays(30 * 6))
-                            {
-                                revision.Body = null;
-                            }
-
                             // Look up any refs associated with this revision
                             revision.Refs = refsByObjectId[revision.ObjectId].AsReadOnlyList();
 
@@ -170,8 +161,10 @@ namespace GitCommands
         private ArgumentBuilder BuildArguments(RefFilterOptions refFilterOptions,
             string branchFilter,
             string revisionFilter,
-            string pathFilter)
+            string pathFilter,
+            bool hasPathFilter)
         {
+            string endFormat = hasPathFilter ? EndOfBody : "";
             return new GitArgumentBuilder("log")
             {
                 "-z",
@@ -179,7 +172,7 @@ namespace GitCommands
                     !string.IsNullOrWhiteSpace(branchFilter) && IsSimpleBranchFilter(branchFilter),
                     branchFilter
                 },
-                $"--pretty=format:\"{FullFormat}\"",
+                $"--pretty=format:\"{FullFormat}{endFormat}\"",
                 {
                     refFilterOptions.HasFlag(RefFilterOptions.FirstParent),
                     "--first-parent",
@@ -208,8 +201,7 @@ namespace GitCommands
                     }.ToString()
                 },
                 revisionFilter,
-                "--",
-                pathFilter
+                { hasPathFilter, $"-- {pathFilter}" }
             };
         }
 
@@ -237,7 +229,7 @@ namespace GitCommands
             }
         }
 
-        private static bool TryParseRevision(GitModule module, ArraySegment<byte> chunk, StringPool stringPool, Encoding logOutputEncoding, [NotNullWhen(returnValue: true)] out GitRevision? revision)
+        private static bool TryParseRevision(GitModule module, ArraySegment<byte> chunk, StringPool stringPool, Encoding logOutputEncoding, bool hasPathFilter, [NotNullWhen(returnValue: true)] out GitRevision? revision)
         {
             // The 'chunk' of data contains a complete git log item, encoded.
             // This method decodes that chunk and produces a revision object.
@@ -403,9 +395,13 @@ namespace GitCommands
             var committer = reader.ReadLine(stringPool);
             var committerEmail = reader.ReadLine(stringPool);
 
-            var subject = reader.ReadLine(advance: false);
+            // We keep a full multiline message body within the last six months.
+            // Note also that if body and subject are identical (single line), the subject never need to be stored
+            bool skipBody = DateTime.Now - authorDate > TimeSpan.FromDays(30 * 6);
+            reader.TrimStart();
+            (string? subject, string? body, bool hasMultiLineMessage) = reader.ReadToEndOfBody(skipBody, hasPathFilter);
 
-            if (author is null || authorEmail is null || committer is null || committerEmail is null || subject is null)
+            if (author is null || authorEmail is null || committer is null || committerEmail is null || subject is null || (!skipBody && hasMultiLineMessage && body is null))
             {
                 // TODO log this parse error
                 Debug.Fail("Unable to read an entry from the log -- this should not happen");
@@ -413,17 +409,7 @@ namespace GitCommands
                 return false;
             }
 
-            // NOTE the convention is that the Subject string is duplicated at the start of the Body string
-            // Therefore we read the subject twice.
-            // If there are not enough characters remaining for a body, then just assign the subject string directly.
-            var (body, additionalData) = ParseCommitBody(reader, subject);
-            if (body is null)
-            {
-                // TODO log this parse error
-                Debug.Fail("Unable to read body from the log -- this should not happen");
-                revision = default;
-                return false;
-            }
+            var additionalData = reader.TrimStart().PeakToEnd();
 
             #endregion
 
@@ -441,39 +427,11 @@ namespace GitCommands
                 Subject = subject,
                 Body = body,
                 Name = additionalData,
-                HasMultiLineMessage = !ReferenceEquals(subject, body),
+                HasMultiLineMessage = hasMultiLineMessage,
                 HasNotes = false
             };
 
             return true;
-        }
-
-        private static (string? body, string? additionalData) ParseCommitBody(StringLineReader reader, string subject)
-        {
-            int lengthOfSubjectRepeatedInBody = subject.Length + 2/*newlines*/;
-            if (reader.Remaining == lengthOfSubjectRepeatedInBody + EndOfBody.Length)
-            {
-                return (body: subject, additionalData: null);
-            }
-
-            string tail = reader.ReadToEnd() ?? "";
-            int indexOfEndOfBody = tail.LastIndexOf(EndOfBody, StringComparison.InvariantCulture);
-            if (indexOfEndOfBody < 0)
-            {
-                // TODO log this parse error
-                Debug.Fail("Missing end-of-body marker in the log -- this should not happen");
-                return (body: null, additionalData: null);
-            }
-
-            string? additionalData = null;
-            if (tail.Length > indexOfEndOfBody + EndOfBody.Length)
-            {
-                additionalData = tail.Substring(indexOfEndOfBody + EndOfBody.Length).TrimStart();
-            }
-
-            string body = indexOfEndOfBody == lengthOfSubjectRepeatedInBody
-                          ? subject : tail.Substring(0, indexOfEndOfBody).TrimEnd();
-            return (body, additionalData);
         }
 
         public void Dispose()
@@ -499,7 +457,7 @@ namespace GitCommands
 
             public int Remaining => _s.Length - _index;
 
-            public string? ReadLine(StringPool? pool = null, bool advance = true)
+            public string? ReadLine(StringPool? pool = null)
             {
                 if (_index == _s.Length)
                 {
@@ -511,34 +469,101 @@ namespace GitCommands
 
                 if (endIndex == -1)
                 {
-                    return ReadToEnd(advance);
+                    // Consider this as an error: PeakToEnd() should be explicitly used
+                    return null;
                 }
 
-                if (advance)
-                {
-                    _index = endIndex + 1;
-                }
+                _index = endIndex + 1;
 
                 return pool is not null
                     ? pool.Intern(_s, startIndex, endIndex - startIndex)
                     : _s.Substring(startIndex, endIndex - startIndex);
             }
 
-            public string? ReadToEnd(bool advance = true)
+            public StringLineReader TrimStart()
+            {
+                while (_index < _s.Length && char.IsWhiteSpace(_s[_index]))
+                {
+                    _index++;
+                }
+
+                return this;
+            }
+
+            private void TrimEnd(ref int endIndex)
+            {
+                while (endIndex > _index && char.IsWhiteSpace(_s[endIndex - 1]))
+                {
+                    endIndex--;
+                }
+            }
+
+            public (string? subject, string? body, bool hasMultiLineMessage) ReadToEndOfBody(bool skipBody, bool hasPathFilter)
             {
                 if (_index == _s.Length)
+                {
+                    return (null, null, false);
+                }
+
+                int endOfBodyIndex;
+                int endBodyIndex;
+                if (hasPathFilter)
+                {
+                    // This check requires considerable CPU resources
+                    endBodyIndex = _s.LastIndexOf(EndOfBody, _s.Length - 1, _s.Length - _index);
+                    if (endBodyIndex < 0)
+                    {
+                        return (null, null, false);
+                    }
+
+                    // Advance to after the marker
+                    endOfBodyIndex = endBodyIndex + EndOfBody.Length;
+                }
+                else
+                {
+                    endBodyIndex = _s.Length;
+                    endOfBodyIndex = endBodyIndex;
+                }
+
+                TrimEnd(ref endBodyIndex);
+
+                int endSubjectIndex = _s.IndexOf('\n', _index, endBodyIndex - _index);
+                if (endSubjectIndex < 0)
+                {
+                    endSubjectIndex = endBodyIndex;
+                }
+                else
+                {
+                    TrimEnd(ref endSubjectIndex);
+                }
+
+                // Subject can also be defined as the contents before empty line (%s for --pretty),
+                // this uses the alternative definition of first line in body.
+                string subject = _s.Substring(_index, endSubjectIndex - _index);
+                bool hasMultiLineMessage = endSubjectIndex < endBodyIndex;
+
+                // Skip body if identical to subject
+                string? body = skipBody || !hasMultiLineMessage
+                    ? null
+                    : _s.Substring(_index, endBodyIndex - _index);
+
+                _index = endOfBodyIndex;
+
+                return (subject, body, hasMultiLineMessage);
+            }
+
+            /// <summary>
+            /// Return the remaining string, without advancing _index
+            /// </summary>
+            /// <returns>Reminder string</returns>
+            public string? PeakToEnd()
+            {
+                if (_index >= _s.Length)
                 {
                     return null;
                 }
 
-                var s = _s.Substring(_index);
-
-                if (advance)
-                {
-                    _index = _s.Length;
-                }
-
-                return s;
+                return _s.Substring(_index);
             }
         }
 
@@ -557,13 +582,8 @@ namespace GitCommands
             }
 
             internal ArgumentBuilder BuildArgumentsBuildArguments(RefFilterOptions refFilterOptions,
-                string branchFilter, string revisionFilter, string pathFilter) =>
-                _revisionReader.BuildArguments(refFilterOptions, branchFilter, revisionFilter, pathFilter);
-
-            internal static (string? body, string? additionalData) ParseCommitBody(StringLineReader reader, string subject) =>
-                RevisionReader.ParseCommitBody(reader, subject);
-
-            internal static StringLineReader MakeReader(string s) => new(s);
+                string branchFilter, string revisionFilter, string pathFilter, bool hasPathFilter) =>
+                _revisionReader.BuildArguments(refFilterOptions, branchFilter, revisionFilter, pathFilter, hasPathFilter);
 
             internal static string EndOfBody => RevisionReader.EndOfBody;
         }
