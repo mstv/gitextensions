@@ -25,9 +25,7 @@ namespace GitCommands
     public sealed class AppTitleGenerator : IAppTitleGenerator
     {
         private readonly IRepositoryDescriptionProvider _descriptionProvider;
-#if DEBUG
         private static string? _extraInfo;
-#endif
 
         public AppTitleGenerator(IRepositoryDescriptionProvider descriptionProvider)
         {
@@ -52,11 +50,7 @@ namespace GitCommands
 
             string description = _descriptionProvider.Get(workingDir);
 
-#if DEBUG
             return $"{pathName}{description} ({branchName}) - {AppSettings.ApplicationName}{_extraInfo}";
-#else
-            return $"{pathName}{description} ({branchName}) - {AppSettings.ApplicationName}";
-#endif
 
             static string? GetFileName(string? path)
             {
@@ -80,10 +74,10 @@ namespace GitCommands
 
         public static void Initialise(string sha, string buildBranch)
         {
-#if DEBUG
             if (ObjectId.TryParse(sha, out ObjectId? objectId))
             {
                 _extraInfo = $" {objectId.ToShortString()}";
+#if DEBUG
                 if (!string.IsNullOrWhiteSpace(buildBranch))
                 {
                     _extraInfo += $" ({buildBranch})";
@@ -92,8 +86,8 @@ namespace GitCommands
             else
             {
                 _extraInfo = " [DEBUG]";
-            }
 #endif
+            }
         }
     }
 }
