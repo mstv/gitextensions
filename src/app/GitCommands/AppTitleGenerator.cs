@@ -25,9 +25,7 @@ public interface IAppTitleGenerator
 public sealed class AppTitleGenerator : IAppTitleGenerator
 {
     private readonly IRepositoryDescriptionProvider _descriptionProvider;
-#if DEBUG
     private static string? _extraInfo;
-#endif
 
     public AppTitleGenerator(IRepositoryDescriptionProvider descriptionProvider)
     {
@@ -52,11 +50,7 @@ public sealed class AppTitleGenerator : IAppTitleGenerator
 
         string description = _descriptionProvider.Get(workingDir);
 
-#if DEBUG
         return $"{pathName}{description} ({branchName}) - {AppSettings.ApplicationName}{_extraInfo}";
-#else
-        return $"{pathName}{description} ({branchName}) - {AppSettings.ApplicationName}";
-#endif
 
         static string? GetFileName(string? path)
         {
@@ -80,10 +74,10 @@ public sealed class AppTitleGenerator : IAppTitleGenerator
 
     public static void Initialise(string sha, string buildBranch)
     {
-#if DEBUG
         if (ObjectId.TryParse(sha, out ObjectId objectId))
         {
             _extraInfo = $" {objectId.ToShortString()}";
+#if DEBUG
             if (!string.IsNullOrWhiteSpace(buildBranch))
             {
                 _extraInfo += $" ({buildBranch})";
@@ -92,7 +86,7 @@ public sealed class AppTitleGenerator : IAppTitleGenerator
         else
         {
             _extraInfo = " [DEBUG]";
-        }
 #endif
+        }
     }
 }
