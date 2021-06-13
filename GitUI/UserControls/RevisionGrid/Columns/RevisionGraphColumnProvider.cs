@@ -255,7 +255,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
 
                     void DrawItem()
                     {
-                        if (index > _revisionGraph.GetCachedCount())
+                        if (index >= _revisionGraph.GetCachedCount())
                         {
                             return;
                         }
