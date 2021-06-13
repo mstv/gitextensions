@@ -1111,6 +1111,7 @@ namespace GitUI
                     {
                         await this.SwitchToMainThreadAsync();
 
+                        _gridView._revisionGraph.LoadingFinished = true;
                         SetPage(_gridView);
                         _isRefreshingRevisions = false;
                         CheckAndRepairInitialRevision();

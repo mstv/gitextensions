@@ -53,9 +53,12 @@ namespace GitUI.UserControls.RevisionGrid.Graph
             _nodes = ImmutableList<RevisionGraphRevision>.Empty;
             _orderedNodesCache = null;
             _orderedRowCache = null;
+            LoadingFinished = false;
         }
 
         public int Count => _nodes.Count;
+
+        public bool LoadingFinished { get; set; } = false;
 
         /// <summary>
         /// Checks whether the given hash is present in the graph.
@@ -73,7 +76,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
             }
 
             int cachedCount = _orderedRowCache.Count;
-            return cachedCount == Count ? cachedCount : cachedCount - _straightenLanesLookAhead;
+            return LoadingFinished ? cachedCount : cachedCount - _straightenLanesLookAhead;
         }
 
         /// <summary>
