@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GitCommands;
 using GitCommands.Git;
 using GitExtUtils.GitUI.Theming;
 using GitUI.BranchTreePanel.Interfaces;
@@ -43,6 +44,8 @@ namespace GitUI.BranchTreePanel
 
             protected string? AheadBehind { get; set; }
 
+            protected string? RelatedBranch { get; set; }
+
             /// <summary>
             /// Short name of the branch/branch path. <example>"issue1344"</example>.
             /// </summary>
@@ -78,9 +81,10 @@ namespace GitUI.BranchTreePanel
                     && Visible == other.Visible;
             }
 
-            public void UpdateAheadBehind(string aheadBehindData)
+            public void UpdateAheadBehind(string aheadBehindData, string relatedBranch)
             {
                 AheadBehind = aheadBehindData;
+                RelatedBranch = relatedBranch;
             }
 
             public bool Rebase()
@@ -128,7 +132,9 @@ namespace GitUI.BranchTreePanel
             {
                 TreeViewNode.TreeView?.BeginInvoke(new Action(() =>
                 {
-                    UICommands.BrowseGoToRef(FullPath, showNoRevisionMsg: true, toggleSelection: ModifierKeys.HasFlag(Keys.Control));
+                    string branch = RelatedBranch is null || !ModifierKeys.HasFlag(Keys.Alt)
+                        ? FullPath : RelatedBranch.Substring(GitRefName.RefsRemotesPrefix.Length);
+                    UICommands.BrowseGoToRef(branch, showNoRevisionMsg: true, toggleSelection: ModifierKeys.HasFlag(Keys.Control));
                     TreeViewNode.TreeView?.Focus();
                 }));
             }
@@ -395,9 +401,12 @@ namespace GitUI.BranchTreePanel
                     bool isVisible = !IsFiltering.Value || _refsSource.Contains(branch.ObjectId);
                     LocalBranchNode localBranchNode = new(this, branch.ObjectId, branch.Name, branch.Name == currentBranch, isVisible);
 
-                    if (aheadBehindData is not null && aheadBehindData.ContainsKey(localBranchNode.FullPath))
+                    if (aheadBehindData is not null)
                     {
-                        localBranchNode.UpdateAheadBehind(aheadBehindData[localBranchNode.FullPath].ToDisplay());
+                        if (aheadBehindData.TryGetValue(localBranchNode.FullPath, out AheadBehindData aheadBehind))
+                        {
+                            localBranchNode.UpdateAheadBehind(aheadBehind.ToDisplay(), aheadBehind.RemoteRef);
+                        }
                     }
 
                     var parent = localBranchNode.CreateRootNode(pathToNode, (tree, parentPath) => new BranchPathNode(tree, parentPath));
