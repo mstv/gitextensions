@@ -113,9 +113,12 @@ namespace GitUI.BranchTreePanel
                     bool isVisible = !IsFiltering.Value || _refsSource.Contains(branch.ObjectId);
                     LocalBranchNode localBranchNode = new(this, branch.ObjectId, branch.Name, branch.Name == currentBranch, isVisible);
 
-                    if (aheadBehindData is not null && aheadBehindData.ContainsKey(localBranchNode.FullPath))
+                    if (aheadBehindData is not null)
                     {
-                        localBranchNode.UpdateAheadBehind(aheadBehindData[localBranchNode.FullPath].ToDisplay());
+                        if (aheadBehindData.TryGetValue(localBranchNode.FullPath, out AheadBehindData aheadBehind))
+                        {
+                            localBranchNode.UpdateAheadBehind(aheadBehind.ToDisplay(), aheadBehind.RemoteRef);
+                        }
                     }
 
                     var parent = localBranchNode.CreateRootNode(pathToNode, (tree, parentPath) => new BranchPathNode(tree, parentPath));
