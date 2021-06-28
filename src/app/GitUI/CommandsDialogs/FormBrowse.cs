@@ -468,6 +468,8 @@ namespace GitUI.CommandsDialogs
 
         protected override void OnApplicationActivated()
         {
+            RefreshGitStatusMonitor();
+
             if (AppSettings.RefreshArtificialCommitOnApplicationActivated && CommitInfoTabControl.SelectedTab == DiffTabPage)
             {
                 revisionDiff.RefreshArtificial();
@@ -1304,6 +1306,7 @@ namespace GitUI.CommandsDialogs
         private void CommitToolStripMenuItemClick(object sender, EventArgs e)
         {
             UICommands.StartCommitDialog(this);
+            RefreshGitStatusMonitor();
         }
 
         private void PushToolStripMenuItemClick(object sender, EventArgs e)
