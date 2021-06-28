@@ -205,8 +205,8 @@ namespace GitUI.CommandsDialogs
 
             repoObjectsTree.Initialize(_aheadBehindDataProvider, _filterBranchHelper, RevisionGrid, RevisionGrid, RevisionGrid);
             toolStripBranchFilterComboBox.DropDown += toolStripBranches_DropDown_ResizeDropDownWidth;
-            revisionDiff.Bind(RevisionGrid, fileTree, () => RequestRefresh());
-            fileTree.Bind(() => RequestRefresh());
+            revisionDiff.Bind(RevisionGrid, fileTree, RequestGitStatusRefresh);
+            fileTree.Bind(RequestGitStatusRefresh);
 
             _appTitleGenerator = ManagedExtensibility.GetExport<IAppTitleGenerator>().Value;
             _windowsJumpListManager = ManagedExtensibility.GetExport<IWindowsJumpListManager>().Value;
@@ -677,6 +677,8 @@ namespace GitUI.CommandsDialogs
 
         protected override void OnApplicationActivated()
         {
+            RequestGitStatusRefresh();
+
             if (AppSettings.RefreshArtificialCommitOnApplicationActivated && CommitInfoTabControl.SelectedTab == DiffTabPage)
             {
                 revisionDiff.RefreshArtificial();
@@ -828,7 +830,7 @@ namespace GitUI.CommandsDialogs
             }
 
             _gitStatusMonitor.InvalidateGitWorkingDirectoryStatus();
-            RequestRefresh();
+            RequestGitStatusRefresh();
 
             if (_dashboard is null || !_dashboard.Visible)
             {
@@ -840,7 +842,7 @@ namespace GitUI.CommandsDialogs
             toolStripButtonPush.DisplayAheadBehindInformation(Module.GetSelectedBranch());
         }
 
-        private void RequestRefresh() => _gitStatusMonitor?.RequestRefresh();
+        private void RequestGitStatusRefresh() => _gitStatusMonitor?.RequestRefresh();
 
         private void RefreshSelection()
         {
@@ -1461,6 +1463,7 @@ namespace GitUI.CommandsDialogs
         private void CommitToolStripMenuItemClick(object sender, EventArgs e)
         {
             UICommands.StartCommitDialog(this);
+            RequestGitStatusRefresh();
         }
 
         private void InitNewRepositoryToolStripMenuItemClick(object sender, EventArgs e)
@@ -1554,7 +1557,7 @@ namespace GitUI.CommandsDialogs
         private void ResetToolStripMenuItem_Click(object sender, EventArgs e)
         {
             UICommands.StartResetChangesDialog(this);
-            RequestRefresh();
+            RequestGitStatusRefresh();
             revisionDiff.RefreshArtificial();
         }
 
@@ -3275,7 +3278,7 @@ namespace GitUI.CommandsDialogs
                 var args = GitCommandHelpers.ResetCmd(ResetMode.Soft, "HEAD~1");
                 Module.GitExecutable.GetOutput(args);
                 refreshToolStripMenuItem.PerformClick();
-                RequestRefresh();
+                RequestGitStatusRefresh();
             }
         }
 
