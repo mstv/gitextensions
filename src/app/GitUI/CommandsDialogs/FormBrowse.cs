@@ -468,6 +468,8 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     protected override void OnApplicationActivated()
     {
+        RefreshGitStatusMonitor();
+
         if (AppSettings.RefreshArtificialCommitOnApplicationActivated)
         {
             if (CommitInfoTabControl.SelectedTab == DiffTabPage)
@@ -1332,6 +1334,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     {
         this.ForceActivate();
         UICommands.StartCommitDialog(this);
+        RefreshGitStatusMonitor();
     }
 
     private void PushToolStripMenuItemClick(object? sender, EventArgs e)
