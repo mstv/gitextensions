@@ -25,6 +25,7 @@ namespace GitUI
                     return;
                 }
 
+#if false
                 try
                 {
                     foreach (var plugin in ManagedExtensibility.GetExports<IGitPlugin>().Select(lazy => lazy.Value))
@@ -46,6 +47,7 @@ namespace GitUI
                 {
                     // no-op
                 }
+#endif
             }
         }
 
