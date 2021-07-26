@@ -30,11 +30,6 @@
     -->
   <Target Name="_EnumeratePlugins" AfterTargets="AfterBuild">
 
-    <ItemGroup>
-      <Folders Include="$([System.IO.Directory]::GetDirectories(&quot;$(ArtifactsPluginsDir)&quot;))" />
-      <OnlyDirs Include="@(Folders->Replace($(TargetDir), ''))"/>
-    </ItemGroup>
-
     <PropertyGroup>
       <ProbingPrivatePath>Plugins;@(OnlyDirs)</ProbingPrivatePath>
       <TargetAppConfig>@(AppConfigFileDestination)</TargetAppConfig>

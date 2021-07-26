@@ -50,6 +50,7 @@ public static class PluginRegistry
 
     private static void LoadPlugins<T>() where T : IGitPlugin
     {
+#if false
         try
         {
             IGitPlugin[] plugins = [.. ManagedExtensibility.GetExports<T>()
@@ -92,6 +93,7 @@ public static class PluginRegistry
         {
             DebugHelpers.Fail($"Fail to load plugins. Error: {ex.Demystify()}");
         }
+#endif
     }
 
     public static IRepositoryHostPlugin? TryGetGitHosterForModule(IGitModule module)
