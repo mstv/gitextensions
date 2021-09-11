@@ -137,7 +137,7 @@ namespace GitUI.UserControls
                         {
                             if (_process is null)
                             {
-                                operation.LogProcessEnd(new Exception("Process instance is null in Exited event"));
+                                operation.LogProcessEnd(ex: new Exception("Process instance is null in Exited event"));
                                 return;
                             }
 
@@ -151,7 +151,7 @@ namespace GitUI.UserControls
                             }
                             catch (Exception ex)
                             {
-                                operation.LogProcessEnd(ex);
+                                operation.LogProcessEnd(ex: ex);
                             }
 
                             _exitcode = _process.ExitCode;
@@ -171,7 +171,7 @@ namespace GitUI.UserControls
             }
             catch (Exception ex)
             {
-                operation.LogProcessEnd(ex);
+                operation.LogProcessEnd(ex: ex);
                 ex.Data.Add("command", command);
                 ex.Data.Add("arguments", arguments);
                 throw;

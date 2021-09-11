@@ -129,7 +129,7 @@ namespace GitUI.UserControls
             }
             catch (Exception ex)
             {
-                operation.LogProcessEnd(ex);
+                operation.LogProcessEnd(ex: ex);
                 throw;
             }
         }
