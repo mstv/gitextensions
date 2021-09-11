@@ -131,14 +131,14 @@ namespace GitCommands
                     catch (InvalidOperationException ex) when (useShellExecute)
                     {
                         // _process.Start() has succeeded, ignore the failure getting the _process.Id
-                        _logOperation.LogProcessEnd(ex);
+                        _logOperation.LogProcessEnd(ex: ex);
                     }
                 }
                 catch (Exception ex)
                 {
                     Dispose();
 
-                    _logOperation.LogProcessEnd(ex);
+                    _logOperation.LogProcessEnd(ex: ex);
                     throw new ExternalOperationException($"{fileName} {prefixArguments}".Trim(), arguments, workDir, innerException: ex);
                 }
             }
@@ -165,8 +165,12 @@ namespace GitCommands
                             ex = new OperationCanceledException("Ctrl+C pressed or console closed", ex);
                         }
 
-                        _logOperation.LogProcessEnd(ex);
+                        _logOperation.LogProcessEnd(exitCode, ex: ex, stderr: errorOutput);
                         _exitTaskCompletionSource.TrySetException(ex);
+                    }
+                    else
+                    {
+                        _logOperation.LogProcessEnd(exitCode);
                     }
 
                     _exitTaskCompletionSource.TrySetResult(exitCode);
