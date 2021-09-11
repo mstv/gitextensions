@@ -47,13 +47,14 @@ namespace GitCommands.Logging
             }
         }
 
-        private void LogProcessEnd(int? exitCode = null, Exception? ex = null)
+        public void LogProcessEnd(int? exitCode = null, Exception? ex = null, string? stderr = null)
         {
             try
             {
                 _entry.Duration = _stopwatch.Elapsed;
                 _entry.ExitCode = exitCode;
                 _entry.Exception = ex;
+                _entry.StdErr = stderr;
                 _raiseCommandsChanged();
             }
             catch (Exception)
@@ -74,6 +75,7 @@ namespace GitCommands.Logging
         public int? ProcessId { get; set; }
         public int? ExitCode { get; set; }
         public Exception? Exception { get; set; }
+        public string? StdErr { get; set; }
         public StackTrace? CallStack { get; set; }
 
         internal CommandLogEntry(string fileName, string arguments, string workingDir, DateTime startedAt, bool isOnMainThread)
@@ -142,7 +144,9 @@ namespace GitCommands.Logging
                 s.Append("Started at:  ").AppendLine($"{StartedAt:O}");
                 s.Append("UI Thread?:  ").AppendLine($"{IsOnMainThread}");
                 s.Append("Duration:    ").AppendLine(Duration is not null ? $"{Duration.Value.TotalMilliseconds:0.###} ms" : "still running");
-                s.Append("Exit code:   ").AppendLine(ExitCode is not null ? $"{ExitCode}" : Exception is not null ? $"{Exception}" : "unknown");
+                s.Append("Exit code:   ").AppendLine(ExitCode is not null ? $"{ExitCode}" : "unknown");
+                s.Append(Exception is not null ? $"Exception:{Environment.NewLine} {Exception}{Environment.NewLine}" : "");
+                s.Append(StdErr is not null ? $"Standard err:{Environment.NewLine} {StdErr}{Environment.NewLine}" : "");
                 s.Append("Call stack:  ").Append(CallStack is not null ? $"{Environment.NewLine}{CallStack}" : "not captured");
 
                 return s.ToString();
