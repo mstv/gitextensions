@@ -15,6 +15,8 @@ namespace ResourceManager
             _initialiser = new GitExtensionsControlInitialiser(this);
         }
 
+        public ToolStripMenuItem DebugToolStripMenuItem { get; set; } = null;
+
         [Browsable(false)] // because we always read from settings
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public override Font Font
@@ -77,13 +79,48 @@ namespace ResourceManager
         /// </summary>
         public virtual bool ProcessHotkey(Keys keyData)
         {
-            if (!HotkeysEnabled)
+            if (DebugToolStripMenuItem is null)
             {
-                return false;
+                if (!HotkeysEnabled)
+                {
+                    return false;
+                }
+
+                HotkeyCommand? hotkey = Hotkeys?.FirstOrDefault(hotkey => hotkey?.KeyData == keyData);
+                return hotkey is not null && ExecuteCommand(hotkey.CommandCode).Executed;
             }
 
-            HotkeyCommand? hotkey = Hotkeys?.FirstOrDefault(hotkey => hotkey?.KeyData == keyData);
-            return hotkey is not null && ExecuteCommand(hotkey.CommandCode).Executed;
+            bool result = false;
+            if (!HotkeysEnabled)
+            {
+                DebugToolStripMenuItem.Text += " Hotkeys disabled in " + Name + " for ";
+            }
+            else if (Hotkeys is null || !Hotkeys.Any())
+            {
+                DebugToolStripMenuItem.Text += " Empty Hotkeys for ";
+            }
+            else
+            {
+                HotkeyCommand? hotkey = Hotkeys?.FirstOrDefault(hotkey => hotkey?.KeyData == keyData);
+                if (hotkey is null)
+                {
+                    DebugToolStripMenuItem.Text += " No Hotkey ";
+                }
+                else
+                {
+                    DebugToolStripMenuItem.Text += " Existing Hotkey " + keyData.ToString();
+                    result = ExecuteCommand(hotkey.CommandCode).Executed;
+                    DebugToolStripMenuItem.Text += result ? "" : " not";
+                    DebugToolStripMenuItem.Text += " executed by " + Name;
+                }
+            }
+
+            if (!result)
+            {
+                DebugToolStripMenuItem.Text += keyData.ToString();
+            }
+
+            return result;
         }
 
         /// <summary>Gets or sets a value that specifies if the hotkeys are used</summary>

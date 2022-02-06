@@ -1365,11 +1365,12 @@ namespace GitUI.CommandsDialogs
 
         public override bool ProcessHotkey(Keys keyData)
         {
+            DiffFiles.DebugToolStripMenuItem = DebugToolStripMenuItem;
+            DiffText.DebugToolStripMenuItem = DebugToolStripMenuItem;
+            BlameControl.DebugToolStripMenuItem = DebugToolStripMenuItem;
             return base.ProcessHotkey(keyData) // generic handling of this controls's hotkeys (upstream)
                 || (!GitExtensionsControl.IsTextEditKey(keyData) // downstream (without keys for quick search and filter)
-                    && ((DiffFiles.Visible && DiffFiles.ProcessHotkey(keyData))
-                        || (DiffText.Visible && DiffText.ProcessHotkey(keyData))
-                        || (BlameControl.Visible && BlameControl.ProcessHotkey(keyData))));
+                    && DiffText.Visible && DiffText.ProcessHotkey(keyData));
         }
 
         /// <summary>

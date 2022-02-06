@@ -1990,6 +1990,39 @@ namespace GitUI.CommandsDialogs
 
         public override bool ProcessHotkey(Keys keyData)
         {
+            helpToolStripMenuItem.Text = "&Help - ";
+            if (!HotkeysEnabled)
+            {
+                helpToolStripMenuItem.Text += "Hotkeys disabled for ";
+            }
+            else if (Hotkeys is null || !Hotkeys.Any())
+            {
+                helpToolStripMenuItem.Text += "Empty Hotkeys for ";
+            }
+            else
+            {
+                HotkeyCommand? hotkey = Hotkeys?.FirstOrDefault(hotkey => hotkey?.KeyData == keyData);
+                if (hotkey is null)
+                {
+                    helpToolStripMenuItem.Text += "No Hotkey ";
+                }
+                else
+                {
+                    helpToolStripMenuItem.Text += "Existing Hotkey ";
+                }
+            }
+
+            helpToolStripMenuItem.Text += keyData.ToString();
+            bool executed = ProcessHotkeyImpl(keyData);
+            helpToolStripMenuItem.Text += executed ? " executed. " : " not executed. ";
+            return executed;
+        }
+
+        private bool ProcessHotkeyImpl(Keys keyData)
+        {
+            RevisionGridControl.DebugToolStripMenuItem = helpToolStripMenuItem;
+            revisionDiff.DebugToolStripMenuItem = helpToolStripMenuItem;
+            fileTree.DebugToolStripMenuItem = helpToolStripMenuItem;
             if (IsDesignMode || !HotkeysEnabled)
             {
                 return false;
