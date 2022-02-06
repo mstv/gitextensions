@@ -13,6 +13,8 @@ namespace ResourceManager
     {
         private IReadOnlyList<HotkeyCommand>? _hotkeys;
 
+        public ToolStripMenuItem DebugToolStripMenuItem { get; set; } = null;
+
         private bool _serviceProviderLoaded = false;
 
         protected override void OnRuntimeLoad()
@@ -50,13 +52,48 @@ namespace ResourceManager
         /// </summary>
         public virtual bool ProcessHotkey(Keys keyData)
         {
-            if (!HotkeysEnabled)
+            if (DebugToolStripMenuItem is null)
             {
-                return false;
+                if (!HotkeysEnabled)
+                {
+                    return false;
+                }
+
+                HotkeyCommand? hotkey = _hotkeys?.FirstOrDefault(hotkey => hotkey?.KeyData == keyData);
+                return hotkey is not null && ExecuteCommand(hotkey.CommandCode);
             }
 
-            HotkeyCommand? hotkey = _hotkeys?.FirstOrDefault(hotkey => hotkey?.KeyData == keyData);
-            return hotkey is not null && ExecuteCommand(hotkey.CommandCode);
+            bool result = false;
+            if (!HotkeysEnabled)
+            {
+                DebugToolStripMenuItem.Text += " Hotkeys disabled in " + Name + " for ";
+            }
+            else if (_hotkeys is null || !_hotkeys.Any())
+            {
+                DebugToolStripMenuItem.Text += " Empty Hotkeys for ";
+            }
+            else
+            {
+                HotkeyCommand? hotkey = _hotkeys?.FirstOrDefault(hotkey => hotkey?.KeyData == keyData);
+                if (hotkey is null)
+                {
+                    DebugToolStripMenuItem.Text += " No Hotkey ";
+                }
+                else
+                {
+                    DebugToolStripMenuItem.Text += " Existing Hotkey " + keyData.ToString();
+                    result = ExecuteCommand(hotkey.CommandCode);
+                    DebugToolStripMenuItem.Text += result ? "" : " not";
+                    DebugToolStripMenuItem.Text += " executed by " + Name;
+                }
+            }
+
+            if (!result)
+            {
+                DebugToolStripMenuItem.Text += keyData.ToString();
+            }
+
+            return result;
         }
 
         /// <summary>
