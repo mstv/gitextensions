@@ -310,6 +310,8 @@ See the changes in the commit form.");
 
         public override bool ProcessHotkey(Keys keyData)
         {
+            FileText.DebugToolStripMenuItem = DebugToolStripMenuItem;
+            BlameControl.DebugToolStripMenuItem = DebugToolStripMenuItem;
             return base.ProcessHotkey(keyData)
                 || (!GitExtensionsControl.IsTextEditKey(keyData) // downstream (without keys for quick search)
                     && ((FileText.Visible && FileText.ProcessHotkey(keyData))
