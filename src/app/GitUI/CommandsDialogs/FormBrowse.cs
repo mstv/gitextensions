@@ -1655,8 +1655,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void ToolStripSplitStashButtonClick(object sender, EventArgs e)
     {
-        UICommands.StartStashDialog(this);
-        UpdateStashCount();
+        toolStripSplitStash.ShowDropDown();
     }
 
     private void StashChangesToolStripMenuItemClick(object sender, EventArgs e)
