@@ -7,19 +7,38 @@ namespace GitCommands.Git.Extensions
 {
     public static class ProcessExtensions
     {
-        public static void TerminateTree(this Process process)
+        public static bool SendTerminateRequest(this Process process)
         {
             if (EnvUtils.RunningOnWindows())
             {
                 // Send Ctrl+C
-                NativeMethods.AttachConsole(process.Id);
-                NativeMethods.SetConsoleCtrlHandler(IntPtr.Zero, add: true);
-                NativeMethods.GenerateConsoleCtrlEvent(0, 0);
-
-                if (!process.HasExited)
+                if (!NativeMethods.AttachConsole(process.Id))
                 {
-                    process.WaitForExit(500);
+                    return false;
                 }
+
+                _ = NativeMethods.SetConsoleCtrlHandler(IntPtr.Zero, add: true);
+
+                bool result = NativeMethods.GenerateConsoleCtrlEvent(0, 0);
+
+                _ = NativeMethods.FreeConsole();
+
+                return result;
+            }
+
+            return false;
+        }
+
+        public static void TerminateTree(this Process process)
+        {
+            if (process.SendTerminateRequest())
+            {
+                if (process.HasExited)
+                {
+                    return;
+                }
+
+                process.WaitForExit(500);
             }
 
             if (!process.HasExited)
@@ -35,6 +54,9 @@ namespace GitCommands.Git.Extensions
 
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern bool AttachConsole(int dwProcessId);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool FreeConsole();
 
             [DllImport("kernel32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
