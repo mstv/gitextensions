@@ -249,9 +249,16 @@ namespace GitCommands
             public Task<int> WaitForExitAsync() => _exitTaskCompletionSource.Task;
 
             /// <inheritdoc />
-            public Task WaitForProcessExitAsync(CancellationToken token)
+            public async Task WaitForProcessExitAsync(CancellationToken token)
             {
-                return _process.WaitForExitAsync(token);
+#if false // does not work
+                await _process.WaitForExitAsync(token);
+#else
+                while (!_process.HasExited && !token.IsCancellationRequested)
+                {
+                    await Task.Delay(10, token);
+                }
+#endif
             }
 
             /// <inheritdoc />

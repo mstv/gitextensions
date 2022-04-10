@@ -149,9 +149,9 @@ namespace CommonTestUtils
                 }
             }
 
-            public Task WaitForProcessExitAsync(CancellationToken token)
+            public async Task WaitForProcessExitAsync(CancellationToken token)
             {
-                return Task.CompletedTask;
+                await Task.CompletedTask;
             }
 
             public void WaitForInputIdle()
