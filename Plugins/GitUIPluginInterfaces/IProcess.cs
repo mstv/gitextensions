@@ -14,6 +14,8 @@ namespace GitUIPluginInterfaces
     /// </remarks>
     public interface IProcess : IDisposable
     {
+        const int DefaultExitTimeoutMilliseconds = 500;
+
         /// <summary>
         /// Gets an object that facilitates writing to the process's standard input stream.
         /// </summary>
@@ -63,6 +65,12 @@ namespace GitUIPluginInterfaces
         /// <param name="token">An optional token to cancel the asynchronous operation.</param>
         /// <returns>A task that will complete when the process has exited, cancellation has been requested, or an error occurs.</returns>
         Task WaitForProcessExitAsync(CancellationToken token);
+
+        /// <summary>
+        /// Tries to cancel the process by sending the console control event Ctrl+C.
+        /// If the process does not terminate within the exitTimeoutMilliseconds, it is killed.
+        /// </summary>
+        Task TerminateAsync(bool entireProcessTree = true, int exitTimeoutMilliseconds = DefaultExitTimeoutMilliseconds);
 
         /// <summary>
         /// Waits for the process to reach an idle state.

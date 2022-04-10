@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using GitCommands.Git.Extensions;
 using GitCommands.Logging;
 using GitExtUtils;
 using GitUI;
@@ -224,6 +225,20 @@ namespace GitCommands
                     _emptyStream ??= new();
                     _emptyReader ??= new(_emptyStream);
                     return _emptyReader;
+                }
+            }
+
+            /// <inheritdoc />
+            public async Task TerminateAsync(bool entireProcessTree = true, int exitTimeoutMilliseconds = 500)
+            {
+                _process.SendTerminateRequest();
+
+                using CancellationTokenSource cts = new(exitTimeoutMilliseconds);
+                await WaitForProcessExitAsync(cts.Token);
+
+                if (!_process.HasExited)
+                {
+                    _process.Kill(entireProcessTree: true);
                 }
             }
 

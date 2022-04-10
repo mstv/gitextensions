@@ -297,11 +297,13 @@ namespace GitCommands
                     exitCode: 0);
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             using IProcess process = executable.Start(arguments, createWindow: false, redirectInput: writeInput is not null, redirectOutput: true, outputEncoding, throwOnErrorExit: throwOnErrorExit);
             MemoryStream outputBuffer = new();
             MemoryStream errorBuffer = new();
-            var outputTask = process.StandardOutput.BaseStream.CopyToAsync(outputBuffer);
-            var errorTask = process.StandardError.BaseStream.CopyToAsync(errorBuffer);
+            Task outputTask = process.StandardOutput.BaseStream.CopyToAsync(outputBuffer, cancellationToken);
+            Task errorTask = process.StandardError.BaseStream.CopyToAsync(errorBuffer, cancellationToken);
 
             if (writeInput is not null)
             {
@@ -324,12 +326,18 @@ namespace GitCommands
             }
 #endif
 
-            // Wait for the process to exit (or be cancelled)
-            await process.WaitForProcessExitAsync(cancellationToken);
-
-            // Await the output and exit status
-            var exitTask = process.WaitForExitAsync();
-            await Task.WhenAll(outputTask, errorTask, exitTask);
+            // Await the output and the process to exit (or be cancelled)
+            try
+            {
+                Task exitTask = process.WaitForProcessExitAsync(cancellationToken); // may or may not throw on cancel
+                await Task.WhenAll(outputTask, errorTask, exitTask);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            catch (OperationCanceledException)
+            {
+                await process.TerminateAsync();
+                throw;
+            }
 
             var output = outputEncoding.GetString(outputBuffer.GetBuffer(), 0, (int)outputBuffer.Length);
             var error = outputEncoding.GetString(errorBuffer.GetBuffer(), 0, (int)errorBuffer.Length);
