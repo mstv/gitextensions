@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using GitCommands.Git.Extensions;
 using GitCommands.Logging;
 using GitExtUtils;
 using GitUI;
@@ -214,6 +215,20 @@ namespace GitCommands
                     }
 
                     return _process.StandardError;
+                }
+            }
+
+            /// <inheritdoc />
+            public async Task TerminateAsync(bool entireProcessTree = true, int exitTimeoutMilliseconds = 500)
+            {
+                _process.SendTerminateRequest();
+
+                using CancellationTokenSource cts = new(exitTimeoutMilliseconds);
+                await WaitForExitAsync(cts.Token);
+
+                if (!_process.HasExited)
+                {
+                    _process.Kill(entireProcessTree: true);
                 }
             }
 

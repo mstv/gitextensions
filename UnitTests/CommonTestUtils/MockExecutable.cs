@@ -116,6 +116,11 @@ namespace CommonTestUtils
             public StreamReader StandardOutput { get; }
             public StreamReader StandardError { get; }
 
+            public async Task TerminateAsync(bool entireProcessTree, int exitTimeoutMilliseconds)
+            {
+                await Task.CompletedTask;
+            }
+
             public int WaitForExit()
             {
                 return ThreadHelper.JoinableTaskFactory.Run(() => WaitForExitAsync());
