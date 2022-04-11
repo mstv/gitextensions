@@ -65,7 +65,7 @@ namespace GitCommandsTests
             const int cancelDelay = 1000;
             const int exitDelay = IProcess.DefaultExitTimeoutMilliseconds + cancelDelay;
             const int minRuntime = cancelDelay + exitDelay;
-            string arguments = exeFile.Contains("ping") ? $"-n {(minRuntime / 1000) + 2} 127.0.0.1" : "";
+            string arguments = exeFile.Contains("ping") ? $"-n {(minRuntime / 1000) + 30} 127.0.0.1" : "";
 
             CancellationTokenSequence cancellationTokenSequence = new();
             CancellationToken cancellationToken = cancellationTokenSequence.Next();

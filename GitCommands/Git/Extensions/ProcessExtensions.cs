@@ -12,14 +12,17 @@ namespace GitCommands.Git.Extensions
             if (EnvUtils.RunningOnWindows())
             {
                 // Send Ctrl+C
+                Debug.WriteLine($"{process.MainModule.FileName}: trying to attach to console");
                 if (!NativeMethods.AttachConsole(process.Id))
                 {
+                    Debug.WriteLine($"{process.MainModule.FileName}: failed to attach to console");
                     return false;
                 }
 
                 _ = NativeMethods.SetConsoleCtrlHandler(IntPtr.Zero, add: true);
 
                 bool result = NativeMethods.GenerateConsoleCtrlEvent(0, 0);
+                Debug.WriteLine($"{process.MainModule.FileName}: send Ctrl+C result: {result}");
 
                 _ = NativeMethods.FreeConsole();
 

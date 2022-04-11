@@ -70,7 +70,13 @@ namespace GitUIPluginInterfaces
         /// Tries to cancel the process by sending the console control event Ctrl+C.
         /// If the process does not terminate within the exitTimeoutMilliseconds, it is killed.
         /// </summary>
-        Task TerminateAsync(bool entireProcessTree = true, int exitTimeoutMilliseconds = DefaultExitTimeoutMilliseconds);
+        Task TerminateXAsync(bool entireProcessTree = true, int exitTimeoutMilliseconds = DefaultExitTimeoutMilliseconds);
+
+        /// <summary>
+        /// Tries to cancel the process by sending the console control event Ctrl+C.
+        /// If the process does not terminate within the exitTimeoutMilliseconds, it is killed.
+        /// </summary>
+        void Terminate(bool entireProcessTree = true, int exitTimeoutMilliseconds = DefaultExitTimeoutMilliseconds);
 
         /// <summary>
         /// Waits for the process to reach an idle state.

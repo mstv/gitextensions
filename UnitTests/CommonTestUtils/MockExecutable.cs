@@ -124,9 +124,13 @@ namespace CommonTestUtils
             public StreamReader StandardOutput { get; }
             public StreamReader StandardError { get; }
 
-            public async Task TerminateAsync(bool entireProcessTree, int exitTimeoutMilliseconds)
+            public async Task TerminateXAsync(bool entireProcessTree, int exitTimeoutMilliseconds)
             {
                 await Task.CompletedTask;
+            }
+
+            public void Terminate(bool entireProcessTree, int exitTimeoutMilliseconds)
+            {
             }
 
             public int WaitForExit()

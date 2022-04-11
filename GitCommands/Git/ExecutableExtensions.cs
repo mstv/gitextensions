@@ -335,7 +335,7 @@ namespace GitCommands
             }
             catch (OperationCanceledException)
             {
-                await process.TerminateAsync();
+                process.Terminate();
                 throw;
             }
 

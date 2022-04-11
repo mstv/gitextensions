@@ -229,16 +229,52 @@ namespace GitCommands
             }
 
             /// <inheritdoc />
-            public async Task TerminateAsync(bool entireProcessTree = true, int exitTimeoutMilliseconds = 500)
+            public async Task TerminateXAsync(bool entireProcessTree = true, int exitTimeoutMilliseconds = 500)
             {
                 _process.SendTerminateRequest();
 
                 using CancellationTokenSource cts = new(exitTimeoutMilliseconds);
                 await WaitForProcessExitAsync(cts.Token);
+                Debug.WriteLine($"{_process.MainModule.FileName} exited on request: {_process.HasExited}");
 
                 if (!_process.HasExited)
                 {
-                    _process.Kill(entireProcessTree: true);
+                    try
+                    {
+                        Debug.WriteLine($"{_process.MainModule.FileName} is being killed");
+                        _process.Kill(entireProcessTree: true);
+                        Debug.WriteLine($"{_process.MainModule.FileName} killed: {_process.HasExited}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Failed to kill {_process.MainModule.FileName}: {ex}");
+                    }
+                }
+            }
+
+            public void Terminate(bool entireProcessTree = true, int exitTimeoutMilliseconds = 500)
+            {
+                _process.SendTerminateRequest();
+
+                if (!_process.HasExited)
+                {
+                    Thread.Sleep(exitTimeoutMilliseconds);
+                }
+
+                Debug.WriteLine($"{_process.MainModule.FileName} exited on request: {_process.HasExited}");
+
+                if (!_process.HasExited)
+                {
+                    try
+                    {
+                        Debug.WriteLine($"{_process.MainModule.FileName} is being killed");
+                        _process.Kill(entireProcessTree: true);
+                        Debug.WriteLine($"{_process.MainModule.FileName} killed: {_process.HasExited}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Failed to kill {_process.MainModule.FileName}: {ex}");
+                    }
                 }
             }
 
