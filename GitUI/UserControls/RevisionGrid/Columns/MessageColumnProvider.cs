@@ -145,10 +145,10 @@ namespace GitUI.UserControls.RevisionGrid.Columns
             }
 
             // Artificial
-            var stats = _grid.GetChangeCount(revision.ObjectId);
-            if (stats is not null && AppSettings.ShowGitStatusForArtificialCommits)
+            var changeCount = _grid.GetChangeCount(revision.ObjectId);
+            if (changeCount is not null && AppSettings.ShowGitStatusForArtificialCommits)
             {
-                toolTip = _toolTipBuilder.Append(stats.GetSummary()).ToString();
+                toolTip = _toolTipBuilder.Append(changeCount.GetSummary()).ToString();
                 return true;
             }
 
@@ -184,35 +184,36 @@ namespace GitUI.UserControls.RevisionGrid.Columns
             offset = baseOffset + max + DpiUtil.Scale(6);
 
             // Summary of changes
-            var changes = _grid.GetChangeCount(revision.ObjectId);
-            if (changes is null || !AppSettings.ShowGitStatusForArtificialCommits)
+            var changeCount = _grid.GetChangeCount(revision.ObjectId);
+            if (changeCount is null || !AppSettings.ShowGitStatusForArtificialCommits)
             {
                 return;
             }
 
-            if (changes.Valid)
+            if (changeCount.IsUpdating)
             {
-                if (changes.HasChanges)
+                if (changeCount.HasChanges)
                 {
-                    DrawArtificialCount(e, changes.Changed, Images.FileStatusModified, style, messageBounds, ref offset);
-                    DrawArtificialCount(e, changes.New, Images.FileStatusAdded, style, messageBounds, ref offset);
-                    DrawArtificialCount(e, changes.Deleted, Images.FileStatusRemoved, style, messageBounds, ref offset);
-                    DrawArtificialCount(e, changes.SubmodulesChanged, Images.SubmoduleRevisionDown, style, messageBounds, ref offset);
-                    DrawArtificialCount(e, changes.SubmodulesDirty, Images.SubmoduleDirty, style, messageBounds, ref offset);
+                    DrawArtificialCount(_grid, e, changeCount.Changed, Images.FileStatusModified, style, messageBounds, ref offset);
+                    DrawArtificialCount(_grid, e, changeCount.New, Images.FileStatusAdded, style, messageBounds, ref offset);
+                    DrawArtificialCount(_grid, e, changeCount.Deleted, Images.FileStatusRemoved, style, messageBounds, ref offset);
+                    DrawArtificialCount(_grid, e, changeCount.SubmodulesChanged, Images.SubmoduleRevisionDown, style, messageBounds, ref offset);
+                    DrawArtificialCount(_grid, e, changeCount.SubmodulesDirty, Images.SubmoduleDirty, style, messageBounds, ref offset);
                 }
                 else
                 {
-                    DrawArtificialCount(e, null, Images.RepoStateClean, style, messageBounds, ref offset);
+                    DrawArtificialCount(_grid, e, items: null, Images.RepoStateClean, style, messageBounds, ref offset);
                 }
             }
             else
             {
-                DrawArtificialCount(e, null, Images.RepoStateUnknown, style, messageBounds, ref offset);
+                DrawArtificialCount(_grid, e, items: null, Images.RepoStateUnknown, style, messageBounds, ref offset);
             }
 
             return;
 
-            void DrawArtificialCount(
+            static void DrawArtificialCount(
+                RevisionGridControl grid,
                 DataGridViewCellPaintingEventArgs e,
                 IReadOnlyList<GitItemStatus>? items,
                 Image icon,
@@ -242,7 +243,7 @@ namespace GitUI.UserControls.RevisionGrid.Columns
                 var text = items?.Count.ToString() ?? "";
                 var bounds = messageBounds.ReduceLeft(offset);
                 var textWidth = Math.Max(
-                    _grid.DrawColumnText(e, text, style.NormalFont, style.ForeColor, bounds),
+                    grid.DrawColumnText(e, text, style.NormalFont, style.ForeColor, bounds),
                     TextRenderer.MeasureText("88", style.NormalFont).Width);
                 offset += textWidth + textHorizontalPadding;
             }

@@ -9,9 +9,9 @@ namespace GitUI
     public sealed class ArtificialCommitChangeCount
     {
         /// <summary>
-        /// If the count is valid or if it is updating.
+        /// If the count is updating, unknown (i.e. a modal form) or unused.
         /// </summary>
-        public bool Valid { get; private set; } = false;
+        public bool IsUpdating { get; private set; } = false;
 
         /// <summary>
         /// Number of changed files.
@@ -44,7 +44,7 @@ namespace GitUI
         /// Any change in any category.
         /// </summary>
         public bool HasChanges
-            => Valid
+            => IsUpdating
                && ((Changed?.Count ?? 0) > 0
                || (New?.Count ?? 0) > 0
                || (Deleted?.Count ?? 0) > 0
@@ -57,8 +57,8 @@ namespace GitUI
         /// <param name="items">Git items.</param>
         public void Update(IReadOnlyList<GitItemStatus>? items)
         {
-            Valid = items is not null;
-            if (Valid)
+            IsUpdating = items is not null;
+            if (IsUpdating)
             {
                 Changed = items.Where(item => !item.IsNew && !item.IsDeleted && !item.IsSubmodule).ToList();
                 New = items.Where(item => item.IsNew && !item.IsSubmodule).ToList();
