@@ -9,12 +9,17 @@ namespace GitUI
     public sealed class ArtificialCommitChangeCount
     {
         /// <summary>
+        /// If the count is valid or if it is updating.
+        /// </summary>
+        public bool Valid { get; private set; } = false;
+
+        /// <summary>
         /// Number of changed files.
         /// </summary>
         public IReadOnlyList<GitItemStatus> Changed { get; private set; } = Array.Empty<GitItemStatus>();
 
         /// <summary>
-        ///  Number of new files.
+        /// Number of new files.
         /// </summary>
         public IReadOnlyList<GitItemStatus> New { get; private set; } = Array.Empty<GitItemStatus>();
 
@@ -39,23 +44,28 @@ namespace GitUI
         /// Any change in any category.
         /// </summary>
         public bool HasChanges
-            => (Changed?.Count ?? 0) > 0
+            => Valid
+               && ((Changed?.Count ?? 0) > 0
                || (New?.Count ?? 0) > 0
                || (Deleted?.Count ?? 0) > 0
                || (SubmodulesChanged?.Count ?? 0) > 0
-               || (SubmodulesDirty?.Count ?? 0) > 0;
+               || (SubmodulesDirty?.Count ?? 0) > 0);
 
         /// <summary>
         /// Update the change count.
         /// </summary>
         /// <param name="items">Git items.</param>
-        public void Update(IReadOnlyList<GitItemStatus> items)
+        public void Update(IReadOnlyList<GitItemStatus>? items)
         {
-            Changed = items.Where(item => !item.IsNew && !item.IsDeleted && !item.IsSubmodule).ToList();
-            New = items.Where(item => item.IsNew && !item.IsSubmodule).ToList();
-            Deleted = items.Where(item => item.IsDeleted && !item.IsSubmodule).ToList();
-            SubmodulesChanged = items.Where(item => item.IsSubmodule && item.IsChanged).ToList();
-            SubmodulesDirty = items.Where(item => item.IsSubmodule && item.IsDirty).ToList();
+            Valid = items is not null;
+            if (Valid)
+            {
+                Changed = items.Where(item => !item.IsNew && !item.IsDeleted && !item.IsSubmodule).ToList();
+                New = items.Where(item => item.IsNew && !item.IsSubmodule).ToList();
+                Deleted = items.Where(item => item.IsDeleted && !item.IsSubmodule).ToList();
+                SubmodulesChanged = items.Where(item => item.IsSubmodule && item.IsChanged).ToList();
+                SubmodulesDirty = items.Where(item => item.IsSubmodule && item.IsDirty).ToList();
+            }
         }
 
         /// <summary>
