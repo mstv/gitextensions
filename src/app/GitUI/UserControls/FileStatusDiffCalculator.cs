@@ -10,6 +10,8 @@ public sealed partial class FileStatusDiffCalculator
 {
     internal const string GitGrepIconName = nameof(GitGrepIconName);
 
+    private const int HashLength = 4;
+
     private readonly Func<IGitModule> _getModule;
 
     // Currently bound revisions etc. Cache so we can reload the view, if AppSettings.ShowDiffForAllParents is changed.
@@ -104,11 +106,11 @@ public sealed partial class FileStatusDiffCalculator
                     .Take(multipleParents)
                     .Where(parentId => !(multipleParents == 3 && DescribeRevision?.Invoke(parentId).Contains(": untracked files on ") is true))
                     .Select(parentId =>
-                                new FileStatusWithDescription(
-                                    firstRev: new GitRevision(parentId),
-                                    secondRev: selectedRev,
-                                    summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(parentId),
-                                    statuses: module.GetDiffFilesWithSubmodulesStatus(parentId, selectedRev.ObjectId, actualRev.ParentIds[0], !showSkipWorktreeFiles, untrackedFilesMode, cancellationToken))));
+                        new FileStatusWithDescription(
+                            firstRev: new GitRevision(parentId),
+                            secondRev: selectedRev,
+                            summary: $"Diff B {selectedRev.ObjectId.ToShortString(HashLength)} with A {GetDescriptionForRevision(parentId)}",
+                            statuses: module.GetDiffFilesWithSubmodulesStatus(parentId, selectedRev.ObjectId, actualRev.ParentIds[0], !showSkipWorktreeFiles, untrackedFilesMode, cancellationToken))));
             }
             else
             {
@@ -159,7 +161,7 @@ public sealed partial class FileStatusDiffCalculator
         fileStatusDescs.Add(new FileStatusWithDescription(
             firstRev: firstRev,
             secondRev: selectedRev,
-            summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(firstRev.ObjectId),
+            summary: $"Diff B {selectedRev.ObjectId.ToShortString(HashLength)} with A {GetDescriptionForRevision(firstRev.ObjectId)}",
             statuses: module.GetDiffFilesWithSubmodulesStatus(firstRev.ObjectId, selectedRev.ObjectId, selectedRev.FirstParentId, cancellationToken: cancellationToken)));
 
         if (!AppSettings.ShowDiffForAllParents || revisions.Count > maxMultiCompare || !allowMultiDiff)
@@ -235,7 +237,7 @@ public sealed partial class FileStatusDiffCalculator
                     .Select(rev => new FileStatusWithDescription(
                         firstRev: rev,
                         secondRev: selectedRev,
-                        summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(rev.ObjectId),
+                        summary: $"Diff B {selectedRev.ObjectId.ToShortString(HashLength)} with A {GetDescriptionForRevision(rev.ObjectId)}",
                         statuses: module.GetDiffFilesWithSubmodulesStatus(rev.ObjectId, selectedRev.ObjectId, selectedRev.FirstParentId, cancellationToken: cancellationToken))));
 
             return fileStatusDescs;
