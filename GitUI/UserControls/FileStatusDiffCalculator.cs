@@ -6,6 +6,8 @@ namespace GitUI
 {
     public sealed partial class FileStatusDiffCalculator
     {
+        private const int HashLength = 4;
+
         private readonly Func<GitModule> _getModule;
 
         // Currently bound revisions etc. Cache so we can reload the view, if AppSettings.ShowDiffForAllParents is changed.
@@ -73,7 +75,7 @@ namespace GitUI
                             new FileStatusWithDescription(
                                 firstRev: new GitRevision(parentId),
                                 secondRev: selectedRev,
-                                summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(parentId),
+                                summary: $"Diff b/{selectedRev.ObjectId.ToShortString(HashLength)} with a/{GetDescriptionForRevision(parentId)}",
                                 statuses: module.GetDiffFilesWithSubmodulesStatus(parentId, selectedRev.ObjectId, actualRev.ParentIds[0], cancellationToken))));
                 }
 
@@ -106,7 +108,7 @@ namespace GitUI
             fileStatusDescs.Add(new FileStatusWithDescription(
                 firstRev: firstRev,
                 secondRev: selectedRev,
-                summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(firstRev.ObjectId),
+                summary: $"Diff b/{selectedRev.ObjectId.ToShortString(HashLength)} with a/{GetDescriptionForRevision(firstRev.ObjectId)}",
                 statuses: module.GetDiffFilesWithSubmodulesStatus(firstRev.ObjectId, selectedRev.ObjectId, selectedRev.FirstParentId, cancellationToken)));
 
             if (!AppSettings.ShowDiffForAllParents || revisions.Count > maxMultiCompare || !allowMultiDiff)
@@ -184,7 +186,7 @@ namespace GitUI
                         .Select(rev => new FileStatusWithDescription(
                             firstRev: rev,
                             secondRev: selectedRev,
-                            summary: TranslatedStrings.DiffWithParent + GetDescriptionForRevision(rev.ObjectId),
+                            summary: $"Diff b/{selectedRev.ObjectId.ToShortString(HashLength)} with a/{GetDescriptionForRevision(rev.ObjectId)}",
                             statuses: module.GetDiffFilesWithSubmodulesStatus(rev.ObjectId, selectedRev.ObjectId, selectedRev.FirstParentId, cancellationToken))));
 
                 return fileStatusDescs;
