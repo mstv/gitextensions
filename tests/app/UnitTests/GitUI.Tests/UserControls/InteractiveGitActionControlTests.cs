@@ -1,4 +1,5 @@
-﻿using GitUI.UserControls;
+﻿using GitUI;
+using GitUI.UserControls;
 
 namespace GitUITests.UserControls;
 
@@ -32,7 +33,7 @@ public class InteractiveGitActionControlTests
     [TestCase(InteractiveGitActionControl.GitAction.None, true)]
     public void SetState(InteractiveGitActionControl.GitAction action, bool conflicts)
     {
-        _accessor.SetGitAction(action, conflicts);
+        ThreadHelper.JoinableTaskFactory.Run(() => _accessor.SetGitActionAsync(action, conflicts));
 
         _accessor.Action.Should().Be(action);
         _accessor.HasConflicts.Should().Be(conflicts);
