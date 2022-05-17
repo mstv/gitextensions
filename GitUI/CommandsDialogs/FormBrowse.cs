@@ -496,7 +496,7 @@ namespace GitUI.CommandsDialogs
                         new WindowsThumbnailToolbarButton(_closeAll.Text, Images.DeleteFile, (s, e) => NativeMethods.PostMessageW(NativeMethods.HWND_BROADCAST, _closeAllMessage))));
             }
 
-            this.InvokeAsync(OnActivate).FileAndForget();
+            OnActivateAsync().FileAndForget();
             base.OnActivated(e);
         }
 
@@ -947,7 +947,7 @@ namespace GitUI.CommandsDialogs
 
                 RefreshWorkingDirComboText();
 
-                OnActivate();
+                ThreadHelper.JoinableTaskFactory.RunAsync(OnActivateAsync);
 
                 LoadUserMenu();
 
@@ -1056,13 +1056,13 @@ namespace GitUI.CommandsDialogs
             // TODO: add more
         }
 
-        private void OnActivate()
+        private async Task OnActivateAsync()
         {
             // check if we are in the middle of bisect
-            notificationBarBisectInProgress.RefreshBisect();
+            await notificationBarBisectInProgress.RefreshBisectAsync();
 
             // check if we are in the middle of an action (merge/rebase/etc.)
-            notificationBarGitActionInProgress.RefreshGitAction(
+            await notificationBarGitActionInProgress.RefreshGitActionAsync(
                 checkForConflicts: AppSettings.GitAsyncWhenMinimized || (WindowState != FormWindowState.Minimized));
         }
 
