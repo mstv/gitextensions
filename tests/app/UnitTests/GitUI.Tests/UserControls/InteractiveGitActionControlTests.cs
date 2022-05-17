@@ -1,4 +1,5 @@
-﻿using GitUI.UserControls;
+﻿using GitUI;
+using GitUI.UserControls;
 
 namespace GitUITests.UserControls
 {
@@ -24,7 +25,7 @@ namespace GitUITests.UserControls
         [TestCase(InteractiveGitActionControl.GitAction.None, true)]
         public void SetState(InteractiveGitActionControl.GitAction action, bool conflicts)
         {
-            _accessor.SetGitAction(action, conflicts);
+            ThreadHelper.JoinableTaskFactory.Run(() => _accessor.SetGitActionAsync(action, conflicts));
 
             ClassicAssert.AreEqual(action, _accessor.Action);
             ClassicAssert.AreEqual(conflicts, _accessor.HasConflicts);
