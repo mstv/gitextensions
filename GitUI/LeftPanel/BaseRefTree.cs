@@ -70,7 +70,7 @@ namespace GitUI.LeftPanel
             ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ReloadNodesAsync(LoadNodesAsync, getRefs);
-            });
+            }).FileAndForget();
         }
 
         internal override void UpdateVisibility()
