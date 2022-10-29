@@ -7,6 +7,8 @@ namespace GitUI.HelperDialogs
 {
     public partial class FormStatus : GitExtensionsDialog
     {
+        public static Action<FormStatus> OnDone;
+
         private readonly bool _useDialogSettings;
         private bool _errorOccurred;
 
@@ -159,6 +161,17 @@ namespace GitUI.HelperDialogs
         {
             try
             {
+                _errorOccurred = !isSuccess;
+
+                try
+                {
+                    OnDone?.Invoke(this);
+                }
+                catch
+                {
+                    // Do nothing
+                }
+
                 AppendMessage("Done");
                 ProgressBar.Visible = false;
                 Ok.Enabled = true;
@@ -169,8 +182,6 @@ namespace GitUI.HelperDialogs
 
                 Bitmap image = isSuccess ? Images.StatusBadgeSuccess : Images.StatusBadgeError;
                 SetIcon(image);
-
-                _errorOccurred = !isSuccess;
 
                 if (isSuccess && (_useDialogSettings && AppSettings.CloseProcessDialog))
                 {
