@@ -18,6 +18,8 @@ namespace GitUI.SpellChecker
     {
         public event EventHandler? TextAssigned;
 
+        private const string _closingAutoCompleteKeys = " ()[]<>.,;";
+
         private readonly TranslationString _cutMenuItemText = new("Cut");
         private readonly TranslationString _copyMenuItemText = new("Copy");
         private readonly TranslationString _pasteMenuItemText = new("Paste");
@@ -738,13 +740,11 @@ namespace GitUI.SpellChecker
             TextBox.Paste(DataFormats.GetFormat(DataFormats.UnicodeText));
         }
 
-        private static readonly char[] ClosingAutoCompleteKeys = new[] { ' ', '(', ')' };
-
         private void TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             _disableAutoCompleteTriggerOnTextUpdate = e.KeyChar.IsSeparator();
 
-            if (ClosingAutoCompleteKeys.Contains(e.KeyChar))
+            if (_closingAutoCompleteKeys.Contains(e.KeyChar))
             {
                 AutoComplete.Visible = false;
             }
