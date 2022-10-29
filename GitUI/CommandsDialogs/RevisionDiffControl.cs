@@ -320,6 +320,8 @@ namespace GitUI.CommandsDialogs
             splitterManager.AddSplitter(DiffSplitContainer, "DiffSplitContainer");
         }
 
+        public SplitContainer HorizontalSplitter => DiffSplitContainer;
+
         protected override void OnRuntimeLoad()
         {
             base.OnRuntimeLoad();

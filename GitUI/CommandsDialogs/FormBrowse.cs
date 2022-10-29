@@ -1856,18 +1856,21 @@ namespace GitUI.CommandsDialogs
         internal enum Command
         {
             // Focus or visuals
+            FocusLeftPanel = 25,
             FocusRevisionGrid = 3,
             FocusCommitInfo = 4,
             FocusDiff = 5,
             FocusFileTree = 6,
-            FocusFilter = 18,
-            ToggleLeftPanel = 21,
-            FocusLeftPanel = 25,
             FocusGpgInfo = 26,
             FocusGitConsole = 29,
             FocusBuildServerStatus = 30,
             FocusNextTab = 31,
             FocusPrevTab = 32,
+
+            FocusFilter = 18,
+
+            ToggleGitOutput = 47,
+            ToggleLeftPanel = 21,
 
             // START menu
             OpenRepo = 45,
@@ -2050,6 +2053,7 @@ namespace GitUI.CommandsDialogs
                 case Command.GoToSuperproject: toolStripButtonLevelUp.PerformClick(); break;
                 case Command.GoToSubmodule: toolStripButtonLevelUp.ShowDropDown(); break;
                 case Command.ToggleBetweenArtificialAndHeadCommits: RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.ToggleBetweenArtificialAndHeadCommits); break;
+                case Command.ToggleGitOutput: ToggleGitOutputControl(); break;
                 case Command.GoToChild: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToChild)); break;
                 case Command.GoToParent: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToParent)); break;
                 case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction, isSilent: false); break;
@@ -2167,6 +2171,10 @@ namespace GitUI.CommandsDialogs
                     revisionDiff.SwitchFocus(alreadyContainedFocus: false);
                 }
             }
+
+            void ToggleGitOutputControl()
+            {
+            }
         }
 
         internal CommandStatus ExecuteCommand(Command cmd)
@@ -2199,6 +2207,7 @@ namespace GitUI.CommandsDialogs
             _splitterManager.AddSplitter(RevisionsSplitContainer, nameof(RevisionsSplitContainer));
             _splitterManager.AddSplitter(MainSplitContainer, nameof(MainSplitContainer));
             _splitterManager.AddSplitter(RightSplitContainer, nameof(RightSplitContainer));
+            _splitterManager.AddSplitter(LeftSplitContainer, nameof(LeftSplitContainer));
 
             revisionDiff.InitSplitterManager(_splitterManager);
             fileTree.InitSplitterManager(_splitterManager);
