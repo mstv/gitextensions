@@ -58,6 +58,7 @@ namespace GitUI.CommandsDialogs
             this.userShell = new System.Windows.Forms.ToolStripSplitButton();
             this.EditSettings = new System.Windows.Forms.ToolStripButton();
             this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.LeftSplitContainer = new System.Windows.Forms.SplitContainer();
             this.repoObjectsTree = new GitUI.LeftPanel.RepoObjectsTree();
             this.RightSplitContainer = new System.Windows.Forms.SplitContainer();
             this.RevisionsSplitContainer = new System.Windows.Forms.SplitContainer();
@@ -160,6 +161,9 @@ namespace GitUI.CommandsDialogs
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
             this.MainSplitContainer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.LeftSplitContainer)).BeginInit();
+            this.LeftSplitContainer.Panel1.SuspendLayout();
+            this.LeftSplitContainer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.RightSplitContainer)).BeginInit();
             this.RightSplitContainer.Panel1.SuspendLayout();
             this.RightSplitContainer.Panel2.SuspendLayout();
@@ -543,7 +547,7 @@ namespace GitUI.CommandsDialogs
             // 
             // MainSplitContainer.Panel1
             // 
-            this.MainSplitContainer.Panel1.Controls.Add(this.repoObjectsTree);
+            this.MainSplitContainer.Panel1.Controls.Add(this.LeftSplitContainer);
             this.MainSplitContainer.Panel1.Padding = new System.Windows.Forms.Padding(1);
             this.MainSplitContainer.Panel1MinSize = 192;
             // 
@@ -554,15 +558,36 @@ namespace GitUI.CommandsDialogs
             this.MainSplitContainer.SplitterWidth = 6;
             this.MainSplitContainer.TabIndex = 1;
             // 
+            // LeftSplitContainer
+            // 
+            this.LeftSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LeftSplitContainer.Location = new System.Drawing.Point(1, 1);
+            this.LeftSplitContainer.Margin = new System.Windows.Forms.Padding(0);
+            this.LeftSplitContainer.Name = "LeftSplitContainer";
+            this.LeftSplitContainer.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // LeftSplitContainer.Panel1
+            // 
+            this.LeftSplitContainer.Panel1.Controls.Add(this.repoObjectsTree);
+            // 
+            // LeftSplitContainer.Panel2
+            // 
+            this.LeftSplitContainer.Panel2MinSize = 0;
+            this.LeftSplitContainer.Size = new System.Drawing.Size(190, 457);
+            this.LeftSplitContainer.SplitterDistance = 370;
+            this.LeftSplitContainer.SplitterWidth = 6;
+            this.LeftSplitContainer.TabIndex = 2;
+            this.LeftSplitContainer.TabStop = false;
+            // 
             // repoObjectsTree
             // 
             this.repoObjectsTree.Dock = System.Windows.Forms.DockStyle.Fill;
             this.repoObjectsTree.Location = new System.Drawing.Point(0, 0);
-            this.repoObjectsTree.MinimumSize = new System.Drawing.Size(190, 0);
             this.repoObjectsTree.Margin = new System.Windows.Forms.Padding(0);
+            this.repoObjectsTree.MinimumSize = new System.Drawing.Size(190, 0);
             this.repoObjectsTree.Name = "repoObjectsTree";
-            this.repoObjectsTree.Size = new System.Drawing.Size(267, 502);
-            this.repoObjectsTree.TabIndex = 0;
+            this.repoObjectsTree.Size = new System.Drawing.Size(190, 340);
+            this.repoObjectsTree.TabIndex = 1;
             // 
             // RightSplitContainer
             // 
@@ -1402,6 +1427,9 @@ namespace GitUI.CommandsDialogs
             this.MainSplitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).EndInit();
             this.MainSplitContainer.ResumeLayout(false);
+            this.LeftSplitContainer.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.LeftSplitContainer)).EndInit();
+            this.LeftSplitContainer.ResumeLayout(false);
             this.RightSplitContainer.Panel1.ResumeLayout(false);
             this.RightSplitContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.RightSplitContainer)).EndInit();
@@ -1448,7 +1476,6 @@ namespace GitUI.CommandsDialogs
         private BindingSource gitItemBindingSource;
         private GitUI.RevisionGridControl RevisionGrid;
         private CommitInfo.CommitInfo RevisionInfo;
-        private GitUI.LeftPanel.RepoObjectsTree repoObjectsTree;
         private ToolTip FilterToolTip;
         private RevisionFileTreeControl fileTree;
         private RevisionDiffControl revisionDiff;
@@ -1567,5 +1594,7 @@ namespace GitUI.CommandsDialogs
         private Panel RevisionGridContainer;
         private UserControls.InteractiveGitActionControl notificationBarBisectInProgress;
         private UserControls.InteractiveGitActionControl notificationBarGitActionInProgress;
+        private SplitContainer LeftSplitContainer;
+        private LeftPanel.RepoObjectsTree repoObjectsTree;
     }
 }
