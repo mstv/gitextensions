@@ -460,11 +460,13 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     // This is the first row. Start with only the startsegments of this row
                     segments = new List<RevisionGraphSegment>(revisionStartSegments);
 
+                    RevisionGraphSegment? prevSegment = null;
                     int revisionSegmentsCount = revisionStartSegments.Length;
                     for (int i = 0; i < revisionSegmentsCount; i++)
                     {
                         RevisionGraphSegment startSegment = revisionStartSegments[i];
-                        startSegment.LaneInfo = new LaneInfo(startSegment);
+                        startSegment.LaneInfo = new LaneInfo(startSegment, prevSegment);
+                        prevSegment = startSegment;
                     }
                 }
                 else
@@ -493,6 +495,8 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         // Copy all new segments that start from this node (revision) to this lane.
                         if (revision == segment.Parent)
                         {
+                            RevisionGraphSegment prevSegment = segments.LastOrDefault();
+
                             if (!startSegmentsAdded)
                             {
                                 startSegmentsAdded = true;
@@ -513,9 +517,11 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                                 else
                                 {
                                     startSegment.LaneInfo ??= segment.LaneInfo is null
-                                            ? new LaneInfo(startSegment)
-                                            : new LaneInfo(startSegment, derivedFrom: segment.LaneInfo);
+                                            ? new LaneInfo(startSegment, prevSegment)
+                                            : new LaneInfo(startSegment, prevSegment, derivedFrom: segment.LaneInfo);
                                 }
+
+                                prevSegment = startSegment;
                             }
                         }
                     }
@@ -523,6 +529,8 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     // The startsegments do not connect to any previous row. This means that this is a new branch.
                     if (!startSegmentsAdded)
                     {
+                        RevisionGraphSegment prevSegment = segments.LastOrDefault();
+
                         // Add new segments started by this revision to the end
                         segments.AddRange(revisionStartSegments);
 
@@ -530,7 +538,8 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         for (int i = 0; i < revisionStartSegmentsCount; i++)
                         {
                             RevisionGraphSegment startSegment = revisionStartSegments[i];
-                            startSegment.LaneInfo = new LaneInfo(startSegment);
+                            startSegment.LaneInfo = new LaneInfo(startSegment, prevSegment);
+                            prevSegment = startSegment;
                         }
                     }
                 }
