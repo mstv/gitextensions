@@ -1,4 +1,5 @@
 ﻿using System.Drawing.Drawing2D;
+using GitCommands;
 
 namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
 {
@@ -42,8 +43,26 @@ namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
             Graphics g = context.G;
             Pen pen = context.Pen;
 
+            if (AppSettings.DebugGraphPoints.Value)
+            {
+                if (fromPoint.X == toPoint.X)
+                {
+                    return;
+                }
+
+                g.SmoothingMode = SmoothingMode.None;
+                DrawLine(new Point(fromPoint.X, fromPoint.Y - 1), new Point(fromPoint.X, fromPoint.Y + 1));
+                DrawLine(new Point(toPoint.X, toPoint.Y - 1), new Point(toPoint.X, toPoint.Y + 1));
+                return;
+            }
+
             if (fromPoint.X == toPoint.X)
             {
+                if (AppSettings.DebugGraphCurves.Value)
+                {
+                    return;
+                }
+
                 // direct line without anti-aliasing
                 g.SmoothingMode = SmoothingMode.None;
                 DrawLine(fromPoint, toPoint);
@@ -63,6 +82,11 @@ namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
 
             if (!fromPerpendicularly && !toPerpendicularly && singleLane)
             {
+                if (AppSettings.DebugGraphCurves.Value)
+                {
+                    return;
+                }
+
                 // Direct line with anti-aliasing
                 DrawLine(e0, e1);
             }
@@ -144,7 +168,17 @@ namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
 
             void DrawBezier(in PointF e0, in PointF c0, in PointF c1, in PointF e1)
             {
-                g.DrawBezier(pen, e0, c0, c1, e1);
+                if (AppSettings.DebugGraphCurves.Value)
+                {
+                    DrawLine(e0, new(e0.X, e0.Y + 1));
+                    DrawLine(c0, new(c0.X, c0.Y + 1));
+                    DrawLine(c1, new(c1.X, c1.Y + 1));
+                    DrawLine(e1, new(e1.X, e1.Y + 1));
+                }
+                else
+                {
+                    g.DrawBezier(pen, e0, c0, c1, e1);
+                }
             }
 
             void DrawLine(in PointF from, in PointF to)
@@ -156,7 +190,10 @@ namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
             {
                 SizeF shift = fractionOfCell * cellShift;
                 PointF end = start + shift;
-                g.DrawLine(pen, start, end);
+                if (!AppSettings.DebugGraphCurves.Value)
+                {
+                    g.DrawLine(pen, start, end);
+                }
 
                 start = end;
                 bezierCenter = end + shift;
