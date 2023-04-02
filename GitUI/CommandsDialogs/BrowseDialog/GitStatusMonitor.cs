@@ -478,10 +478,13 @@ namespace GitUI.CommandsDialogs.BrowseDialog
                         {
                             // No action
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             try
                             {
+                                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                Application.OpenForms[0].Text = $"{Application.OpenForms[0].Text} {_consecutiveErrorCount}: {ex.Message}";
+
                                 if (++_consecutiveErrorCount < _maxConsecutiveErrors)
                                 {
                                     // Try again
