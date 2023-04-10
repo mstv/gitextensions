@@ -34,9 +34,9 @@
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.panel2 = new System.Windows.Forms.Panel();
             this.lvScripts = new GitUI.UserControls.NativeListView();
-            this.chdrNames = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chdrEvents = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chdrCommand = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chdrNames = new System.Windows.Forms.ColumnHeader();
+            this.chdrEvents = new System.Windows.Forms.ColumnHeader();
+            this.chdrCommand = new System.Windows.Forms.ColumnHeader();
             this.panelButtons = new System.Windows.Forms.FlowLayoutPanel();
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
@@ -210,6 +210,7 @@
         }
 
         #endregion
+
         private System.Windows.Forms.Button btnMoveUp;
         private System.Windows.Forms.Button btnMoveDown;
         private System.Windows.Forms.Button btnArgumentsHelp;
