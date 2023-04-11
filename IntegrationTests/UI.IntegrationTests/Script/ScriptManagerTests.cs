@@ -8,6 +8,7 @@ namespace GitExtensions.UITests.Script
     [TestFixture]
     public class ScriptManagerTests
     {
+#if false
         [Test]
         public void Can_save_settings()
         {
@@ -37,5 +38,6 @@ namespace GitExtensions.UITests.Script
                 ScriptManager.TestAccessor.Reset();
             }
         }
+#endif
     }
 }

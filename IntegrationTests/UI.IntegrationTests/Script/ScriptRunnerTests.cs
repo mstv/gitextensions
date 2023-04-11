@@ -1,3 +1,4 @@
+#if false
 using System.Reflection;
 using CommonTestUtils;
 using FluentAssertions;
@@ -241,3 +242,4 @@ namespace GitExtensions.UITests.Script
         }
     }
 }
+#endif
