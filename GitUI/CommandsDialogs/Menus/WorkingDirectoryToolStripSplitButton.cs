@@ -21,48 +21,53 @@ namespace GitUI.CommandsDialogs.Menus
             // This is used as Tag in order to mark controls which are to be excluded from the filtering considerations.
             private static readonly object _excludeFromFilterMarker = new();
 
-            private readonly Func<GitUICommands> _getUICommands;
-
             /// <summary>
             ///  Gets the current instance of the git module.
             /// </summary>
-            internal GitModule Module => UICommands.Module;
+            private GitModule Module => UICommands.Module;
 
             /// <summary>
-            ///  Gets the form that is displaying the menu item.
+            ///  Gets the active or the first open form.
             /// </summary>
-            internal Form? OwnerForm => _txtFilter.Control.FindForm();
+            private Form? ActiveOrOpenForm
+                => Form.ActiveForm ?? (Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null);
 
             /// <summary>
             ///  Gets the current instance of the UI commands.
             /// </summary>
-            internal GitUICommands UICommands => _getUICommands();
+            private GitUICommands UICommands => _getUICommands();
+
+            private readonly Func<GitUICommands> _getUICommands;
 
             /// <summary>
-            ///  Gets the current instance of the <see cref="RepositoryHistoryUIService"/>.
+            ///  The current instance of the <see cref="RepositoryHistoryUIService"/>.
             /// </summary>
-            internal readonly RepositoryHistoryUIService RepositoryHistoryUIService;
+            private readonly RepositoryHistoryUIService _repositoryHistoryUIService;
 
-            internal readonly ToolStripMenuItem _tsmiCategorisedRepos;
-            internal readonly ToolStripMenuItem _tsmiOpenLocalRepository;
-            internal readonly ToolStripMenuItem _tsmiCloseRepo;
-            internal readonly ToolStripMenuItem _tsmiRecentReposSettings;
-            internal readonly ToolStripTextBox _txtFilter = new();
+            private readonly ToolStripMenuItem _tsmiCategorisedRepos;
+            private readonly ToolStripMenuItem _tsmiOpenLocalRepository;
+            private readonly ToolStripMenuItem _tsmiCloseRepo;
+            private readonly ToolStripMenuItem _tsmiRecentReposSettings;
+            private readonly ToolStripTextBox _txtFilter = new();
 
             // NOTE: This is pretty bad, but we want to share the same look and feel of the menu items defined in the Start menu.
-            internal readonly StartToolStripMenuItem _startToolStripMenuItem;
-            internal readonly ToolStripMenuItem _closeToolStripMenuItem;
+            private readonly StartToolStripMenuItem _startToolStripMenuItem;
+            private readonly ToolStripMenuItem _closeToolStripMenuItem;
 
             internal Implementation(
-                ToolStripDropDown dropDown,
+                ToolStripSplitButton button,
                 Func<GitUICommands> getUICommands,
                 RepositoryHistoryUIService repositoryHistoryUIService,
                 StartToolStripMenuItem startToolStripMenuItem,
                 ToolStripMenuItem closeToolStripMenuItem,
                 Action refreshContent)
             {
+                button.ButtonClick += (s, e) => button.ShowDropDown();
+                button.DropDownOpening += (s, e) => FillDropDown(button);
+                button.MouseUp += MouseUpHandler;
+
                 _getUICommands = getUICommands;
-                RepositoryHistoryUIService = repositoryHistoryUIService;
+                _repositoryHistoryUIService = repositoryHistoryUIService;
                 _startToolStripMenuItem = startToolStripMenuItem;
                 _closeToolStripMenuItem = closeToolStripMenuItem;
 
@@ -93,14 +98,14 @@ namespace GitUI.CommandsDialogs.Menus
                     //  6. separator
                     //  7. "Configure menu"
                     const int defaultItemCount = 7;
-                    if (dropDown.Items.Count <= defaultItemCount)
+                    if (button.DropDown.Items.Count <= defaultItemCount)
                     {
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(filterTextbox.Text))
                     {
-                        foreach (ToolStripItem item in dropDown.Items)
+                        foreach (ToolStripItem item in button.DropDown.Items)
                         {
                             item.Visible = true;
                         }
@@ -108,7 +113,7 @@ namespace GitUI.CommandsDialogs.Menus
                         return;
                     }
 
-                    foreach (ToolStripItem item in dropDown.Items)
+                    foreach (ToolStripItem item in button.DropDown.Items)
                     {
                         if (item is ToolStripSeparator || item.Tag == _excludeFromFilterMarker)
                         {
@@ -147,20 +152,106 @@ namespace GitUI.CommandsDialogs.Menus
                 {
                     using (FormRecentReposSettings frm = new())
                     {
-                        frm.ShowDialog(OwnerForm);
+                        frm.ShowDialog(ActiveOrOpenForm);
                     }
 
                     refreshContent();
                 };
             }
+
+            private void FillDropDown(ToolStripDropDownItem button)
+            {
+                button.DropDown.SuspendLayout();
+                try
+                {
+                    button.DropDown.Items.Clear();
+
+                    _txtFilter.Text = string.Empty;
+
+                    button.DropDown.Items.Add(_txtFilter);
+                    button.DropDown.Items.Add(new ToolStripSeparator());
+
+                    _repositoryHistoryUIService.PopulateFavouriteRepositoriesMenu(_tsmiCategorisedRepos);
+                    if (_tsmiCategorisedRepos.DropDownItems.Count > 0)
+                    {
+                        button.DropDown.Items.Add(_tsmiCategorisedRepos);
+                    }
+
+                    _repositoryHistoryUIService.PopulateRecentRepositoriesMenu(button);
+
+                    button.DropDown.Items.Add(new ToolStripSeparator());
+                    button.DropDown.Items.Add(_tsmiOpenLocalRepository);
+                    button.DropDown.Items.Add(_tsmiCloseRepo);
+                    button.DropDown.Items.Add(new ToolStripSeparator());
+                    button.DropDown.Items.Add(_tsmiRecentReposSettings);
+                }
+                finally
+                {
+                    button.DropDown.ResumeLayout();
+                }
+            }
+
+            private void MouseUpHandler(object? sender, MouseEventArgs e)
+            {
+                if (e.Button == MouseButtons.Right)
+                {
+                    _startToolStripMenuItem.OpenRepositoryMenuItem.PerformClick();
+                }
+            }
+
+            internal void RefreshContent(ToolStripSplitButton button)
+            {
+                Form? graphicsForm = ActiveOrOpenForm;
+                if (graphicsForm is null)
+                {
+                    // The component is unparented, no point doing anything.
+                    return;
+                }
+
+                string path = Module.WorkingDir;
+
+                // It appears at times Module.WorkingDir path is an empty string,
+                // this caused issues like https://github.com/gitextensions/gitextensions/issues/4874.
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    button.Text = _noWorkingFolderText.Text;
+                    return;
+                }
+
+                IList<Repository> recentRepositoryHistory = ThreadHelper.JoinableTaskFactory.Run(
+                    () => RepositoryHistoryManager.Locals.AddAsMostRecentAsync(path));
+
+                List<RecentRepoInfo> pinnedRepos = new();
+                using Graphics graphics = graphicsForm.CreateGraphics();
+                RecentRepoSplitter splitter = new()
+                {
+                    MeasureFont = button.Font,
+                    Graphics = graphics
+                };
+
+                splitter.SplitRecentRepos(recentRepositoryHistory, pinnedRepos, pinnedRepos);
+
+                RecentRepoInfo? ri = pinnedRepos.Find(e => e.Repo.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase));
+
+                button.Text = PathUtil.GetDisplayPath(ri?.Caption ?? path);
+
+                if (AppSettings.RecentReposComboMinWidth > 0)
+                {
+                    button.AutoSize = false;
+                    float captionWidth = graphics.MeasureString(button.Text, button.Font).Width;
+                    captionWidth = captionWidth + button.DropDownButtonWidth + 5;
+                    button.Width = Math.Max(AppSettings.RecentReposComboMinWidth, (int)captionWidth);
+                }
+                else
+                {
+                    button.AutoSize = true;
+                }
+            }
         }
 
-        private Implementation? _use_property_instead_implementation;
+        private Implementation? _implementation;
 
-        private Implementation _implementation
-            => _use_property_instead_implementation ?? throw new InvalidOperationException("The button is not initialized");
-
-        public WorkingDirectoryToolStripSplitButton()
+        internal WorkingDirectoryToolStripSplitButton()
         {
             Name = nameof(WorkingDirectoryToolStripSplitButton);
 
@@ -174,105 +265,24 @@ namespace GitUI.CommandsDialogs.Menus
         ///  Initializes the menu item.
         /// </summary>
         /// <param name="getUICommands">The method that returns the current instance of UI commands.</param>
-        public void Initialize(Func<GitUICommands> getUICommands, RepositoryHistoryUIService repositoryHistoryUIService,
+        internal void Initialize(Func<GitUICommands> getUICommands, RepositoryHistoryUIService repositoryHistoryUIService,
                                StartToolStripMenuItem startToolStripMenuItem, ToolStripMenuItem closeToolStripMenuItem)
         {
             Translator.Translate(this, AppSettings.CurrentTranslation);
 
-            _use_property_instead_implementation = new Implementation(DropDown, getUICommands, repositoryHistoryUIService, startToolStripMenuItem, closeToolStripMenuItem, RefreshContent);
-        }
-
-        protected override void OnButtonClick(EventArgs e)
-        {
-            base.OnButtonClick(e);
-            ShowDropDown();
-        }
-
-        protected override void OnDropDownShow(EventArgs e)
-        {
-            DropDown.SuspendLayout();
-            DropDownItems.Clear();
-
-            _implementation._txtFilter.Text = string.Empty;
-
-            DropDownItems.Add(_implementation._txtFilter);
-            DropDownItems.Add(new ToolStripSeparator());
-
-            _implementation.RepositoryHistoryUIService.PopulateFavouriteRepositoriesMenu(_implementation._tsmiCategorisedRepos);
-            if (_implementation._tsmiCategorisedRepos.DropDownItems.Count > 0)
-            {
-                DropDownItems.Add(_implementation._tsmiCategorisedRepos);
-            }
-
-            _implementation.RepositoryHistoryUIService.PopulateRecentRepositoriesMenu(this);
-
-            DropDownItems.Add(new ToolStripSeparator());
-            DropDownItems.Add(_implementation._tsmiOpenLocalRepository);
-            DropDownItems.Add(_implementation._tsmiCloseRepo);
-            DropDownItems.Add(new ToolStripSeparator());
-            DropDownItems.Add(_implementation._tsmiRecentReposSettings);
-
-            DropDown.ResumeLayout();
-        }
-
-        protected override void OnMouseUp(MouseEventArgs e)
-        {
-            base.OnMouseUp(e);
-
-            if (e.Button == MouseButtons.Right)
-            {
-                _implementation._startToolStripMenuItem.OpenRepositoryMenuItem.PerformClick();
-            }
+            _implementation = new Implementation(this, getUICommands, repositoryHistoryUIService, startToolStripMenuItem, closeToolStripMenuItem, RefreshContent);
         }
 
         /// <summary>Updates the text shown on the combo button itself.</summary>
-        public void RefreshContent()
+        internal void RefreshContent()
         {
-            Form? ownerForm = _implementation.OwnerForm;
-            if (ownerForm is null)
+            if (_implementation is null)
             {
-                // The component is unparented, no point doing anything.
+                // The component is not initialized, no point doing anything.
                 return;
             }
 
-            string path = _implementation.Module.WorkingDir;
-
-            // It appears at times Module.WorkingDir path is an empty string,
-            // this caused issues like https://github.com/gitextensions/gitextensions/issues/4874.
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                Text = _noWorkingFolderText.Text;
-                return;
-            }
-
-            IList<Repository> recentRepositoryHistory = ThreadHelper.JoinableTaskFactory.Run(
-                () => RepositoryHistoryManager.Locals.AddAsMostRecentAsync(path));
-
-            List<RecentRepoInfo> pinnedRepos = new();
-            using Graphics graphics = ownerForm.CreateGraphics();
-            RecentRepoSplitter splitter = new()
-            {
-                MeasureFont = Font,
-                Graphics = graphics
-            };
-
-            splitter.SplitRecentRepos(recentRepositoryHistory, pinnedRepos, pinnedRepos);
-
-            RecentRepoInfo? ri = pinnedRepos.Find(e => e.Repo.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase));
-
-            Text = PathUtil.GetDisplayPath(ri?.Caption ?? path);
-
-            if (AppSettings.RecentReposComboMinWidth > 0)
-            {
-                AutoSize = false;
-                float captionWidth = graphics.MeasureString(Text, Font).Width;
-                captionWidth = captionWidth + DropDownButtonWidth + 5;
-                Width = Math.Max(AppSettings.RecentReposComboMinWidth, (int)captionWidth);
-            }
-            else
-            {
-                AutoSize = true;
-            }
+            _implementation.RefreshContent(this);
         }
 
         void ITranslate.AddTranslationItems(ITranslation translation)
