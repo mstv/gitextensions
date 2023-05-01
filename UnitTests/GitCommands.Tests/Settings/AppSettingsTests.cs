@@ -56,7 +56,7 @@ namespace GitCommandsTests.Settings
             File.WriteAllText(filePath, SettingsFileContent);
 
             using GitExtSettingsCache cache = GitExtSettingsCache.Create(filePath);
-            RepoDistSettings container = new(null, cache, SettingLevel.Unknown);
+            DistributedSettings container = new(null, cache, SettingLevel.Unknown);
             object storedValue = null;
 
             // Act
@@ -91,7 +91,7 @@ namespace GitCommandsTests.Settings
             File.WriteAllText(filePath, SettingsFileContent);
 
             using GitExtSettingsCache cache = GitExtSettingsCache.Create(filePath);
-            RepoDistSettings container = new(null, cache, SettingLevel.Unknown);
+            DistributedSettings container = new(null, cache, SettingLevel.Unknown);
             object storedValue = null;
 
             // Act

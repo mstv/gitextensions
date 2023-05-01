@@ -5,6 +5,7 @@ using GitUI.CommandsDialogs;
 using GitUI.Editor;
 using GitUI.LeftPanel;
 using GitUI.Script;
+using GitUIPluginInterfaces;
 using Microsoft;
 using ResourceManager;
 
@@ -425,7 +426,8 @@ namespace GitUI.Hotkey
                  * these integers are never matched in the 'switch' routine on a form and
                  * therefore execute the 'default' action
                  */
-                return ScriptManager
+                IScriptsManager scriptsManager = ManagedExtensibility.GetExport<IScriptsManager>().Value;
+                return scriptsManager
                     .GetScripts()
                     .Where(s => !string.IsNullOrEmpty(s.Name))
                     .Select(s => new HotkeyCommand(s.HotkeyCommandIdentifier, s.Name!) { KeyData = Keys.None })

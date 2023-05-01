@@ -34,11 +34,11 @@ namespace GitUI.CommandsDialogs.SettingsDialog
 
             Module = module;
 
-            var repoDistGlobalSettings = RepoDistSettings.CreateGlobal(false);
-            var repoDistPulledSettings = RepoDistSettings.CreateDistributed(module, false);
-            var repoDistLocalSettings = RepoDistSettings.CreateLocal(module, false);
-            RepoDistSettings repoDistEffectiveSettings = new(
-                new RepoDistSettings(repoDistGlobalSettings, repoDistPulledSettings.SettingsCache, SettingLevel.Distributed),
+            var repoDistGlobalSettings = DistributedSettings.CreateGlobal(false);
+            var repoDistPulledSettings = DistributedSettings.CreateDistributed(module, false);
+            var repoDistLocalSettings = DistributedSettings.CreateLocal(module, false);
+            DistributedSettings repoDistEffectiveSettings = new(
+                new DistributedSettings(repoDistGlobalSettings, repoDistPulledSettings.SettingsCache, SettingLevel.Distributed),
                 repoDistLocalSettings.SettingsCache,
                 SettingLevel.Effective);
 

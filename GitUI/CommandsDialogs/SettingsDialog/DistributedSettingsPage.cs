@@ -4,10 +4,10 @@ using Microsoft;
 
 namespace GitUI.CommandsDialogs.SettingsDialog
 {
-    public class RepoDistSettingsPage : SettingsPageWithHeader, IRepoDistSettingsPage
+    public class DistributedSettingsPage : SettingsPageWithHeader, IRepoDistSettingsPage
     {
         protected RepoDistSettingsSet? RepoDistSettingsSet => CommonLogic.RepoDistSettingsSet;
-        protected RepoDistSettings? CurrentSettings { get; private set; }
+        protected DistributedSettings? CurrentSettings { get; private set; }
 
         protected override void Init(ISettingsPageHost pageHost)
         {
@@ -55,7 +55,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog
             }
         }
 
-        private void SetCurrentSettings(RepoDistSettings settings)
+        private void SetCurrentSettings(DistributedSettings settings)
         {
             if (CurrentSettings is not null)
             {

@@ -1118,7 +1118,8 @@ namespace GitUI.CommandsDialogs
 
                     button.Click += delegate
                     {
-                        if (ScriptRunner.RunScript(this, Module, script.Name, UICommands, RevisionGrid).NeedsGridRefresh)
+                        IScriptsManager scriptsManager = ManagedExtensibility.GetExport<IScriptsManager>().Value;
+                        if (scriptsManager.RunScript(script.HotkeyCommandIdentifier, this, RevisionGrid).NeedsGridRefresh)
                         {
                             RefreshRevisions();
                         }

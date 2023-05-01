@@ -3092,9 +3092,11 @@ namespace GitUI
 
         bool ICheckRefs.Contains(ObjectId objectId) => _gridView.Contains(objectId);
 
-        void IRunScript.Execute(string name)
+        // TODO: refactor out
+        void IRunScript.Execute(int scriptId)
         {
-            if (ScriptRunner.RunScript(this, Module, name, UICommands, this).NeedsGridRefresh)
+            IScriptsManager scriptsManager = ManagedExtensibility.GetExport<IScriptsManager>().Value;
+            if (scriptsManager.RunScript(scriptId, FindForm() as GitModuleForm, this).NeedsGridRefresh)
             {
                 PerformRefreshRevisions();
             }
