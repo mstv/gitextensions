@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Drawing2D;
 using System.Globalization;
+using System.Text;
 using ConEmu.WinForms;
 using GitCommands;
 using GitCommands.Config;
@@ -221,6 +222,7 @@ namespace GitUI.CommandsDialogs
         private bool _fileBlameHistoryLeftPanelStartupState;
 
         private TabPage? _consoleTabPage;
+        private readonly Control _gitOutputControl;
 
         private readonly Dictionary<Brush, Icon> _overlayIconByBrush = new();
 
@@ -266,6 +268,8 @@ namespace GitUI.CommandsDialogs
 
             MainSplitContainer.Visible = false;
             MainSplitContainer.SplitterDistance = DpiUtil.Scale(260);
+
+            _gitOutputControl = CreateGitOutputControl(toolPanel.ContentPanel, LeftSplitContainer, revisionDiff.HorizontalSplitter);
 
             ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
@@ -326,6 +330,105 @@ namespace GitUI.CommandsDialogs
 
             // Application is init, the repo related operations are triggered in OnLoad()
             return;
+
+            static Control CreateGitOutputControl(Panel panel, SplitContainer verticalSplitContainer, SplitContainer horizontalSplitContainer)
+            {
+                RichTextBox gitOutputControl = new()
+                {
+                    Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
+                    BackColor = Color.WhiteSmoke,
+                    Font = AppSettings.FixedWidthFont,
+                    Name = nameof(gitOutputControl),
+                    ReadOnly = true,
+                    WordWrap = false
+                };
+                Control heightVictimControl = horizontalSplitContainer.Panel1.Controls[0];
+                verticalSplitContainer.Invalidated += (_, _) => SetSize();
+                horizontalSplitContainer.Invalidated += (_, _) => SetSize();
+                horizontalSplitContainer.Parent.Parent.VisibleChanged += (_, _) => SetSize();
+                horizontalSplitContainer.Parent.Parent.Parent.Parent.VisibleChanged += (_, _) => SetSize();
+
+                List<StringBuilder> outputs = new(capacity: 10);
+                FormStatus.OnDone = (formStatus) =>
+                {
+                    if (outputs.Count == outputs.Capacity)
+                    {
+                        outputs.RemoveAt(0);
+                    }
+
+                    outputs.Add(GetOutput(formStatus));
+
+                    StringBuilder sb = new();
+                    foreach (StringBuilder output in outputs)
+                    {
+                        sb.Append(output);
+                    }
+
+                    sb.Append('$');
+
+                    gitOutputControl.Text = sb.ToString();
+                    gitOutputControl.SelectionStart = sb.Length;
+                    gitOutputControl.ScrollToCaret();
+                    return;
+
+                    static StringBuilder GetOutput(FormStatus formStatus)
+                    {
+                        StringBuilder sb = new();
+                        if (formStatus is FormProcess formProcess)
+                        {
+                            sb.Append("$ ").Append(formProcess.ProcessString).Append(' ').Append(formProcess.ProcessArguments).AppendLine();
+                        }
+                        else
+                        {
+                            sb.AppendLine("---");
+                        }
+
+                        return sb.AppendLine(formStatus.GetOutputString());
+                    }
+                };
+                gitOutputControl.LinkClicked += (_, e) => OsShellUtil.OpenUrlInDefaultBrowser(e.LinkText);
+
+                panel.Controls.Add(gitOutputControl);
+                panel.Controls.SetChildIndex(gitOutputControl, 0);
+
+                return gitOutputControl;
+
+                void SetSize()
+                {
+                    const int margin = 6;
+                    const int offset = 1;
+                    const int h1offset = 1;
+
+                    gitOutputControl.Visible = !verticalSplitContainer.Panel2Collapsed;
+                    if (gitOutputControl.Visible)
+                    {
+                        int height = verticalSplitContainer.Panel2.Height;
+                        int width = (2 * offset) + GetWidth();
+                        gitOutputControl.SetBounds(margin, panel.Height - height - offset - margin, width, (2 * offset) + height);
+
+                        heightVictimControl.Dock = DockStyle.Top;
+                        heightVictimControl.Height = horizontalSplitContainer.Height - height;
+                    }
+                    else
+                    {
+                        heightVictimControl.Dock = DockStyle.Fill;
+                    }
+
+                    return;
+
+                    int GetWidth()
+                    {
+                        if (!horizontalSplitContainer.Visible)
+                        {
+                            return h1offset + verticalSplitContainer.Panel2.ClientSize.Width;
+                        }
+
+                        int left = verticalSplitContainer.Panel2.PointToScreen(new(horizontalSplitContainer.Panel1.ClientRectangle.Left, 0)).X;
+                        int right = horizontalSplitContainer.Panel1.PointToScreen(new(horizontalSplitContainer.Panel1.ClientRectangle.Right, 0)).X;
+                        return right - left;
+                    }
+                }
+            }
 
             void InitCountArtificial(out GitStatusMonitor gitStatusMonitor)
             {
@@ -1762,18 +1865,21 @@ namespace GitUI.CommandsDialogs
         internal enum Command
         {
             // Focus or visuals
+            FocusLeftPanel = 25,
             FocusRevisionGrid = 3,
             FocusCommitInfo = 4,
             FocusDiff = 5,
             FocusFileTree = 6,
-            FocusFilter = 18,
-            ToggleLeftPanel = 21,
-            FocusLeftPanel = 25,
             FocusGpgInfo = 26,
             FocusGitConsole = 29,
             FocusBuildServerStatus = 30,
             FocusNextTab = 31,
             FocusPrevTab = 32,
+
+            FocusFilter = 18,
+
+            ToggleGitOutput = 47,
+            ToggleLeftPanel = 21,
 
             // START menu
             OpenRepo = 45,
@@ -1956,6 +2062,7 @@ namespace GitUI.CommandsDialogs
                 case Command.GoToSuperproject: toolStripButtonLevelUp.PerformClick(); break;
                 case Command.GoToSubmodule: toolStripButtonLevelUp.ShowDropDown(); break;
                 case Command.ToggleBetweenArtificialAndHeadCommits: RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.ToggleBetweenArtificialAndHeadCommits); break;
+                case Command.ToggleGitOutput: ToggleGitOutputControl(); break;
                 case Command.GoToChild: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToChild)); break;
                 case Command.GoToParent: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToParent)); break;
                 case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction, isSilent: false); break;
@@ -2073,6 +2180,15 @@ namespace GitUI.CommandsDialogs
                     revisionDiff.SwitchFocus(alreadyContainedFocus: false);
                 }
             }
+
+            void ToggleGitOutputControl()
+            {
+                LeftSplitContainer.Panel2Collapsed = !LeftSplitContainer.Panel2Collapsed;
+                if (!LeftSplitContainer.Panel2Collapsed)
+                {
+                    ActiveControl = _gitOutputControl;
+                }
+            }
         }
 
         internal CommandStatus ExecuteCommand(Command cmd)
@@ -2105,6 +2221,7 @@ namespace GitUI.CommandsDialogs
             _splitterManager.AddSplitter(RevisionsSplitContainer, nameof(RevisionsSplitContainer));
             _splitterManager.AddSplitter(MainSplitContainer, nameof(MainSplitContainer));
             _splitterManager.AddSplitter(RightSplitContainer, nameof(RightSplitContainer));
+            _splitterManager.AddSplitter(LeftSplitContainer, nameof(LeftSplitContainer));
 
             revisionDiff.InitSplitterManager(_splitterManager);
             fileTree.InitSplitterManager(_splitterManager);
