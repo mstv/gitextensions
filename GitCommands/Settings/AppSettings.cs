@@ -396,7 +396,7 @@ namespace GitCommands
         public static bool UseHistogramDiffAlgorithm
         {
             // The settings key has patience in the name for historical reasons
-            get => GetBool("usepatiencediffalgorithm", false);
+            get => GetBool("usepatiencediffalgorithm", true);
             set => SetBool("usepatiencediffalgorithm", value);
         }
 

@@ -119,6 +119,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             // 
             this.checkBoxShowBuildResultPage.AutoSize = true;
             this.tableLayoutPanel1.SetColumnSpan(this.checkBoxShowBuildResultPage, 2);
+            this.checkBoxShowBuildResultPage.Checked = false;
             this.checkBoxShowBuildResultPage.Enabled = false;
             this.checkBoxShowBuildResultPage.Location = new System.Drawing.Point(3, 66);
             this.checkBoxShowBuildResultPage.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
