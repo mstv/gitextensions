@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using GitCommands;
 using GitUIPluginInterfaces;
 
 namespace GitUI.UserControls.RevisionGrid.Graph
@@ -358,16 +359,17 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
             for (int nextIndex = startIndex; nextIndex <= lastToCacheRowIndex; ++nextIndex)
             {
-                bool startSegmentsAdded = false;
-
                 RevisionGraphRevision revision = orderedNodesCache[nextIndex];
+                RevisionGraphSegment[] revisionStartSegments = Order(revision.GetStartSegments(), orderedNodesCache, nextIndex);
 
                 // The list containing the segments is created later. We can set the correct capacity then, to prevent resizing
                 List<RevisionGraphSegment> segments;
-                RevisionGraphSegment[] revisionStartSegments = revision.GetStartSegments();
 
+                RevisionGraphRow? previousRevisionGraphRow;
                 if (nextIndex == 0)
                 {
+                    previousRevisionGraphRow = null;
+
                     // This is the first row. Start with only the startsegments of this row
                     segments = new List<RevisionGraphSegment>(revisionStartSegments);
 
@@ -379,10 +381,12 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 else
                 {
                     // Copy lanes from last row
-                    RevisionGraphRow previousRevisionGraphRow = localOrderedRowCache[nextIndex - 1];
+                    previousRevisionGraphRow = localOrderedRowCache[nextIndex - 1];
 
-                    // Create segments list with te correct capacity
+                    // Create segments list with the correct capacity
                     segments = new List<RevisionGraphSegment>(previousRevisionGraphRow.Segments.Count + revisionStartSegments.Length);
+
+                    bool startSegmentsAdded = false;
 
                     // Loop through all segments that do not end in the previous row
                     foreach (var segment in previousRevisionGraphRow.Segments.Where(s => s.Parent != previousRevisionGraphRow.Revision))
@@ -432,7 +436,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     }
                 }
 
-                localOrderedRowCache.Add(new RevisionGraphRow(revision, segments));
+                localOrderedRowCache.Add(new RevisionGraphRow(revision, segments, previousRevisionGraphRow));
             }
 
             // Straightening does not apply to the first and the last row. The single node there shall not be moved.
@@ -448,6 +452,75 @@ namespace GitUI.UserControls.RevisionGrid.Graph
             Updated?.Invoke();
 
             return;
+
+            static RevisionGraphSegment[] Order(RevisionGraphSegment[] segments, RevisionGraphRevision[] orderedNodesCache, int nextIndex)
+            {
+                if (!AppSettings.ReduceGraphCrossings.Value)
+                {
+                    return segments;
+                }
+
+                // Define local function GetRowIndex with precalculated limit here
+                int endIndex = Math.Min(nextIndex + 50, orderedNodesCache.Length);
+                int GetRowIndex(RevisionGraphRevision revision)
+                {
+                    for (int index = nextIndex + 1; index < endIndex; ++index)
+                    {
+                        if (orderedNodesCache[index] == revision)
+                        {
+                            return index - nextIndex;
+                        }
+                    }
+
+                    return int.MaxValue;
+                }
+
+                return segments.OrderBy(s => s, (a, b) =>
+                    {
+                        int rowA = GetRowIndex(a.Parent);
+                        int rowB = GetRowIndex(b.Parent);
+
+                        // Prefer the one which is the ancestor of the other
+                        if (rowA != int.MaxValue && rowB != int.MaxValue)
+                        {
+                            if (rowA > rowB && IsAncestorOf(a.Parent, b.Parent, rowA))
+                            {
+                                return -1;
+                            }
+                            else if (rowB > rowA && IsAncestorOf(b.Parent, a.Parent, rowB))
+                            {
+                                return 1;
+                            }
+                        }
+
+                        return Score(a, rowA).CompareTo(Score(b, rowB));
+
+                        int Score(RevisionGraphSegment segment, int row)
+                            => segment.Parent.Parents.IsEmpty ? row // initial revision
+                                : !segment.Parent.Parents.Pop().IsEmpty ? -2000 + row // merged into
+                                : !segment.Parent.Children.Pop().IsEmpty ? -1000 + row // branched from
+                                : row; // just a commit
+
+                        bool IsAncestorOf(RevisionGraphRevision ancestor, RevisionGraphRevision child, int stopRow)
+                        {
+                            if (child.Parents.Contains(ancestor))
+                            {
+                                return true;
+                            }
+
+                            foreach (RevisionGraphRevision parent in child.Parents)
+                            {
+                                if (GetRowIndex(parent) < stopRow && IsAncestorOf(ancestor, parent, stopRow))
+                                {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        }
+                    })
+                    .ToArray();
+            }
 
             static void StraightenLanes(int startIndex, int lastStraightenIndex, int lastLookaheadIndex, IList<RevisionGraphRow> localOrderedRowCache)
             {
@@ -488,8 +561,14 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     IRevisionGraphRow previousRow = localOrderedRowCache[currentIndex - 1];
                     foreach (RevisionGraphSegment revisionGraphSegment in currentRow.Segments)
                     {
-                        int previousLane = previousRow.GetLaneIndexForSegment(revisionGraphSegment);
-                        int currentLane = currentRow.GetLaneIndexForSegment(revisionGraphSegment);
+                        Lane currentRowLane = currentRow.GetLaneForSegment(revisionGraphSegment);
+                        if (currentRowLane.Sharing != LaneSharing.ExclusiveOrPrimary)
+                        {
+                            continue; // with next revisionGraphSegment
+                        }
+
+                        int currentLane = currentRowLane.Index;
+                        int previousLane = previousRow.GetLaneForSegment(revisionGraphSegment).Index;
                         if (previousLane <= currentLane)
                         {
                             continue; // with next revisionGraphSegment
@@ -499,7 +578,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                         int lookaheadLane = currentLane;
                         for (int lookaheadIndex = currentIndex + 1; lookaheadLane == currentLane && lookaheadIndex <= Math.Min(currentIndex + _straightenLanesLookAhead, lastLookaheadIndex); ++lookaheadIndex)
                         {
-                            lookaheadLane = localOrderedRowCache[lookaheadIndex].GetLaneIndexForSegment(revisionGraphSegment);
+                            lookaheadLane = localOrderedRowCache[lookaheadIndex].GetLaneForSegment(revisionGraphSegment).Index;
                             if ((lookaheadLane == straightenedCurrentLane) || (lookaheadLane > straightenedCurrentLane && previousLane == straightenedCurrentLane))
                             {
                                 for (int moveIndex = currentIndex; moveIndex < lookaheadIndex; ++moveIndex)
