@@ -4,7 +4,7 @@ using Microsoft;
 
 namespace GitUI.CommandsDialogs.SettingsDialog
 {
-    public class ConfigFileSettingsPage : SettingsPageWithHeader, ILocalSettingsPage
+    public class ConfigFileSettingsPage : SettingsPageWithHeader, IConfigFileSettingsPage
     {
         protected ConfigFileSettingsSet ConfigFileSettingsSet => CommonLogic.ConfigFileSettingsSet;
         protected ConfigFileSettings? CurrentSettings { get; private set; }
@@ -46,9 +46,17 @@ namespace GitUI.CommandsDialogs.SettingsDialog
             }
         }
 
+        public void SetSystemSettings()
+        {
+            if (ConfigFileSettingsSet.SystemSettings is not null)
+            {
+                SetCurrentSettings(ConfigFileSettingsSet.SystemSettings);
+            }
+        }
+
         private void SetCurrentSettings(ConfigFileSettings settings)
         {
-            if (CurrentSettings is not null)
+            if (CurrentSettings is not null && !ReferenceEquals(CurrentSettings, ConfigFileSettingsSet.SystemSettings))
             {
                 SaveSettings();
             }

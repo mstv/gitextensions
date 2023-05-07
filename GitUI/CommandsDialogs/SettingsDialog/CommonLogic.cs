@@ -45,6 +45,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog
                 distributedLocalSettings.SettingsCache,
                 SettingLevel.Effective);
 
+            ConfigFileSettings configFileSystemSettings = ConfigFileSettings.CreateSystemWide(useSharedCache: false);
             ConfigFileSettings configFileGlobalSettings = ConfigFileSettings.CreateGlobal(useSharedCache: false);
             ConfigFileSettings configFileLocalSettings = ConfigFileSettings.CreateLocal(module, useSharedCache: false);
             ConfigFileSettings configFileEffectiveSettings = ConfigFileSettings.CreateEffective(module, useSharedCache: false);
@@ -58,7 +59,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog
             ConfigFileSettingsSet = new ConfigFileSettingsSet(
                 configFileEffectiveSettings,
                 configFileLocalSettings,
-                configFileGlobalSettings);
+                configFileGlobalSettings,
+                configFileSystemSettings);
         }
 
         /// <summary>
