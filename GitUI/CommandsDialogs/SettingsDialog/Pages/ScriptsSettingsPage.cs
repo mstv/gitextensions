@@ -181,7 +181,11 @@ Current Branch:
         protected override void PageToSettings()
         {
             // Update the currently edited script
-            _scriptsManager.Update(SelectedScript);
+            ScriptInfo? selectedScript = SelectedScript;
+            if (selectedScript is not null)
+            {
+                _scriptsManager.Update(SelectedScript);
+            }
 
             _scriptsManager.Save();
 
