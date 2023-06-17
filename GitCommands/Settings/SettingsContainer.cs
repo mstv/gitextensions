@@ -49,7 +49,7 @@ namespace GitCommands.Settings
         /// </summary>
         public override void SetValue(string name, string? value)
         {
-            if (LowerPriority is null || SettingsCache.HasValue(name))
+            if (LowerPriority is null || LowerPriority.SettingLevel == SettingLevel.SystemWide || SettingsCache.HasValue(name))
             {
                 SettingsCache.SetValue(name, value);
             }
