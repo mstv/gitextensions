@@ -273,7 +273,7 @@ namespace GitCommands
             }
         }
 
-        public ConfigFileSettings LocalConfigFile => new(lowerPriority: null, EffectiveConfigFile.SettingsCache, SettingLevel.Local);
+        public ConfigFileSettings LocalConfigFile => ConfigFileSettings.CreateLocal(EffectiveConfigFile.SettingsCache);
 
         IConfigFileSettings IGitModule.LocalConfigFile => LocalConfigFile;
 

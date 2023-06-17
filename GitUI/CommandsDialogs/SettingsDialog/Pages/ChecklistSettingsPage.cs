@@ -149,7 +149,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
 
         private string GetGlobalSetting(string settingName)
         {
-            return CommonLogic.ConfigFileSettingsSet.GlobalSettings.GetValue(settingName);
+            return CommonLogic.EffectiveGlobalSettings.GetValue(settingName);
         }
 
         private void translationConfig_Click(object sender, EventArgs e)

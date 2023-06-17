@@ -23,6 +23,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog
         public readonly ConfigFileSettingsSet ConfigFileSettingsSet;
         public readonly GitModule Module;
 
+        public ConfigFileSettings EffectiveGlobalSettings => ConfigFileSettings.GetEffectiveGlobalSettings(ConfigFileSettingsSet.EffectiveSettings);
+
         private CommonLogic()
         {
             // For translation only
@@ -45,10 +47,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog
 
             ConfigFileSettings configFileGlobalSettings = ConfigFileSettings.CreateGlobal(useSharedCache: false);
             ConfigFileSettings configFileLocalSettings = ConfigFileSettings.CreateLocal(module, useSharedCache: false);
-            ConfigFileSettings configFileEffectiveSettings = new(
-                configFileGlobalSettings,
-                configFileLocalSettings.SettingsCache,
-                SettingLevel.Effective);
+            ConfigFileSettings configFileEffectiveSettings = ConfigFileSettings.CreateEffective(module, useSharedCache: false);
 
             DistributedSettingsSet = new DistributedSettingsSet(
                 distributedEffectiveSettings,
@@ -99,7 +98,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog
             IEnumerable<string> GetEditorOptions()
             {
                 yield return Environment.GetEnvironmentVariable(PresetGitEditorEnvVariableName);
-                yield return ConfigFileSettingsSet.GlobalSettings.GetValue("core.editor");
+                yield return EffectiveGlobalSettings.GetValue("core.editor");
                 yield return Environment.GetEnvironmentVariable("VISUAL");
                 yield return Environment.GetEnvironmentVariable(AmbientGitEditorEnvVariableName);
             }

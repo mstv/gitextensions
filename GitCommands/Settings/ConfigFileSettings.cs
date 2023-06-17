@@ -2,23 +2,42 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using GitUIPluginInterfaces;
+using Microsoft;
 
 namespace GitCommands.Settings
 {
     [DebuggerDisplay("{" + nameof(SettingLevel) + "}: {" + nameof(SettingsCache) + "} << {" + nameof(LowerPriority) + "}")]
     public sealed class ConfigFileSettings : SettingsContainer<ConfigFileSettings, ConfigFileSettingsCache>, IConfigFileSettings, IConfigValueStore
     {
-        public ConfigFileSettings(ConfigFileSettings? lowerPriority, ConfigFileSettingsCache settingsCache, SettingLevel settingLevel)
+        private ConfigFileSettings(ConfigFileSettings? lowerPriority, ConfigFileSettingsCache settingsCache, SettingLevel settingLevel)
             : base(lowerPriority, settingsCache)
         {
             SettingLevel = settingLevel;
         }
 
-        public static ConfigFileSettings CreateEffective(GitModule module)
+        public static ConfigFileSettings CreateEffective(GitModule module, bool useSharedCache = true)
         {
             return CreateLocal(module,
-                CreateGlobal(CreateSystemWide()),
-                SettingLevel.Effective);
+                lowerPriority: CreateGlobal(lowerPriority: CreateSystemWide(useSharedCache), useSharedCache),
+                SettingLevel.Effective,
+                useSharedCache);
+        }
+
+        public static ConfigFileSettings GetEffectiveGlobalSettings(ConfigFileSettings effectiveLocalSettings)
+        {
+            ConfigFileSettings effectiveGlobalSettings = effectiveLocalSettings.LowerPriority;
+            Debug.Assert(effectiveLocalSettings.SettingLevel == SettingLevel.Effective && effectiveGlobalSettings?.SettingLevel is SettingLevel.Global,
+                $"{nameof(effectiveLocalSettings)} must have been created using {nameof(CreateEffective)}");
+            Validates.NotNull(effectiveGlobalSettings);
+            return effectiveGlobalSettings;
+        }
+
+        /// <summary>
+        /// Factory added just for accessing the ctor by GitModule.LocalConfigFile in its very special way.
+        /// </summary>
+        internal static ConfigFileSettings CreateLocal(ConfigFileSettingsCache effectiveSettingsCache)
+        {
+            return new ConfigFileSettings(lowerPriority: null, effectiveSettingsCache, SettingLevel.Local);
         }
 
         public static ConfigFileSettings CreateLocal(GitModule module, bool useSharedCache = true)
@@ -38,7 +57,7 @@ namespace GitCommands.Settings
             return CreateGlobal(lowerPriority: null, useSharedCache);
         }
 
-        public static ConfigFileSettings CreateGlobal(ConfigFileSettings? lowerPriority, bool useSharedCache = true)
+        private static ConfigFileSettings CreateGlobal(ConfigFileSettings? lowerPriority, bool useSharedCache = true)
         {
             string configPath = Path.Combine(EnvironmentConfiguration.GetHomeDir(), ".config", "git", "config");
             if (!File.Exists(configPath))
