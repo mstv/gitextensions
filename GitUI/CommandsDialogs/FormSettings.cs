@@ -239,6 +239,8 @@ namespace GitUI.CommandsDialogs
                 }
 
                 _commonLogic.ConfigFileSettingsSet.EffectiveSettings.Save();
+                _commonLogic.ConfigFileSettingsSet.LocalSettings.Save();
+                _commonLogic.ConfigFileSettingsSet.GlobalSettings.Save();
                 _commonLogic.DistributedSettingsSet.EffectiveSettings.Save();
 
                 if (EnvUtils.RunningOnWindows())
