@@ -119,7 +119,7 @@ namespace GitUI.Editor
                     }
                 };
 
-            IgnoreWhitespace = AppSettings.IgnoreWhitespaceKind.GetValue(reload: !AppSettings.RememberIgnoreWhiteSpacePreference);
+            IgnoreWhitespace = AppSettings.IgnoreWhitespaceKind;
             OnIgnoreWhitespaceChanged();
 
             ignoreWhitespaceAtEol.Image = Images.WhitespaceIgnoreEol.AdaptLightness();
@@ -131,7 +131,7 @@ namespace GitUI.Editor
             ignoreAllWhitespaces.Image = Images.WhitespaceIgnoreAll.AdaptLightness();
             ignoreAllWhitespaceChangesToolStripMenuItem.Image = ignoreAllWhitespaces.Image;
 
-            ShowEntireFile = AppSettings.ShowEntireFile.GetValue(reload: !AppSettings.RememberShowEntireFilePreference);
+            ShowEntireFile = AppSettings.ShowEntireFile;
             showEntireFileButton.Checked = ShowEntireFile;
             showEntireFileToolStripMenuItem.Checked = ShowEntireFile;
             SetStateOfContextLinesButtons();
@@ -141,12 +141,11 @@ namespace GitUI.Editor
 
             showNonPrintChars.Image = Images.ShowWhitespace.AdaptLightness();
             showNonprintableCharactersToolStripMenuItem.Image = showNonPrintChars.Image;
-            bool showNonPrintingChars = AppSettings.ShowNonPrintingChars.GetValue(reload: !AppSettings.RememberShowNonPrintingCharsPreference);
-            showNonPrintChars.Checked = showNonPrintingChars;
-            showNonprintableCharactersToolStripMenuItem.Checked = showNonPrintingChars;
-            ToggleNonPrintingChars(showNonPrintingChars);
+            showNonPrintChars.Checked = AppSettings.ShowNonPrintingChars;
+            showNonprintableCharactersToolStripMenuItem.Checked = AppSettings.ShowNonPrintingChars;
+            ToggleNonPrintingChars(AppSettings.ShowNonPrintingChars);
 
-            ShowSyntaxHighlightingInDiff = AppSettings.ShowSyntaxHighlightingInDiff.GetValue(reload: !AppSettings.RememberShowSyntaxHighlightingInDiff);
+            ShowSyntaxHighlightingInDiff = AppSettings.ShowSyntaxHighlightingInDiff;
             showSyntaxHighlighting.Image = Resources.SyntaxHighlighting.AdaptLightness();
             showSyntaxHighlighting.Checked = ShowSyntaxHighlightingInDiff;
             automaticContinuousScrollToolStripMenuItem.Text = TranslatedStrings.ContScrollToNextFileOnlyWithAlt;
@@ -986,7 +985,7 @@ namespace GitUI.Editor
                     throw new NotSupportedException("Unsupported value for IgnoreWhitespaceKind: " + IgnoreWhitespace);
             }
 
-            AppSettings.IgnoreWhitespaceKind.Value = IgnoreWhitespace;
+            AppSettings.IgnoreWhitespaceKind = IgnoreWhitespace;
         }
 
         /// <summary>
@@ -1300,7 +1299,7 @@ namespace GitUI.Editor
         {
             ShowSyntaxHighlightingInDiff = !ShowSyntaxHighlightingInDiff;
             showSyntaxHighlighting.Checked = ShowSyntaxHighlightingInDiff;
-            AppSettings.ShowSyntaxHighlightingInDiff.Value = ShowSyntaxHighlightingInDiff;
+            AppSettings.ShowSyntaxHighlightingInDiff = ShowSyntaxHighlightingInDiff;
             OnExtraDiffArgumentsChanged();
         }
 
@@ -1310,7 +1309,7 @@ namespace GitUI.Editor
             showEntireFileButton.Checked = ShowEntireFile;
             showEntireFileToolStripMenuItem.Checked = ShowEntireFile;
             SetStateOfContextLinesButtons();
-            AppSettings.ShowEntireFile.Value = ShowEntireFile;
+            AppSettings.ShowEntireFile = ShowEntireFile;
             OnExtraDiffArgumentsChanged();
         }
 
@@ -1883,7 +1882,7 @@ namespace GitUI.Editor
             showNonPrintChars.Checked = showNonprintableCharactersToolStripMenuItem.Checked;
 
             ToggleNonPrintingChars(show: showNonprintableCharactersToolStripMenuItem.Checked);
-            AppSettings.ShowNonPrintingChars.Value = showNonPrintChars.Checked;
+            AppSettings.ShowNonPrintingChars = showNonPrintChars.Checked;
         }
 
         private void FindToolStripMenuItemClick(object sender, EventArgs e)

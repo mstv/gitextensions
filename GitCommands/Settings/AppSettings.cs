@@ -1093,11 +1093,10 @@ namespace GitCommands
             set => SetBool("showRemoteBranches", value);
         }
 
-        private static readonly BoolViewSetting _showReflogReferences = new(nameof(ShowReflogReferences), false);
         public static bool ShowReflogReferences
         {
-            get => _showReflogReferences.Value;
-            set => _showReflogReferences.Value = value;
+            get => GetBool("showReflogReferences", false);
+            set => SetBool("showReflogReferences", value);
         }
 
         public static bool ShowStashes
@@ -1517,17 +1516,17 @@ namespace GitCommands
             set => SetBool("FillRefLabels", value);
         }
 
-        public static readonly BoolViewSetting MergeGraphLanesHavingCommonParent = new(nameof(MergeGraphLanesHavingCommonParent), true);
-
-        public static readonly BoolViewSetting ReduceGraphCrossings = new(nameof(ReduceGraphCrossings), true);
-
         public static string LastFormatPatchDir
         {
             get => GetString("lastformatpatchdir", "");
             set => SetString("lastformatpatchdir", value);
         }
 
-        public static readonly EnumViewSetting<IgnoreWhitespaceKind> IgnoreWhitespaceKind = new(nameof(IgnoreWhitespaceKind), Settings.IgnoreWhitespaceKind.None);
+        public static IgnoreWhitespaceKind IgnoreWhitespaceKind
+        {
+            get => GetEnum("IgnoreWhitespaceKind", IgnoreWhitespaceKind.None);
+            set => SetEnum("IgnoreWhitespaceKind", value);
+        }
 
         public static bool RememberIgnoreWhiteSpacePreference
         {
@@ -1535,7 +1534,17 @@ namespace GitCommands
             set => SetBool("rememberIgnoreWhiteSpacePreference", value);
         }
 
-        public static readonly BoolViewSetting ShowNonPrintingChars = new(nameof(ShowNonPrintingChars), false);
+        public static bool ShowNonPrintingChars
+        {
+            get => RememberShowNonPrintingCharsPreference && GetBool("ShowNonPrintingChars", false);
+            set
+            {
+                if (RememberShowNonPrintingCharsPreference)
+                {
+                    SetBool("ShowNonPrintingChars", value);
+                }
+            }
+        }
 
         public static bool RememberShowNonPrintingCharsPreference
         {
@@ -1543,7 +1552,17 @@ namespace GitCommands
             set => SetBool("RememberShowNonPrintableCharsPreference", value);
         }
 
-        public static readonly BoolViewSetting ShowEntireFile = new(nameof(ShowEntireFile), false);
+        public static bool ShowEntireFile
+        {
+            get => RememberShowEntireFilePreference && GetBool("ShowEntireFile", false);
+            set
+            {
+                if (RememberShowEntireFilePreference)
+                {
+                    SetBool("ShowEntireFile", value);
+                }
+            }
+        }
 
         public static bool RememberShowEntireFilePreference
         {
@@ -1573,7 +1592,17 @@ namespace GitCommands
             set => SetBool("RememberNumberOfContextLines", value);
         }
 
-        public static readonly BoolViewSetting ShowSyntaxHighlightingInDiff = new(nameof(ShowSyntaxHighlightingInDiff), true);
+        public static bool ShowSyntaxHighlightingInDiff
+        {
+            get => RememberShowSyntaxHighlightingInDiff && GetBool("ShowSyntaxHighlightingInDiff", true);
+            set
+            {
+                if (RememberShowSyntaxHighlightingInDiff)
+                {
+                    SetBool("ShowSyntaxHighlightingInDiff", value);
+                }
+            }
+        }
 
         public static bool RememberShowSyntaxHighlightingInDiff
         {
