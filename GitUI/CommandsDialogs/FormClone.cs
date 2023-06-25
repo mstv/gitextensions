@@ -5,7 +5,6 @@ using GitCommands.Git.Commands;
 using GitCommands.UserRepositoryHistory;
 using GitExtUtils.GitUI.Theming;
 using GitUI.HelperDialogs;
-using GitUI.Infrastructure;
 using GitUIPluginInterfaces;
 using ResourceManager;
 
@@ -460,7 +459,7 @@ namespace GitUI.CommandsDialogs
         /// <param name="contents">A string to attempt to extract URLs from.</param>
         /// <param name="url">A <see cref="string"/> that contains the URL, if any, extracted from <paramref name="contents"/>.</param>
         /// <returns><see langword="true"/> if a URL was extracted; otherwise <see langword="false"/>.</returns>
-        private bool TryExtractUrl(string contents, out string url)
+        private static bool TryExtractUrl(string contents, out string url)
         {
             url = "";
 
@@ -493,7 +492,7 @@ namespace GitUI.CommandsDialogs
                 _form = form;
             }
 
-            public bool TryExtractUrl(string text, out string url) => _form.TryExtractUrl(text, out url);
+            public bool TryExtractUrl(string text, out string url) => FormClone.TryExtractUrl(text, out url);
         }
     }
 }

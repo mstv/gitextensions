@@ -2,7 +2,6 @@
 using GitCommands;
 using GitCommands.Submodules;
 using GitUI.CommandsDialogs;
-using GitUIPluginInterfaces;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
 
@@ -238,7 +237,7 @@ namespace GitUI.LeftPanel
                 modulePaths.Find(path => submodulePath != path && submodulePath.Contains(path));
         }
 
-        private string GetNodeRelativePath(GitModule topModule, SubmoduleNode node)
+        private static string GetNodeRelativePath(GitModule topModule, SubmoduleNode node)
         {
             return node.SuperPath.SubstringAfter(topModule.WorkingDir).ToPosixPath() + node.LocalPath;
         }
@@ -376,15 +375,7 @@ namespace GitUI.LeftPanel
             }
 
             GitModule module = new(node.Info.Path);
-
-            // Reset all changes.
-            module.Reset(ResetMode.Hard);
-
-            // Also delete new files, if requested.
-            if (resetType == FormResetChanges.ActionEnum.ResetAndDelete)
-            {
-                module.Clean(CleanMode.OnlyNonIgnored, directories: true);
-            }
+            module.ResetAllChanges(clean: resetType == FormResetChanges.ActionEnum.ResetAndDelete);
         }
 
         public void StashSubmodule(IWin32Window owner, SubmoduleNode node)

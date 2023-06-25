@@ -9,7 +9,6 @@ using GitUI.Blame;
 using GitUIPluginInterfaces;
 using Microsoft.VisualStudio.Composition;
 using NSubstitute;
-using NUnit.Framework;
 using ResourceManager;
 
 namespace GitUITests.UserControls
@@ -183,7 +182,7 @@ namespace GitUITests.UserControls
             }
         }
 
-        private IEnumerable<GitBlameLine> CreateBlameLine(params DateTime[] lineDates)
+        private static IEnumerable<GitBlameLine> CreateBlameLine(params DateTime[] lineDates)
         {
             for (var index = 0; index < lineDates.Length; index++)
             {

@@ -651,7 +651,7 @@ namespace GitUI.CommandsDialogs
 
         protected override void WndProc(ref Message m)
         {
-            if (m.Msg == _closeAllMessage || (m.Msg == NativeMethods.WM_SYSCOMMAND && m.WParam == NativeMethods.SC_CLOSE))
+            if (m.Msg == _closeAllMessage || m is { Msg: NativeMethods.WM_SYSCOMMAND, WParam: NativeMethods.SC_CLOSE })
             {
                 // Application close is requested, e.g. using the Taskbar context menu.
                 // This request is directed to the main form also if a modal form like FormCommit is on top.
@@ -690,7 +690,7 @@ namespace GitUI.CommandsDialogs
             }
         }
 
-        private bool NeedsGitStatusMonitor()
+        private static bool NeedsGitStatusMonitor()
         {
             return AppSettings.ShowGitStatusInBrowseToolbar || (AppSettings.ShowGitStatusForArtificialCommits && AppSettings.RevisionGraphShowArtificialCommits);
         }
@@ -1358,7 +1358,7 @@ namespace GitUI.CommandsDialogs
 
         private void ResetToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UICommands.StartResetChangesDialog(this);
+            UICommands.StartResetChangesDialog(this, Module.GetWorkTreeFiles(), onlyWorkTree: false);
             RefreshGitStatusMonitor();
             revisionDiff.RefreshArtificial();
         }
@@ -2433,7 +2433,7 @@ namespace GitUI.CommandsDialogs
             return item;
         }
 
-        private void UpdateSubmoduleMenuItemStatus(ToolStripItem item, SubmoduleInfo info, string textFormat = "{0}")
+        private static void UpdateSubmoduleMenuItemStatus(ToolStripItem item, SubmoduleInfo info, string textFormat = "{0}")
         {
             if (info.Detailed is not null)
             {
@@ -2587,9 +2587,9 @@ namespace GitUI.CommandsDialogs
                     continue;
                 }
 
-                if (infos.ContainsKey(path))
+                if (infos.TryGetValue(path, out SubmoduleInfo? info))
                 {
-                    UpdateSubmoduleMenuItemStatus(item, infos[path]);
+                    UpdateSubmoduleMenuItemStatus(item, info);
                 }
                 else
                 {
@@ -2978,7 +2978,7 @@ namespace GitUI.CommandsDialogs
             bool IsFileExistingInRepo([NotNullWhen(returnValue: true)] string? path) => IsPathExists(path) && path.StartsWith(Module.WorkingDir, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        private void FormBrowse_DragEnter(object sender, DragEventArgs e)
+        private static void FormBrowse_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)
                 || e.Data.GetDataPresent(DataFormats.Text)

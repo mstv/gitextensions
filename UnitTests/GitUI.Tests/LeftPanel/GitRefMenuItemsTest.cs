@@ -2,7 +2,6 @@
 using GitUI.LeftPanel.ContextMenu;
 using GitUI.LeftPanel.Interfaces;
 using NSubstitute;
-using NUnit.Framework;
 using ResourceManager;
 
 namespace GitUITests.LeftPanel
@@ -105,7 +104,7 @@ namespace GitUITests.LeftPanel
             Assert.AreEqual(caption, _testNode.CallStatck.Pop());
         }
 
-        private MenuItemsGenerator<TestBranchNode> CreateGenerator(IMenuItemFactory factory)
+        private static MenuItemsGenerator<TestBranchNode> CreateGenerator(IMenuItemFactory factory)
         {
             return new MenuItemsGenerator<TestBranchNode>(factory);
         }

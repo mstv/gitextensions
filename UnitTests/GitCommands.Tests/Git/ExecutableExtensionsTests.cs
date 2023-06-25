@@ -6,7 +6,6 @@ using GitCommands;
 using GitCommands.Settings;
 using GitExtUtils;
 using GitUIPluginInterfaces;
-using NUnit.Framework;
 
 namespace GitCommandsTests.Git
 {
@@ -130,7 +129,7 @@ namespace GitCommandsTests.Git
             Assert.IsInstanceOf<Win32Exception>(ex.InnerException);
         }
 
-        private string GenerateStringByLength(int length)
+        private static string GenerateStringByLength(int length)
         {
             StringBuilder sb = new(length);
 

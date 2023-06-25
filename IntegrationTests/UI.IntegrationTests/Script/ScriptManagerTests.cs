@@ -1,7 +1,5 @@
-﻿using ApprovalTests;
-using GitCommands;
+﻿using GitCommands;
 using GitUI.Script;
-using NUnit.Framework;
 
 namespace GitExtensions.UITests.Script
 {
@@ -10,7 +8,7 @@ namespace GitExtensions.UITests.Script
     {
 #if false
         [Test]
-        public void Can_save_settings()
+        public async Task Can_save_settings()
         {
             string originalScripts = AppSettings.OwnScripts;
 
@@ -30,7 +28,7 @@ namespace GitExtensions.UITests.Script
                 string? xml = ScriptManager.SerializeIntoXml();
 
                 // Verify as a string, as the xml verifier ignores line breaks.
-                Approvals.Verify(xml);
+                await Verifier.VerifyXml(xml);
             }
             finally
             {

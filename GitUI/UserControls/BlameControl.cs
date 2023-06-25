@@ -109,8 +109,7 @@ namespace GitUI.Blame
                 return;
             }
 
-            int line = _clickedBlameLine is not null && _clickedBlameLine.Commit.ObjectId == objectId
-                ? _clickedBlameLine.OriginLineNumber
+            int line = _clickedBlameLine is not null ? _clickedBlameLine.OriginLineNumber
                 : initialLine ?? (fileName == _fileName ? BlameFile.CurrentFileLine : 1);
             _revGrid = revGrid;
             _fileName = fileName;
@@ -314,7 +313,7 @@ namespace GitUI.Blame
                 () => BlameFile.ViewTextAsync(_fileName, body));
             cancellationToken.ThrowIfCancellationRequested();
 
-            BlameFile.GoToLine(lineNumber);
+            BlameFile.GoToLine(Math.Min(lineNumber, _blame.Lines.Count));
             _clickedBlameLine = null;
 
             _blameId = revision.ObjectId;
@@ -417,7 +416,7 @@ namespace GitUI.Blame
             return (gutter.ToString(), body.ToString(), gitBlameDisplays);
         }
 
-        private string BuildAuthorLine(GitBlameLine line, StringBuilder authorLineBuilder, int lineLength, string dateTimeFormat,
+        private static string BuildAuthorLine(GitBlameLine line, StringBuilder authorLineBuilder, int lineLength, string dateTimeFormat,
             string? filename, bool showAuthor, bool showAuthorDate, bool showOriginalFilePath, bool displayAuthorFirst)
         {
             if (showAuthor && displayAuthorFirst)
@@ -628,6 +627,8 @@ namespace GitUI.Blame
                 return;
             }
 
+            _clickedBlameLine = _lastBlameLine;
+
             BlameRevision(blameInfo.selectedRevision.ObjectId, blameInfo.filename);
         }
 
@@ -641,6 +642,7 @@ namespace GitUI.Blame
             // Try get actual parent revision, get popup if it does not exist.
             // (The menu should be disabled if previous is not in grid).
             GitRevision? revision = _revGrid?.GetActualRevision(blameInfo.selectedRevision);
+            _clickedBlameLine = _lastBlameLine;
             BlameRevision(revision?.FirstParentId, blameInfo.filename);
         }
 
@@ -713,7 +715,7 @@ namespace GitUI.Blame
             public DateTime ArtificialOldBoundary => _control.ArtificialOldBoundary;
 
             public void BuildAuthorLine(GitBlameLine line, StringBuilder lineBuilder, int lineLength, string dateTimeFormat, string filename, bool showAuthor, bool showAuthorDate, bool showOriginalFilePath, bool displayAuthorFirst)
-                => _control.BuildAuthorLine(line, lineBuilder, lineLength, dateTimeFormat, filename, showAuthor, showAuthorDate, showOriginalFilePath, displayAuthorFirst);
+                => BlameControl.BuildAuthorLine(line, lineBuilder, lineLength, dateTimeFormat, filename, showAuthor, showAuthorDate, showOriginalFilePath, displayAuthorFirst);
 
             public (string gutter, string body, List<GitBlameEntry> avatars) BuildBlameContents(string filename) => _control.BuildBlameContents(filename, avatarSize: 10);
 
