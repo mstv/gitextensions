@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using GitUIPluginInterfaces;
 
@@ -66,6 +67,7 @@ namespace GitCommands.Config
         {
             try
             {
+                Debug.WriteLine($"W {FileName}");
                 FileInfoExtensions.MakeFileTemporaryWritable(fileName, file => File.WriteAllText(file, GetAsString(), GetEncoding()));
             }
             catch (Exception ex)
@@ -254,6 +256,7 @@ namespace GitCommands.Config
 
             public void Parse(string? fileContent = null)
             {
+                Debug.WriteLine($"R {FileName}");
                 _fileContent = fileContent ?? File.ReadAllText(FileName, GetEncoding());
 
                 ParsePart parseFunc = ReadUnknown;
