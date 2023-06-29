@@ -1523,6 +1523,8 @@ namespace GitCommands
 
         public static readonly BoolViewSetting ReduceGraphCrossings = new(nameof(ReduceGraphCrossings), true);
 
+        public static readonly BoolViewSetting StraightenGraphDiagonals = new(nameof(StraightenGraphDiagonals), true);
+
         public static readonly BoolViewSetting StraightOneLaneDiagonals = new(nameof(StraightOneLaneDiagonals), true);
 
         public static string LastFormatPatchDir
