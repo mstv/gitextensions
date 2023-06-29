@@ -41,6 +41,8 @@ namespace GitUI
                 var oldCommands = _uiCommands;
                 _uiCommands = value ?? throw new ArgumentNullException(nameof(value));
                 OnUICommandsChanged(new GitUICommandsChangedEventArgs(oldCommands));
+
+                ScriptManager.Initialize(value.Module.EffectiveSettings);
             }
         }
 
@@ -81,7 +83,8 @@ namespace GitUI
 
         protected override CommandStatus ExecuteCommand(int command)
         {
-            CommandStatus result = ScriptRunner.ExecuteScriptCommand(this, Module, command, UICommands, RevisionGridControl);
+            var result = ScriptManager.RunScript(command, this, RevisionGridControl);
+
             if (!result.Executed)
             {
                 result = base.ExecuteCommand(command);

@@ -5,6 +5,7 @@ using GitUI.CommandsDialogs;
 using GitUI.Editor;
 using GitUI.LeftPanel;
 using GitUI.Script;
+using GitUIPluginInterfaces;
 using Microsoft;
 using ResourceManager;
 
@@ -299,6 +300,7 @@ namespace GitUI.Hotkey
                     Hk(FormBrowse.Command.StashPop, Keys.Control | Keys.Alt | Keys.Down),
                     Hk(FormBrowse.Command.StashStaged, Keys.Control | Keys.Shift | Keys.Alt | Keys.Up),
                     Hk(FormBrowse.Command.ToggleBetweenArtificialAndHeadCommits, Keys.Control | Keys.OemBackslash),
+                    Hk(FormBrowse.Command.ToggleGitOutput, Keys.Control | Keys.D9),
                     Hk(FormBrowse.Command.ToggleLeftPanel, Keys.Control | Keys.Alt | Keys.C)),
                 new HotkeySettings(
                     RepoObjectsTree.HotkeySettingsName,
@@ -424,7 +426,8 @@ namespace GitUI.Hotkey
                  * these integers are never matched in the 'switch' routine on a form and
                  * therefore execute the 'default' action
                  */
-                return ScriptManager
+                IScriptsManager scriptsManager = ManagedExtensibility.GetExport<IScriptsManager>().Value;
+                return scriptsManager
                     .GetScripts()
                     .Where(s => !string.IsNullOrEmpty(s.Name))
                     .Select(s => new HotkeyCommand(s.HotkeyCommandIdentifier, s.Name!) { KeyData = Keys.None })

@@ -15,7 +15,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
     public partial class UserRepositoriesList : GitExtensionsControl
     {
         private readonly TranslationString _groupRecentRepositories = new("Recent repositories");
-        private readonly TranslationString _repositorySearchPlaceholder = new("Search repositories");
+        private readonly TranslationString _repositorySearchPlaceholder = new("Search repositories...");
         private readonly TranslationString _groupActions = new("Actions");
         private readonly TranslationString _deleteCategoryCaption = new(
             "Delete Category");
@@ -910,7 +910,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
             }
         }
 
-        private void OnDragEnter(object sender, DragEventArgs e)
+        private static void OnDragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetData(DataFormats.FileDrop) is string[] fileNameArray)
             {

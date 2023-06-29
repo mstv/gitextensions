@@ -13,6 +13,7 @@ using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
 using GitUI.Avatars;
 using GitUI.BuildServerIntegration;
+using GitUI.CommandDialogs;
 using GitUI.CommandsDialogs;
 using GitUI.CommandsDialogs.BrowseDialog;
 using GitUI.HelperDialogs;
@@ -24,7 +25,6 @@ using GitUI.UserControls.RevisionGrid;
 using GitUI.UserControls.RevisionGrid.Columns;
 using GitUIPluginInterfaces;
 using Microsoft;
-using Microsoft.VisualBasic;
 using Microsoft.VisualStudio.Threading;
 using ResourceManager;
 using TaskDialog = System.Windows.Forms.TaskDialog;
@@ -53,7 +53,7 @@ namespace GitUI
     }
 
     [DefaultEvent("DoubleClick")]
-    public sealed partial class RevisionGridControl : GitModuleControl, IScriptHostControl, ICheckRefs, IRunScript, IRevisionGridFilter
+    public sealed partial class RevisionGridControl : GitModuleControl, IScriptHostControl, ICheckRefs, IRunScript, IRevisionGridFilter, IRevisionGridInfo, IRevisionGridUpdate
     {
         public event EventHandler<DoubleClickRevisionEventArgs>? DoubleClickRevision;
         public event EventHandler<FilterChangedEventArgs>? FilterChanged;
@@ -236,10 +236,10 @@ namespace GitUI
             _gridView.DragEnter += OnGridViewDragEnter;
             _gridView.DragDrop += OnGridViewDragDrop;
 
-            _buildServerWatcher = new BuildServerWatcher(this, _gridView, () => Module);
+            _buildServerWatcher = new BuildServerWatcher(revisionGrid: this, _gridView, revisionGridInfo: this, () => Module);
 
             GitRevisionSummaryBuilder gitRevisionSummaryBuilder = new();
-            _revisionGraphColumnProvider = new RevisionGraphColumnProvider(this, _gridView._revisionGraph, gitRevisionSummaryBuilder);
+            _revisionGraphColumnProvider = new RevisionGraphColumnProvider(_gridView._revisionGraph, gitRevisionSummaryBuilder);
             _gridView.AddColumn(_revisionGraphColumnProvider);
             _gridView.AddColumn(new MessageColumnProvider(this, gitRevisionSummaryBuilder));
             _gridView.AddColumn(new AvatarColumnProvider(_gridView, AvatarService.DefaultProvider, AvatarService.CacheCleaner));
@@ -927,25 +927,29 @@ namespace GitUI
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                Lazy<IGitRef?> headRef = new(() =>
+                    !string.IsNullOrEmpty(CurrentBranch.Value)
+                    ? getUnfilteredRefs.Value.FirstOrDefault(i => i.CompleteName == $"{GitRefName.RefsHeadsPrefix}{CurrentBranch.Value}")
+                    : null);
+
+                Lazy<ObjectId?> currentCheckout = new(() =>
+                    headRef.Value?.ObjectId ?? capturedModule.GetCurrentCheckout());
+
+                ObjectId? previousCheckout = CurrentCheckout;
+
                 // Evaluate GitRefs and current commit
                 ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     await TaskScheduler.Default;
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    IGitRef? headRef = !string.IsNullOrEmpty(CurrentBranch.Value)
-                        ? getUnfilteredRefs.Value.FirstOrDefault(i => i.CompleteName == $"{GitRefName.RefsHeadsPrefix}{CurrentBranch.Value}")
-                        : null;
-                    ObjectId? newCurrentCheckout = headRef?.ObjectId ?? capturedModule.GetCurrentCheckout();
-
                     // If the current checkout (HEAD) is changed, don't get the currently selected rows,
                     // select the new current checkout instead.
-                    if (newCurrentCheckout != CurrentCheckout && newCurrentCheckout is not null)
+                    CurrentCheckout = currentCheckout.Value;
+                    if (CurrentCheckout != previousCheckout && CurrentCheckout is not null)
                     {
-                        currentlySelectedObjectIds = new List<ObjectId> { newCurrentCheckout };
+                        currentlySelectedObjectIds = new List<ObjectId> { CurrentCheckout };
                     }
-
-                    CurrentCheckout = newCurrentCheckout;
 
                     // Exclude the 'stash' ref, it is specially handled when stashes are shown
                     refsByObjectId = (AppSettings.ShowStashes
@@ -953,8 +957,8 @@ namespace GitUI
                         : getUnfilteredRefs.Value)
                         .ToLookup(gitRef => gitRef.ObjectId);
                     ResetNavigationHistory();
-                    UpdateSelectedRef(capturedModule, getUnfilteredRefs.Value, headRef);
-                    _gridView.ToBeSelectedObjectIds = GetToBeSelectedRevisions(newCurrentCheckout, currentlySelectedObjectIds);
+                    UpdateSelectedRef(capturedModule, getUnfilteredRefs.Value, headRef.Value);
+                    _gridView.ToBeSelectedObjectIds = GetToBeSelectedRevisions(CurrentCheckout, currentlySelectedObjectIds);
 
                     _gridView._revisionGraph.OnlyFirstParent = _filterInfo.ShowOnlyFirstParent;
                     _gridView._revisionGraph.HeadId = CurrentCheckout;
@@ -1036,7 +1040,7 @@ namespace GitUI
                     cancellationToken.ThrowIfCancellationRequested();
                     reader.GetLog(
                         observeRevisions,
-                        _filterInfo.GetRevisionFilter(CurrentBranch),
+                        _filterInfo.GetRevisionFilter(currentCheckout),
                         pathFilter,
                         cancellationToken);
                 }).FileAndForget(
@@ -1373,7 +1377,7 @@ namespace GitUI
                         {
                             parents = headParents;
                         }
-                        else if (headParents is not null && headParents.ToList().IndexOf(notSelectedId) is int index && index >= 0)
+                        else if (headParents is not null && headParents.ToList().IndexOf(notSelectedId) is int index and >= 0)
                         {
                             parents = headParents.Skip(index + 1).ToList();
                         }
@@ -3071,12 +3075,10 @@ namespace GitUI
 
             return true;
         }
+
         #endregion
 
         #region IScriptHostControl
-
-        GitRevision IScriptHostControl.GetCurrentRevision()
-            => GetActualRevision(CurrentCheckout);
 
         GitRevision? IScriptHostControl.GetLatestSelectedRevision()
             => LatestSelectedRevision;
@@ -3087,14 +3089,26 @@ namespace GitUI
         Point IScriptHostControl.GetQuickItemSelectorLocation()
             => GetQuickItemSelectorLocation();
 
-        string IScriptHostControl.GetCurrentBranch() => CurrentBranch.Value;
+        #endregion
+
+        #region IRevisionGridInfo
+
+        IReadOnlyList<GitRevision> IRevisionGridInfo.GetSelectedRevisions()
+            => GetSelectedRevisions();
+
+        ObjectId? IRevisionGridInfo.CurrentCheckout => CurrentCheckout;
+
+        string IRevisionGridInfo.GetCurrentBranch() => CurrentBranch.Value;
+
         #endregion
 
         bool ICheckRefs.Contains(ObjectId objectId) => _gridView.Contains(objectId);
 
-        void IRunScript.Execute(string name)
+        // TODO: refactor out
+        void IRunScript.Execute(int scriptId)
         {
-            if (ScriptRunner.RunScript(this, Module, name, UICommands, this).NeedsGridRefresh)
+            IScriptsManager scriptsManager = ManagedExtensibility.GetExport<IScriptsManager>().Value;
+            if (scriptsManager.RunScript(scriptId, FindForm() as GitModuleForm, this).NeedsGridRefresh)
             {
                 PerformRefreshRevisions();
             }

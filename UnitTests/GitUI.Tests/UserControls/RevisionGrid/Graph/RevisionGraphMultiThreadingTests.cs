@@ -1,6 +1,6 @@
-﻿using GitUI.UserControls.RevisionGrid.Graph;
+﻿using GitCommands;
+using GitUI.UserControls.RevisionGrid.Graph;
 using GitUIPluginInterfaces;
-using NUnit.Framework;
 
 namespace GitUITests.UserControls.RevisionGrid
 {
@@ -27,6 +27,8 @@ namespace GitUITests.UserControls.RevisionGrid
         [SetUp]
         public void Setup()
         {
+            AppSettings.ReduceGraphCrossings.Value = false;
+
             _revisionGraph = new RevisionGraph();
 
             GitRevision revision = new(ObjectId.Random());

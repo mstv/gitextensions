@@ -1,6 +1,5 @@
 ﻿using GitUI;
 using GitUI.UserControls;
-using NUnit.Framework;
 
 namespace GitUITests.UserControls
 {

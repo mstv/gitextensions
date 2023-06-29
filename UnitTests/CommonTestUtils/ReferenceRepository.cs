@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using GitCommands;
 using GitCommands.Config;
 using LibGit2Sharp;
@@ -19,7 +20,7 @@ namespace CommonTestUtils
         /// Reset the repo if possible, if it is null or reset throws create a new.
         /// </summary>
         /// <param name="refRepo">The repo to reset, possibly null.</param>
-        public static void ResetRepo(ref ReferenceRepository? refRepo)
+        public static void ResetRepo([NotNull] ref ReferenceRepository? refRepo)
         {
             if (refRepo is null)
             {
@@ -47,13 +48,13 @@ namespace CommonTestUtils
 
         private const string _fileName = "A.txt";
 
-        private void IndexAdd(Repository repository, string fileName)
+        private static void IndexAdd(Repository repository, string fileName)
         {
             repository.Index.Add(fileName);
             repository.Index.Write();
         }
 
-        private string Commit(Repository repository, string commitMessage)
+        private static string Commit(Repository repository, string commitMessage)
         {
             LibGit2Sharp.Signature author = new("GitUITests", "unittests@gitextensions.com", DateTimeOffset.Now);
             var committer = author;

@@ -333,7 +333,7 @@ namespace GitUI.CommandsDialogs
 
             if (tabControl1.SelectedTab == BlameTab)
             {
-                _ = Blame.LoadBlameAsync(revision, children, fileName, RevisionGrid, BlameTab, Diff.Encoding, force: force, cancellationToken: _viewChangesSequence.Next());
+                _ = Blame.LoadBlameAsync(revision, children, fileName, revisionGridInfo: RevisionGrid, revisionGridUpdate: RevisionGrid, controlToMask: BlameTab, Diff.Encoding, force: force, cancellationToken: _viewChangesSequence.Next());
             }
             else if (tabControl1.SelectedTab == ViewTab)
             {
@@ -509,7 +509,7 @@ namespace GitUI.CommandsDialogs
                 selectedRevisions.Count == 1 && selectedRevisions[0].ObjectId != ObjectId.WorkTreeId &&
                 File.Exists(_fullPathResolver.Resolve(FileName));
             openWithDifftoolToolStripMenuItem.Enabled =
-                selectedRevisions.Count >= 1 && selectedRevisions.Count <= 2;
+                selectedRevisions.Count is >= 1 and <= 2;
             manipulateCommitToolStripMenuItem.Enabled =
                 selectedRevisions.Count == 1 && !selectedRevisions[0].IsArtificial;
             saveAsToolStripMenuItem.Enabled = selectedRevisions.Count == 1;

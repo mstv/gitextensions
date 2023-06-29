@@ -30,7 +30,7 @@ namespace GitCommands
         public static string SettingsFilePath => Path.Combine(ApplicationDataPath.Value, SettingsFileName);
         public static string UserPluginsPath => Path.Combine(LocalApplicationDataPath.Value, UserPluginsDirectoryName);
 
-        public static RepoDistSettings SettingsContainer { get; private set; }
+        public static DistributedSettings SettingsContainer { get; private set; }
 
         private static readonly SettingsPath DetailedSettingsPath = new AppSettingsPath("Detailed");
 
@@ -74,7 +74,7 @@ namespace GitCommands
 
             bool newFile = CreateEmptySettingsFileIfMissing();
 
-            SettingsContainer = new RepoDistSettings(null, GitExtSettingsCache.FromCache(SettingsFilePath), SettingLevel.Unknown);
+            SettingsContainer = new DistributedSettings(null, GitExtSettingsCache.FromCache(SettingsFilePath), SettingLevel.Unknown);
 
             if (newFile || !File.Exists(SettingsFilePath))
             {
@@ -179,7 +179,7 @@ namespace GitCommands
             set => SetBool("RememberAmendCommitState", value);
         }
 
-        public static void UsingContainer(RepoDistSettings settingsContainer, Action action)
+        public static void UsingContainer(DistributedSettings settingsContainer, Action action)
         {
             SettingsContainer.LockedAction(() =>
                 {
@@ -396,7 +396,7 @@ namespace GitCommands
         public static bool UseHistogramDiffAlgorithm
         {
             // The settings key has patience in the name for historical reasons
-            get => GetBool("usepatiencediffalgorithm", false);
+            get => GetBool("usepatiencediffalgorithm", true);
             set => SetBool("usepatiencediffalgorithm", value);
         }
 
@@ -696,7 +696,7 @@ namespace GitCommands
             if (!string.IsNullOrEmpty(ssh))
             {
                 // OpenSSH uses empty path, compatibility with path set in 3.4
-                string path = new SshPathLocator().GetSshFromGitDir(GitBinDir);
+                string path = new SshPathLocator().GetSshFromGitDir(LinuxToolsDir);
                 if (path == ssh)
                 {
                     AppSettings.SshPath = "";
@@ -1093,10 +1093,11 @@ namespace GitCommands
             set => SetBool("showRemoteBranches", value);
         }
 
+        private static readonly BoolViewSetting _showReflogReferences = new(nameof(ShowReflogReferences), false);
         public static bool ShowReflogReferences
         {
-            get => GetBool("showReflogReferences", false);
-            set => SetBool("showReflogReferences", value);
+            get => _showReflogReferences.Value;
+            set => _showReflogReferences.Value = value;
         }
 
         public static bool ShowStashes
@@ -1313,22 +1314,15 @@ namespace GitCommands
             set => SetBool("ShowCommitBodyInRevisionGrid", value);
         }
 
-        /// <summary>Gets or sets the path to the git application executable.</summary>
-        public static string GitBinDir
+        /// <summary>Gets or sets the path to the GNU/Linux tools (bash, ps, sh, ssh, etc.), e.g. "C:\Program Files\Git\usr\bin\"</summary>
+        public static string LinuxToolsDir
         {
-            get => GetString("gitbindir", "");
+            // Migrate the setting value from the from the former "gitbindir"
+            get => GetString(nameof(LinuxToolsDir), defaultValue: null) ?? GetString("gitbindir", "");
             set
             {
-                var temp = value.EnsureTrailingPathSeparator();
-                SetString("gitbindir", temp);
-
-                ////if (string.IsNullOrEmpty(_gitBinDir))
-                ////   return;
-                ////
-                ////var path =
-                ////   Environment.GetEnvironmentVariable("path", EnvironmentVariableTarget.Process) + ";" +
-                ////   _gitBinDir;
-                ////Environment.SetEnvironmentVariable("path", path, EnvironmentVariableTarget.Process);
+                string linuxToolsDir = value.EnsureTrailingPathSeparator();
+                SetString(nameof(LinuxToolsDir), linuxToolsDir);
             }
         }
 
@@ -1523,17 +1517,31 @@ namespace GitCommands
             set => SetBool("FillRefLabels", value);
         }
 
+        public static readonly BoolViewSetting DebugGraphCurves = new(nameof(DebugGraphCurves), false);
+
+        public static readonly BoolViewSetting DebugGraphPoints = new(nameof(DebugGraphPoints), false);
+
+        public static readonly BoolViewSetting DrawGraphWithDiagonals = new(nameof(DrawGraphWithDiagonals), true);
+
+        public static readonly BoolViewSetting MergeGraphLanesHavingCommonParent = new(nameof(MergeGraphLanesHavingCommonParent), true);
+
+        public static readonly BoolViewSetting ReduceGraphCrossings = new(nameof(ReduceGraphCrossings), true);
+
+        public static readonly BoolViewSetting StraightenGraphDiagonals = new(nameof(StraightenGraphDiagonals), true);
+
+        public static readonly BoolViewSetting StraightenOverCommits = new(nameof(StraightenOverCommits), true);
+
+        public static readonly BoolViewSetting StraightenOverSecondaryCommits = new(nameof(StraightenOverSecondaryCommits), false);
+
+        public static readonly BoolViewSetting StraightOneLaneDiagonals = new(nameof(StraightOneLaneDiagonals), true);
+
         public static string LastFormatPatchDir
         {
             get => GetString("lastformatpatchdir", "");
             set => SetString("lastformatpatchdir", value);
         }
 
-        public static IgnoreWhitespaceKind IgnoreWhitespaceKind
-        {
-            get => GetEnum("IgnoreWhitespaceKind", IgnoreWhitespaceKind.None);
-            set => SetEnum("IgnoreWhitespaceKind", value);
-        }
+        public static readonly EnumViewSetting<IgnoreWhitespaceKind> IgnoreWhitespaceKind = new(nameof(IgnoreWhitespaceKind), Settings.IgnoreWhitespaceKind.None);
 
         public static bool RememberIgnoreWhiteSpacePreference
         {
@@ -1541,17 +1549,7 @@ namespace GitCommands
             set => SetBool("rememberIgnoreWhiteSpacePreference", value);
         }
 
-        public static bool ShowNonPrintingChars
-        {
-            get => RememberShowNonPrintingCharsPreference && GetBool("ShowNonPrintingChars", false);
-            set
-            {
-                if (RememberShowNonPrintingCharsPreference)
-                {
-                    SetBool("ShowNonPrintingChars", value);
-                }
-            }
-        }
+        public static readonly BoolViewSetting ShowNonPrintingChars = new(nameof(ShowNonPrintingChars), false);
 
         public static bool RememberShowNonPrintingCharsPreference
         {
@@ -1559,17 +1557,7 @@ namespace GitCommands
             set => SetBool("RememberShowNonPrintableCharsPreference", value);
         }
 
-        public static bool ShowEntireFile
-        {
-            get => RememberShowEntireFilePreference && GetBool("ShowEntireFile", false);
-            set
-            {
-                if (RememberShowEntireFilePreference)
-                {
-                    SetBool("ShowEntireFile", value);
-                }
-            }
-        }
+        public static readonly BoolViewSetting ShowEntireFile = new(nameof(ShowEntireFile), false);
 
         public static bool RememberShowEntireFilePreference
         {
@@ -1599,17 +1587,7 @@ namespace GitCommands
             set => SetBool("RememberNumberOfContextLines", value);
         }
 
-        public static bool ShowSyntaxHighlightingInDiff
-        {
-            get => RememberShowSyntaxHighlightingInDiff && GetBool("ShowSyntaxHighlightingInDiff", true);
-            set
-            {
-                if (RememberShowSyntaxHighlightingInDiff)
-                {
-                    SetBool("ShowSyntaxHighlightingInDiff", value);
-                }
-            }
-        }
+        public static readonly BoolViewSetting ShowSyntaxHighlightingInDiff = new(nameof(ShowSyntaxHighlightingInDiff), true);
 
         public static bool RememberShowSyntaxHighlightingInDiff
         {

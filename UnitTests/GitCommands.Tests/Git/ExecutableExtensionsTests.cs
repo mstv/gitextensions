@@ -6,7 +6,6 @@ using GitCommands;
 using GitCommands.Settings;
 using GitExtUtils;
 using GitUIPluginInterfaces;
-using NUnit.Framework;
 
 namespace GitCommandsTests.Git
 {
@@ -27,7 +26,7 @@ namespace GitCommandsTests.Git
             // We need to correct it to %APPDATA%\GitExtensions\GitExtensions for v3 at least
             var userAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             var settingPath = Path.Combine(userAppDataPath, "GitExtensions\\GitExtensions\\GitExtensions.settings");
-            RepoDistSettings settingContainer = new(null, GitExtSettingsCache.FromCache(settingPath), SettingLevel.Unknown);
+            DistributedSettings settingContainer = new(null, GitExtSettingsCache.FromCache(settingPath), SettingLevel.Unknown);
             _appPath = settingContainer.GetString("gitcommand", "git.exe");
 
             // Execute process in GitExtension working directory, so that git will return success exit-code
@@ -87,31 +86,33 @@ namespace GitCommandsTests.Git
         }
 
         // Process argument upper bound is actually (short.MaxValue - 1)
-        [TestCase(32766, 32766, 32767, 2, true, new int[] { 1, 1 })]
-        [TestCase(32764, 1, 32767, 1, true, new int[] { 2 })]
+        [TestCase(32766, 32766, 32767, 2, new int[] { 1, 1 })]
+        [TestCase(32764, 1, 32767, 1, new int[] { 2 })]
         public void RunBatchCommand_can_handle_max_length_arguments(int arg1Len, int arg2Len,
-            int maxLength, int argCount, bool expectedResult, int[] expectedProcessedCounts)
+            int maxLength, int argCount, int[] expectedProcessedCounts)
         {
             // 3: double quotes + ' '
             // 9: 'reset -- '
             // 1: ' ' added after second Add in ArgumentBuilder
-            var appLength = _appPath.Length + 3;
+            int appLength = _appPath.Length + 3;
             ArgumentBuilder builder = new() { "reset --" };
-            var len = builder.ToString().Length;
-            var args = builder.BuildBatchArguments(new string[]
+            int len = builder.ToString().Length;
+            List<BatchArgumentItem> args = builder.BuildBatchArguments(new string[]
             {
                 GenerateStringByLength(Math.Max(1, arg1Len - appLength - len - 1)),
                 GenerateStringByLength(Math.Max(1, arg2Len - appLength - len - 1))
             }, appLength, maxLength);
 
             Assert.AreEqual(argCount, args.Count);
-            var index = 0;
-            Assert.AreEqual(expectedResult, _gitExecutable.RunBatchCommand(args, (eventArgs) =>
+
+            // The reset command runs in the GE repo dir, so the result depends on workTree contents
+            int index = 0;
+            ExecutionResult? result = _gitExecutable.RunBatchCommand(args, (eventArgs) =>
             {
                 Assert.IsTrue(eventArgs.ExecutionResult);
                 Assert.AreEqual(expectedProcessedCounts[index], eventArgs.ProcessedCount);
                 index++;
-            }));
+            });
         }
 
         [TestCase(32766 - 8, 32766 - 8, int.MaxValue)]
@@ -130,7 +131,7 @@ namespace GitCommandsTests.Git
             Assert.IsInstanceOf<Win32Exception>(ex.InnerException);
         }
 
-        private string GenerateStringByLength(int length)
+        private static string GenerateStringByLength(int length)
         {
             StringBuilder sb = new(length);
 

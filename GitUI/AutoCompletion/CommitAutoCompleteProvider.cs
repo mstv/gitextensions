@@ -30,7 +30,20 @@ namespace GitUI.AutoCompletion
 
             IGitModule module = GetModule();
             ArgumentString cmd = GitCommandHelpers.GetAllChangedFilesCmd(true, UntrackedFilesMode.Default, noLocks: true);
-            var output = await module.GitExecutable.GetOutputAsync(cmd).ConfigureAwait(false);
+            ExecutionResult result = await module.GitExecutable.ExecuteAsync(cmd, throwOnErrorExit: false, cancellationToken: cancellationToken);
+            if (!result.ExitedSuccessfully)
+            {
+                // Try again
+                result = await module.GitExecutable.ExecuteAsync(cmd, throwOnErrorExit: false, cancellationToken: cancellationToken);
+            }
+
+            if (!result.ExitedSuccessfully)
+            {
+                // Failed after retry, do not bother
+                return Enumerable.Empty<AutoCompleteWord>();
+            }
+
+            string output = result.StandardOutput;
             IReadOnlyList<GitItemStatus> changedFiles = _getAllChangedFilesOutputParser.Parse(output);
             foreach (var file in changedFiles)
             {
@@ -82,7 +95,7 @@ namespace GitUI.AutoCompletion
 
         private static Regex? GetRegexForExtension(string extension)
         {
-            return _regexes.Value.ContainsKey(extension) ? _regexes.Value[extension] : null;
+            return _regexes.Value.TryGetValue(extension, out Regex? value) ? value : null;
         }
 
         private static IEnumerable<string> ReadOrInitializeAutoCompleteRegexes()
@@ -145,15 +158,23 @@ namespace GitUI.AutoCompletion
         {
             if (file.IsTracked)
             {
-                var changes = await module.GetCurrentChangesAsync(file.Name, file.OldName, file.Staged == StagedStatus.Index, "-U1000000")
-                .ConfigureAwait(false);
+                GitCommands.Patches.Patch? changes = null;
+                try
+                {
+                    changes = await module.GetCurrentChangesAsync(file.Name, file.OldName, file.Staged == StagedStatus.Index, "-U1000000", noLocks: true)
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Ignore errors, this can be very repetitive
+                }
 
                 if (changes is not null)
                 {
                     return changes.Text;
                 }
 
-                var content = await module.GetFileContentsAsync(file).ConfigureAwaitRunInline();
+                string? content = await module.GetFileContentsAsync(file).ConfigureAwaitRunInline();
                 if (content is not null)
                 {
                     return content;

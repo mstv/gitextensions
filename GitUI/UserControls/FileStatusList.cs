@@ -134,7 +134,7 @@ namespace GitUI
                     (nameof(Images.FileStatusRemovedOnlyB), ScaleHeight(Images.FileStatusRemovedOnlyB)),
                     (nameof(Images.FileStatusRemovedSame), ScaleHeight(Images.FileStatusRemovedSame)),
                     (nameof(Images.FileStatusRemovedUnequal), ScaleHeight(Images.FileStatusRemovedUnequal)),
-                    (nameof(Images.Conflict), ScaleHeight(Images.Conflict)),
+                    (nameof(Images.Unmerged), ScaleHeight(Images.Unmerged)),
                     (nameof(Images.FileStatusRenamed), ScaleHeight(Images.FileStatusRenamed.AdaptLightness())),
                     (nameof(Images.FileStatusRenamedOnlyA), ScaleHeight(Images.FileStatusRenamedOnlyA)),
                     (nameof(Images.FileStatusRenamedOnlyB), ScaleHeight(Images.FileStatusRenamedOnlyB)),
@@ -898,9 +898,7 @@ namespace GitUI
         private static string AppendItemSubmoduleStatus(string text, GitItemStatus item)
         {
             if (item.IsSubmodule
-                && item.GetSubmoduleStatusAsync() is Task<GitSubmoduleStatus> task
-                && task is not null
-                && task.IsCompleted
+                && item.GetSubmoduleStatusAsync() is Task<GitSubmoduleStatus> { IsCompleted: true } task
                 && task.CompletedResult() is not null)
             {
                 text += task.CompletedResult()!.AddedAndRemovedString();
@@ -994,7 +992,8 @@ namespace GitUI
 
         private void UpdateFileStatusListView(bool updateCausedByFilter = false)
         {
-            if (!GitItemStatuses.Any())
+            bool hasChangesOrMultipleGroups = GitItemStatusesWithDescription.Count > 1 || GitItemStatusesWithDescription.Any(x => x.Statuses.Count > 0);
+            if (!hasChangesOrMultipleGroups)
             {
                 HandleVisibility_NoFilesLabel_FilterComboBox(filesPresent: false);
             }
@@ -1020,8 +1019,6 @@ namespace GitUI
             FileStatusListView.Groups.Clear();
             FileStatusListView.Items.Clear();
 
-            bool hasChanges = GitItemStatusesWithDescription.Any(x => x.Statuses.Count > 0);
-
             List<ListViewItem> list = new();
             foreach (var i in GitItemStatusesWithDescription)
             {
@@ -1039,7 +1036,7 @@ namespace GitUI
                 FileStatusListView.Groups.Add(group);
 
                 IReadOnlyList<GitItemStatus> itemStatuses;
-                if (hasChanges && i.Statuses.Count == 0)
+                if (hasChangesOrMultipleGroups && i.Statuses.Count == 0)
                 {
                     itemStatuses = _noItemStatuses;
                     if (group is not null)
@@ -1067,8 +1064,7 @@ namespace GitUI
                     }
 
                     if (item.IsSubmodule
-                        && item.GetSubmoduleStatusAsync() is Task<GitSubmoduleStatus> task
-                        && task is not null)
+                        && item.GetSubmoduleStatusAsync() is Task<GitSubmoduleStatus> task)
                     {
                         var capturedItem = item;
 
@@ -1124,8 +1120,8 @@ namespace GitUI
             int GetItemImageIndex(GitItemStatus gitItemStatus)
             {
                 var imageKey = GetItemImageKey(gitItemStatus);
-                return _stateImageIndexDict.ContainsKey(imageKey)
-                    ? _stateImageIndexDict[imageKey]
+                return _stateImageIndexDict.TryGetValue(imageKey, out int value)
+                    ? value
                     : _stateImageIndexDict[nameof(Images.FileStatusUnknown)];
             }
 
@@ -1160,9 +1156,9 @@ namespace GitUI
                     };
                 }
 
-                if (gitItemStatus.IsConflict)
+                if (gitItemStatus.IsUnmerged)
                 {
-                    return nameof(Images.Conflict);
+                    return nameof(Images.Unmerged);
                 }
 
                 if (gitItemStatus.IsSubmodule)

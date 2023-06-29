@@ -1,6 +1,7 @@
 ﻿using GitUI.Hotkey;
 using GitUI.LeftPanel.ContextMenu;
 using GitUI.Script;
+using GitUIPluginInterfaces;
 using ResourceManager;
 
 namespace GitUI.CommandsDialogs
@@ -19,7 +20,7 @@ namespace GitUI.CommandsDialogs
         /// <param name="contextMenu">The context menu to add user scripts to.</param>
         /// <param name="hostMenuItem">The menu item user scripts not marked as <see cref="ScriptInfo.AddToRevisionGridContextMenu"/> are added to.</param>
         /// <param name="scriptInvoker">The handler that handles user script invocation.</param>
-        public static void AddUserScripts(this ContextMenuStrip contextMenu, ToolStripMenuItem hostMenuItem, Action<string> scriptInvoker)
+        public static void AddUserScripts(this ContextMenuStrip contextMenu, ToolStripMenuItem hostMenuItem, Action<int> scriptInvoker)
         {
             contextMenu = contextMenu ?? throw new ArgumentNullException(nameof(contextMenu));
             hostMenuItem = hostMenuItem ?? throw new ArgumentNullException(nameof(hostMenuItem));
@@ -29,24 +30,25 @@ namespace GitUI.CommandsDialogs
             var hostItemIndex = contextMenu.Items.IndexOf(hostMenuItem);
             var lastScriptItemIndex = hostItemIndex;
 
-            foreach (ScriptInfo script in ScriptManager.GetScripts().Where(x => x.Enabled))
+            var lastIndex = contextMenu.Items.Count;
+
+            IScriptsManager scriptsManager = ManagedExtensibility.GetExport<IScriptsManager>().Value;
+            var scripts = scriptsManager.GetScripts().Where(x => x.Enabled);
+
+            foreach (var script in scripts)
             {
                 ToolStripMenuItem item = new()
                 {
                     Text = script.Name,
-                    Name = script.Name + ScriptNameSuffix,
+                    Name = $"{script.Name}{ScriptNameSuffix}",
                     Image = script.GetIcon(),
                     ShortcutKeyDisplayString = Hotkeys.Value?.FirstOrDefault(h => h.Name == script.Name)?.KeyData.ToShortcutKeyDisplayString()
                 };
 
                 item.Click += (s, e) =>
                 {
-                    string? scriptKey = script.Name;
-
-                    if (scriptKey is not null)
-                    {
-                        scriptInvoker(scriptKey);
-                    }
+                    int scriptId = script.HotkeyCommandIdentifier;
+                    scriptInvoker(scriptId);
                 };
 
                 if (script.AddToRevisionGridContextMenu)

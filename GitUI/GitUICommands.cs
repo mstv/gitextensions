@@ -11,6 +11,7 @@ using GitUI.HelperDialogs;
 using GitUIPluginInterfaces;
 using GitUIPluginInterfaces.RepositoryHosts;
 using JetBrains.Annotations;
+using SmartFormat.Core.Output;
 using static GitUI.CommandsDialogs.FormBrowse;
 
 namespace GitUI
@@ -701,56 +702,30 @@ namespace GitUI
             return DoActionOnRepo(owner, Action, changesRepo: false);
         }
 
-        public bool StartResetChangesDialog(IWin32Window? owner = null)
-        {
-            var workTreeFiles = Module.GetWorkTreeFiles();
-            return StartResetChangesDialog(owner, workTreeFiles, false);
-        }
-
         public bool StartResetChangesDialog(IWin32Window? owner, IReadOnlyCollection<GitItemStatus> workTreeFiles, bool onlyWorkTree)
         {
             // Show a form asking the user if they want to reset the changes.
-            FormResetChanges.ActionEnum resetAction = FormResetChanges.ShowResetDialog(owner, workTreeFiles.Any(item => !item.IsNew), workTreeFiles.Any(item => item.IsNew));
+            FormResetChanges.ActionEnum resetType = FormResetChanges.ShowResetDialog(owner, hasExistingFiles: workTreeFiles.Any(item => !item.IsNew), hasNewFiles: workTreeFiles.Any(item => item.IsNew));
 
-            if (resetAction == FormResetChanges.ActionEnum.Cancel)
+            if (resetType == FormResetChanges.ActionEnum.Cancel)
             {
                 return false;
             }
 
+            return DoActionOnRepo(owner, Action);
+
             bool Action()
             {
-                if (onlyWorkTree)
-                {
-                    GitArgumentBuilder args = new("checkout")
-                    {
-                        "--",
-                        "."
-                    };
-                    Module.GitExecutable.GetOutput(args);
-                }
-                else
-                {
-                    // Reset all changes.
-                    Module.Reset(ResetMode.Hard);
-                }
-
-                if (resetAction == FormResetChanges.ActionEnum.ResetAndDelete)
-                {
-                    Module.Clean(CleanMode.OnlyNonIgnored, directories: true);
-                }
-
-                return true;
+                return Module.ResetAllChanges(clean: resetType == FormResetChanges.ActionEnum.ResetAndDelete, onlyWorkTree);
             }
-
-            return DoActionOnRepo(owner, Action);
         }
 
         private bool StartResetChangesDialog(string fileName)
         {
             // Show a form asking the user if they want to reset the changes.
-            FormResetChanges.ActionEnum resetAction = FormResetChanges.ShowResetDialog(null, true, false);
+            FormResetChanges.ActionEnum resetType = FormResetChanges.ShowResetDialog(null, hasExistingFiles: true, hasNewFiles: false);
 
-            if (resetAction == FormResetChanges.ActionEnum.Cancel)
+            if (resetType == FormResetChanges.ActionEnum.Cancel)
             {
                 return false;
             }
@@ -758,36 +733,22 @@ namespace GitUI
             using (WaitCursorScope.Enter())
             {
                 // Reset all changes.
-                Module.ResetFile(fileName);
-
-                // Also delete new files, if requested.
-                if (resetAction == FormResetChanges.ActionEnum.ResetAndDelete)
+                if (string.IsNullOrWhiteSpace(fileName))
                 {
-                    string? errorCaption = null;
-                    string? errorMessage = null;
-                    string? path = _fullPathResolver.Resolve(fileName);
-                    if (File.Exists(path))
-                    {
-                        try
-                        {
-                            File.Delete(path);
-                        }
-                        catch (Exception ex)
-                        {
-                            errorCaption = TranslatedStrings.ErrorCaptionFailedDeleteFile;
-                            errorMessage = ex.Message;
-                        }
-                    }
-                    else
-                    {
-                        errorCaption = TranslatedStrings.ErrorCaptionFailedDeleteFolder;
-                        path.TryDeleteDirectory(out errorMessage);
-                    }
+                    return Module.ResetAllChanges(clean: resetType == FormResetChanges.ActionEnum.ResetAndDelete);
+                }
 
-                    if (errorMessage is not null)
-                    {
-                        MessageBox.Show(null, errorMessage, errorCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                string filePath = Path.GetRelativePath(Module.WorkingDir, fileName).ToPosixPath();
+                List<GitItemStatus> selectedItems = Module.GetAllChangedFilesWithSubmodulesStatus().Where(item => item.Name == filePath).ToList();
+                if (selectedItems.Count < 1)
+                {
+                    return false;
+                }
+
+                Module.ResetChanges(resetId: null, selectedItems, resetAndDelete: resetType == FormResetChanges.ActionEnum.ResetAndDelete, _fullPathResolver, out StringBuilder output);
+                if (output.Length > 0)
+                {
+                    MessageBox.Show(null, output.ToString(), TranslatedStrings.ResetChangesCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
 
@@ -1323,7 +1284,7 @@ namespace GitUI
         {
             WrapRepoHostingCall(TranslatedStrings.ForkCloneRepo, gitHoster, gh =>
             {
-                using ForkAndCloneForm frm = new(gitHoster, gitModuleChanged);
+                using ForkAndCloneForm frm = new(gh, gitModuleChanged);
                 frm.ShowDialog(owner);
             });
         }
@@ -1333,7 +1294,7 @@ namespace GitUI
             WrapRepoHostingCall(TranslatedStrings.ViewPullRequest, gitHoster,
                                 gh =>
                                 {
-                                    ViewPullRequestsForm frm = new(this, gitHoster) { ShowInTaskbar = true };
+                                    ViewPullRequestsForm frm = new(this, gh) { ShowInTaskbar = true };
                                     frm.Show(owner);
                                 });
         }
@@ -1380,7 +1341,7 @@ namespace GitUI
                 gitHoster,
                 gh =>
                 {
-                    CreatePullRequestForm form = new(this, gitHoster, chooseRemote, chooseBranch)
+                    CreatePullRequestForm form = new(this, gh, chooseRemote, chooseBranch)
                     {
                         ShowInTaskbar = true
                     };

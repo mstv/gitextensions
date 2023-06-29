@@ -219,6 +219,12 @@
       <Component Id="System.IO.Abstractions.dll" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\System.IO.Abstractions.dll" />
       </Component>
+      <Component Id="TestableIO.System.IO.Abstractions.dll" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\TestableIO.System.IO.Abstractions.dll" />
+      </Component>
+      <Component Id="TestableIO.System.IO.Abstractions.Wrappers.dll" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\TestableIO.System.IO.Abstractions.Wrappers.dll" />
+      </Component>
       <Component Id="System.Reactive.dll" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\System.Reactive.dll" />
       </Component>
@@ -231,14 +237,14 @@
       <!-- Shell extensions -->
       <?define ShellExCLSID = "{3C16B20A-BA16-4156-916F-0A375ECFFE24}"?>
       <Component Id="GitExtensionsShellEx32.dll" Guid="*">
-        <File Name="GitExtensionsShellEx32.dll" Source="$(var.ArtifactsBinPath)\GitExtensionsShellEx\GitExtensionsShellEx32.dll" KeyPath="yes" />
+        <File Name="GitExtensionsShellEx32.dll" Source="$(var.ArtifactsPublishPath)\GitExtensionsShellEx32.dll" KeyPath="yes" />
         <?foreach ShellExFileName in GitExtensionsShellEx32.dll?>
         <?include RegisterShellExtension.wxi?>
         <?endforeach ?>
       </Component>
       <Component Id="GitExtensionsShellEx64.dll" Guid="*" Win64="yes">
         <Condition>VersionNT64</Condition>
-        <File Name="GitExtensionsShellEx64.dll" Source="$(var.ArtifactsBinPath)\GitExtensionsShellEx\GitExtensionsShellEx64.dll" KeyPath="yes" />
+        <File Name="GitExtensionsShellEx64.dll" Source="$(var.ArtifactsPublishPath)\GitExtensionsShellEx64.dll" KeyPath="yes" />
         <?foreach ShellExFileName in GitExtensionsShellEx64.dll?>
         <?include RegisterShellExtension.wxi?>
         <?endforeach ?>
@@ -361,16 +367,16 @@
         <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.Plugins.Bitbucket.dll" />
       </Component>
       <Component Id="TeamCityIntegration.dll" Guid="*">
-        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.TeamCityIntegration.dll" />
+        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.Plugins.TeamCityIntegration.dll" />
       </Component>
       <Component Id="AppVeyorIntegration.dll" Guid="*">
-        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.AppVeyorIntegration.dll" />
+        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.Plugins.AppVeyorIntegration.dll" />
       </Component>
       <Component Id="JenkinsIntegration.dll" Guid="*">
-        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.JenkinsIntegration.dll" />
+        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.Plugins.JenkinsIntegration.dll" />
       </Component>
       <Component Id="AzureDevOpsIntegration.dll" Guid="*">
-        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.AzureDevOpsIntegration.dll" />
+        <File Source="$(var.ArtifactsPublishPath)\Plugins\GitExtensions.Plugins.AzureDevOpsIntegration.dll" />
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="PluginManagerDir">
@@ -381,6 +387,9 @@
     <DirectoryRef Id="PackageManagerDir">
       <Component Id="PackageManager.UI.exe" Guid="*">
         <File Source="$(var.PluginManagerSourceDir)\PackageManager\PackageManager.UI.exe" />
+      </Component>
+      <Component Id="PackageManager.UI.runtimeconfig.json" Guid="*">
+        <File Source="$(var.PluginManagerSourceDir)\PackageManager\PackageManager.UI.runtimeconfig.json" />
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="DiffScriptsDir">
@@ -516,6 +525,15 @@
       </Component>
       <Component Id="Spanish.Plugins.xlf" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\Translation\Spanish.Plugins.xlf" />
+      </Component>
+      <Component Id="Tamil.gif" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Translation\Tamil.gif" />
+      </Component>
+      <Component Id="Tamil.xlf" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Translation\Tamil.xlf" />
+      </Component>
+      <Component Id="Tamil.Plugins.xlf" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Translation\Tamil.Plugins.xlf" />
       </Component>
       <Component Id="TraditionalChinese.gif" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\Translation\Traditional Chinese.gif" />
@@ -665,6 +683,8 @@
       <ComponentRef Id="System.Composition.Runtime.dll" />
       <ComponentRef Id="System.Composition.TypedParts.dll" />
       <ComponentRef Id="System.IO.Abstractions.dll" />
+      <ComponentRef Id="TestableIO.System.IO.Abstractions.dll" />
+      <ComponentRef Id="TestableIO.System.IO.Abstractions.Wrappers.dll" />
       <ComponentRef Id="System.Reactive.dll" />
       <ComponentRef Id="System.Reactive.Interfaces.dll" />
       <ComponentRef Id="System.Reactive.Linq.dll" />
@@ -681,6 +701,7 @@
       <ComponentRef Id="GitExtensions.PluginManager.dll" />
       <ComponentRef Id="PackageManager" />
       <ComponentRef Id="PackageManager.UI.exe" />
+      <ComponentRef Id="PackageManager.UI.runtimeconfig.json" />
       <!-- End Plugin Manager build artifacts -->
       <Feature Id="Plugins" Title="Plugins" Level="1">
         <ComponentGroupRef Id="Component.PluginResources" />
@@ -831,6 +852,11 @@
           <ComponentRef Id="Spanish.xlf" />
           <ComponentRef Id="Spanish.Plugins.xlf" />
           <ComponentRef Id="Spanish.gif" />
+        </Feature>
+        <Feature Id="Tamil" Title="Tamil" Level="1">
+          <ComponentRef Id="Tamil.xlf" />
+          <ComponentRef Id="Tamil.Plugins.xlf" />
+          <ComponentRef Id="Tamil.gif" />
         </Feature>
         <Feature Id="TraditionalChinese" Title="Traditional Chinese" Level="1">
           <ComponentRef Id="TraditionalChinese.xlf" />

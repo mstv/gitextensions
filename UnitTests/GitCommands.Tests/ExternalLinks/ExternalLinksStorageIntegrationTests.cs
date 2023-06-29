@@ -1,11 +1,9 @@
 ﻿using System.Reflection;
-using ApprovalTests;
 using CommonTestUtils;
 using FluentAssertions;
 using GitCommands.ExternalLinks;
 using GitCommands.Settings;
 using GitUIPluginInterfaces;
-using NUnit.Framework;
 
 namespace GitCommandsTests.ExternalLinks
 {
@@ -30,19 +28,19 @@ namespace GitCommandsTests.ExternalLinks
             using GitModuleTestHelper testHelper = new();
             var settingsFile = testHelper.CreateRepoFile(".git", "GitExtensions.settings", content);
             using GitExtSettingsCache settingsCache = new(settingsFile);
-            RepoDistSettings settings = new(null, settingsCache, SettingLevel.Unknown);
+            DistributedSettings settings = new(null, settingsCache, SettingLevel.Unknown);
 
             var definitions = _externalLinksStorage.Load(settings);
             definitions.Count.Should().Be(expected);
         }
 
         [Test]
-        public void Can_save_settings()
+        public async Task Can_save_settings()
         {
             using GitModuleTestHelper testHelper = new();
             string settingsFile = testHelper.CreateRepoFile(".git", "GitExtensions.settings", "﻿<dictionary />");
             using GitExtSettingsCache settingsCache = new(settingsFile);
-            RepoDistSettings settings = new(null, settingsCache, SettingLevel.Unknown);
+            DistributedSettings settings = new(null, settingsCache, SettingLevel.Unknown);
 
             ExternalLinkDefinition definition = new()
             {
@@ -58,7 +56,7 @@ namespace GitCommandsTests.ExternalLinks
 
             settings.Save();
 
-            Approvals.VerifyXml(File.ReadAllText(settingsFile));
+            await Verifier.VerifyXml(File.ReadAllText(settingsFile));
         }
     }
 }

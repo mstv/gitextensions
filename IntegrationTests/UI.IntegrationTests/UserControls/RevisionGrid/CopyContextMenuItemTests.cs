@@ -3,7 +3,6 @@ using GitCommands;
 using GitUI;
 using GitUI.UserControls.RevisionGrid;
 using GitUIPluginInterfaces;
-using NUnit.Framework;
 
 namespace GitExtensions.UITests.UserControls.RevisionGrid
 {
@@ -185,7 +184,7 @@ namespace GitExtensions.UITests.UserControls.RevisionGrid
             _copyContextMenuItem.DropDownItems[4].Text.Should().StartWith(AddHotKey(ResourceManager.TranslatedStrings.GetCommitDate(revisions.Length), 'D'));
         }
 
-        private string AddHotKey(string label, char? hotkey)
+        private static string AddHotKey(string label, char? hotkey)
         {
             if (!hotkey.HasValue)
             {

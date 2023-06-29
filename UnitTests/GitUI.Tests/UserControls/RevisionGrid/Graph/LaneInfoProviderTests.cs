@@ -4,7 +4,6 @@ using GitUI;
 using GitUI.UserControls.RevisionGrid.Graph;
 using GitUIPluginInterfaces;
 using NSubstitute;
-using NUnit.Framework;
 
 namespace GitUITests.UserControls.RevisionGrid.Graph
 {
@@ -179,7 +178,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
                 mergedWith is null ? "" : string.Format(LaneInfoProvider.TestAccessor.MergedWithText.Text, mergedWith),
                 node.GitRevision.Body,
                 suffix);
-            _infoProvider.GetLaneInfo(0, 0).Should().Be(expected);
+            _infoProvider.GetLaneInfo(0, 0).Should().StartWith(expected);
         }
 
         [Test]
@@ -218,7 +217,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
         {
             _laneNodeLocator.FindPrevNode(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (_artificialCommitNode, isAtNode: true, null));
 
-            _infoProvider.GetLaneInfo(0, 0).Should().Be(_artificialCommitNode.GitRevision.Body);
+            _infoProvider.GetLaneInfo(0, 0).Should().StartWith(_artificialCommitNode.GitRevision.Body);
         }
 
         [Test]
@@ -226,7 +225,7 @@ namespace GitUITests.UserControls.RevisionGrid.Graph
         {
             _laneNodeLocator.FindPrevNode(Arg.Any<int>(), Arg.Any<int>()).Returns(x => (_artificialCommitNode, isAtNode: false, null));
 
-            _infoProvider.GetLaneInfo(0, 0).Should().Be(_artificialCommitNode.GitRevision.Body);
+            _infoProvider.GetLaneInfo(0, 0).Should().StartWith(_artificialCommitNode.GitRevision.Body);
         }
 
         [Test]

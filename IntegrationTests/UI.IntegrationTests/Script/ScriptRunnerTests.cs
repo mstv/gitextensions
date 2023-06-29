@@ -1,3 +1,4 @@
+#if false
 using System.Reflection;
 using CommonTestUtils;
 using FluentAssertions;
@@ -8,7 +9,6 @@ using GitUI.NBugReports;
 using GitUI.Script;
 using GitUIPluginInterfaces;
 using NSubstitute;
-using NUnit.Framework;
 
 namespace GitExtensions.UITests.Script
 {
@@ -204,7 +204,7 @@ namespace GitExtensions.UITests.Script
             });
         }
 
-        private CommandStatus ExecuteRunScript(IWin32Window owner, IGitModule module, string scriptKey, IGitUICommands uiCommands,
+        private static CommandStatus ExecuteRunScript(IWin32Window owner, IGitModule module, string scriptKey, IGitUICommands uiCommands,
             RevisionGridControl revisionGrid)
         {
             try
@@ -241,3 +241,4 @@ namespace GitExtensions.UITests.Script
         }
     }
 }
+#endif

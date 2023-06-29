@@ -73,6 +73,8 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 }
             }
 
+            laneInfoText.AppendLine().AppendLine().Append($"row {rowIndex} lane {lane}");
+
             return laneInfoText.ToString();
         }
 

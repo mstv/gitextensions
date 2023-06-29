@@ -4,16 +4,16 @@ namespace GitUI.CommandsDialogs.SettingsDialog
 {
     public class RepoDistSettingsSet
     {
-        public readonly RepoDistSettings EffectiveSettings;
-        public readonly RepoDistSettings LocalSettings;
-        public readonly RepoDistSettings RepoDistSettings;
-        public readonly RepoDistSettings GlobalSettings;
+        public readonly DistributedSettings EffectiveSettings;
+        public readonly DistributedSettings LocalSettings;
+        public readonly DistributedSettings RepoDistSettings;
+        public readonly DistributedSettings GlobalSettings;
 
         public RepoDistSettingsSet(
-            RepoDistSettings effectiveSettings,
-            RepoDistSettings localSettings,
-            RepoDistSettings pulledSettings,
-            RepoDistSettings globalSettings)
+            DistributedSettings effectiveSettings,
+            DistributedSettings localSettings,
+            DistributedSettings pulledSettings,
+            DistributedSettings globalSettings)
         {
             EffectiveSettings = effectiveSettings;
             LocalSettings = localSettings;

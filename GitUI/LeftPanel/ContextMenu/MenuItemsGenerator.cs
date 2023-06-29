@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using GitExtUtils.GitUI.Theming;
 using GitUI.LeftPanel.Interfaces;
 using ResourceManager;
@@ -54,7 +55,7 @@ namespace GitUI.LeftPanel.ContextMenu
         }
         #endregion
 
-        public bool TryGetMenuItem(MenuItemKey key, out ToolStripItem item)
+        public bool TryGetMenuItem(MenuItemKey key, [NotNullWhen(true)] out ToolStripItem? item)
         {
             return _itemsIndex.Value.TryGetValue(key, out item);
         }
@@ -114,7 +115,7 @@ namespace GitUI.LeftPanel.ContextMenu
             return Strings.Tooltips[key];
         }
 
-        private bool Implements<TInterface>()
+        private static bool Implements<TInterface>()
         {
             return typeof(TInterface).IsAssignableFrom(typeof(TNode));
         }

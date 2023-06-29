@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using GitCommands;
 using GitUIPluginInterfaces;
 
 namespace GitUI.UserControls.RevisionGrid.Graph
@@ -13,6 +15,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
     public class RevisionGraph : IRevisionGraphRowProvider
     {
         internal const int MaxLanes = 40;
+        private const int _orderSegmentsLookAhead = 50;
         private const int _straightenLanesLookAhead = 20;
 
         // Some unordered collections with raw data
@@ -41,6 +44,14 @@ namespace GitUI.UserControls.RevisionGrid.Graph
         /// </summary>
         /// <remarks>This cache is very expensive to build.</remarks>
         private IList<RevisionGraphRow>? _orderedRowCache;
+
+        private int _straightenDiagonalsLookAhead => AppSettings.StraightenGraphDiagonals.Value ? _straightenLanesLookAhead / 2 : 0;
+
+        /// <summary>
+        /// The number of rows needed to look ahead for straightening diagonals and lanes.
+        /// Refer to the <cref>CacheTo</cref> function.
+        /// </summary>
+        private int _straightenLookAhead => 2 * (_straightenDiagonalsLookAhead + _straightenLanesLookAhead);
 
         // When the cache is updated, this action can be used to invalidate the UI
         public event Action? Updated;
@@ -82,9 +93,9 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
             // _loadingCompleted is set already when all _nodes have been loaded.
             // Return the full number of rows only if the straightening of segments has finished, too.
-            // Else do not show rows yet which might be affected by the straightening of segments (refer to the CacheTo function).
+            // Else do not show rows yet which might be affected by the straightening of segments.
             int cachedCount = _orderedRowCache.Count;
-            return _loadingCompleted && cachedCount == Count ? cachedCount : Math.Max(0, cachedCount - (2 * _straightenLanesLookAhead));
+            return _loadingCompleted && cachedCount == Count ? cachedCount : Math.Max(0, cachedCount - _straightenLookAhead);
         }
 
         /// <summary>
@@ -101,23 +112,38 @@ namespace GitUI.UserControls.RevisionGrid.Graph
         public void CacheTo(int currentRowIndex, int lastToCacheRowIndex)
         {
             // Graph segments shall be straightened. For this, we need to look ahead some rows.
-            // If lanes of a row are moved, go back the same number of rows as for the lookahead
+            // If lanes of a row are moved, go back the same number of rows as for the look-ahead
             // because then the previous rows could benefit from segment straightening, too.
+            // Afterwards straighten diagonals. There is no significant need to look back for straightening lanes again - keeping it easy.
             //
             // row 0
             // row 1
             // ...
-            // last finally straightened row           <-- GetCachedCount()
-            // first partially straightened row        <-- go back not further than here
+            // last finally straightened row                    <-- GetCachedCount()
+            // first partially straightened diagonals row       <-- go back not further than here for straightening diagonals
             // ...
-            // last partially straightened row
-            // row to continue straightening           <-- GetCachedCount() + _straightenLanesLookAhead
-            // first lookahead row for straightening
+            // last partially straightened diagonals row
+            // first look-ahead row for diagonals straightening
             // ...
-            // last lookahead row for straightening    <-- GetCachedCount() + 2 * _straightenLanesLookAhead
+            // last look-ahead row for diagonals straightening  <-- GetCachedCount() + 2 * _straightenDiagonalsLookAhead
+            // first partially straightened lanes row           <-- go back not further than here for straightening lanes
+            // ...
+            // last partially straightened lanes row
+            // row to continue lane straightening               <-- GetCachedCount() + 2 * _straightenDiagonalsLookAhead + _straightenLanesLookAhead
+            // first look-ahead row for lane straightening
+            // ...
+            // last look-ahead row for lane straightening       <-- GetCachedCount() + 2 * _straightenDiagonalsLookAhead + 2 * _straightenLanesLookAhead
             //
-            currentRowIndex += 2 * _straightenLanesLookAhead;
-            lastToCacheRowIndex += 2 * _straightenLanesLookAhead;
+            int lookAhead = _straightenLookAhead;
+            currentRowIndex += lookAhead;
+            lastToCacheRowIndex += lookAhead;
+
+            if (_loadingCompleted)
+            {
+                int maxRowIndex = Count - 1;
+                currentRowIndex = Math.Min(currentRowIndex, maxRowIndex);
+                lastToCacheRowIndex = Math.Min(lastToCacheRowIndex, maxRowIndex);
+            }
 
             RevisionGraphRevision[] orderedNodesCache = BuildOrderedNodesCache(currentRowIndex);
 
@@ -140,7 +166,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
             return false;
         }
 
-        public bool TryGetNode(ObjectId objectId, out RevisionGraphRevision revision)
+        public bool TryGetNode(ObjectId objectId, [NotNullWhen(true)] out RevisionGraphRevision? revision)
         {
             return _nodeByObjectId.TryGetValue(objectId, out revision);
         }
@@ -318,7 +344,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
         /// is not in the same index in the orderednodecache, the order has been changed. Only then rebuilding is
         /// required. If the order is changed after this revision, we do not care since it wasn't processed yet.
         /// </summary>
-        private bool CheckRowCacheIsDirty(IList<RevisionGraphRow> orderedRowCache, RevisionGraphRevision[] orderedNodesCache)
+        private static bool CheckRowCacheIsDirty(IList<RevisionGraphRow> orderedRowCache, RevisionGraphRevision[] orderedNodesCache)
         {
             // We need bounds checking on orderedNodesCache. It should be always larger then the rowcache,
             // but another thread could clear the orderedNodesCache while another is building orderedRowCache.
@@ -339,17 +365,26 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
         private void BuildOrderedRowCache(RevisionGraphRevision[] orderedNodesCache, int currentRowIndex, int lastToCacheRowIndex)
         {
+            bool orderSegments = AppSettings.ReduceGraphCrossings.Value;
+
             int lastOrderedNodeIndex = orderedNodesCache.Length - 1;
 
             // Ensure we keep using the same instance of the rowcache from here on
+            bool loadingCompleted = _loadingCompleted;
             IList<RevisionGraphRow>? localOrderedRowCache = _orderedRowCache;
+
+            int maxLastToCacheRowIndex = lastOrderedNodeIndex - (loadingCompleted || !orderSegments ? 0 : _orderSegmentsLookAhead);
+            if (lastToCacheRowIndex > maxLastToCacheRowIndex)
+            {
+                lastToCacheRowIndex = maxLastToCacheRowIndex;
+                loadingCompleted = false;
+            }
 
             if (localOrderedRowCache is null || CheckRowCacheIsDirty(localOrderedRowCache, orderedNodesCache))
             {
                 localOrderedRowCache = new List<RevisionGraphRow>(capacity: Math.Max(currentRowIndex, lastOrderedNodeIndex) + 1);
             }
 
-            lastToCacheRowIndex = Math.Min(lastToCacheRowIndex, lastOrderedNodeIndex);
             int startIndex = localOrderedRowCache.Count;
             if (startIndex > lastToCacheRowIndex)
             {
@@ -358,16 +393,21 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
             for (int nextIndex = startIndex; nextIndex <= lastToCacheRowIndex; ++nextIndex)
             {
-                bool startSegmentsAdded = false;
-
                 RevisionGraphRevision revision = orderedNodesCache[nextIndex];
+                RevisionGraphSegment[] revisionStartSegments = revision.GetStartSegments();
+                if (orderSegments)
+                {
+                    revisionStartSegments = Order(revisionStartSegments, orderedNodesCache, nextIndex);
+                }
 
                 // The list containing the segments is created later. We can set the correct capacity then, to prevent resizing
                 List<RevisionGraphSegment> segments;
-                RevisionGraphSegment[] revisionStartSegments = revision.GetStartSegments();
 
+                RevisionGraphRow? previousRevisionGraphRow;
                 if (nextIndex == 0)
                 {
+                    previousRevisionGraphRow = null;
+
                     // This is the first row. Start with only the startsegments of this row
                     segments = new List<RevisionGraphSegment>(revisionStartSegments);
 
@@ -381,10 +421,12 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 else
                 {
                     // Copy lanes from last row
-                    RevisionGraphRow previousRevisionGraphRow = localOrderedRowCache[nextIndex - 1];
+                    previousRevisionGraphRow = localOrderedRowCache[nextIndex - 1];
 
-                    // Create segments list with te correct capacity
+                    // Create segments list with the correct capacity
                     segments = new List<RevisionGraphSegment>(previousRevisionGraphRow.Segments.Count + revisionStartSegments.Length);
+
+                    bool startSegmentsAdded = false;
 
                     // Loop through all segments that do not end in the previous row
                     foreach (var segment in previousRevisionGraphRow.Segments.Where(s => s.Parent != previousRevisionGraphRow.Revision))
@@ -438,15 +480,24 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                     }
                 }
 
-                localOrderedRowCache.Add(new RevisionGraphRow(revision, segments));
+                localOrderedRowCache.Add(new RevisionGraphRow(revision, segments, previousRevisionGraphRow));
             }
 
             // Straightening does not apply to the first and the last row. The single node there shall not be moved.
             // So the straightening algorithm can presume that a previous and a next row do exist.
-            // Straighten only lines for which the full lookahead is loaded.
-            int straightenStartIndex = Math.Max(1, startIndex - _straightenLanesLookAhead);
-            int straightenLastIndex = _loadingCompleted && lastToCacheRowIndex == lastOrderedNodeIndex ? lastToCacheRowIndex - 1 : lastToCacheRowIndex - _straightenLanesLookAhead;
-            StraightenLanes(straightenStartIndex, straightenLastIndex, lastLookaheadIndex: lastToCacheRowIndex, localOrderedRowCache);
+            // Straighten only lines for which the full look-ahead is loaded.
+            loadingCompleted = loadingCompleted && lastToCacheRowIndex == lastOrderedNodeIndex;
+            int straightenLanesStartIndex = Math.Max(1, startIndex - _straightenLanesLookAhead);
+            int straightenLanesLastIndex = loadingCompleted ? lastToCacheRowIndex - 1 : lastToCacheRowIndex - _straightenLanesLookAhead;
+            StraightenLanes(straightenLanesStartIndex, straightenLanesLastIndex, lastLookAheadIndex: lastToCacheRowIndex, localOrderedRowCache);
+
+            int straightenDiagonalsLookAhead = _straightenDiagonalsLookAhead;
+            if (straightenDiagonalsLookAhead > 0)
+            {
+                int straightenDiagonalsStartIndex = Math.Max(1, startIndex - _straightenLanesLookAhead - straightenDiagonalsLookAhead);
+                int straightenDiagonalsLastIndex = loadingCompleted ? lastToCacheRowIndex - 1 : lastToCacheRowIndex - _straightenLanesLookAhead - straightenDiagonalsLookAhead;
+                StraightenDiagonals(straightenDiagonalsStartIndex, straightenDiagonalsLastIndex, lastLookAheadIndex: lastToCacheRowIndex, straightenDiagonalsLookAhead, localOrderedRowCache);
+            }
 
             // Overwrite the global instance at the end, to prevent flickering
             _orderedRowCache = localOrderedRowCache;
@@ -455,7 +506,71 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
             return;
 
-            static void StraightenLanes(int startIndex, int lastStraightenIndex, int lastLookaheadIndex, IList<RevisionGraphRow> localOrderedRowCache)
+            static RevisionGraphSegment[] Order(RevisionGraphSegment[] segments, RevisionGraphRevision[] orderedNodesCache, int nextIndex)
+            {
+                // Define local function GetRowIndex with precalculated limit here
+                int endIndex = Math.Min(nextIndex + _orderSegmentsLookAhead, orderedNodesCache.Length);
+                int GetRowIndex(RevisionGraphRevision revision)
+                {
+                    for (int index = nextIndex + 1; index < endIndex; ++index)
+                    {
+                        if (orderedNodesCache[index] == revision)
+                        {
+                            return index - nextIndex;
+                        }
+                    }
+
+                    return int.MaxValue;
+                }
+
+                return segments.OrderBy(s => s, (a, b) =>
+                    {
+                        int rowA = GetRowIndex(a.Parent);
+                        int rowB = GetRowIndex(b.Parent);
+
+                        // Prefer the one which is the ancestor of the other
+                        if (rowA != int.MaxValue && rowB != int.MaxValue)
+                        {
+                            if (rowA > rowB && IsAncestorOf(a.Parent, b.Parent, rowA))
+                            {
+                                return -1;
+                            }
+                            else if (rowB > rowA && IsAncestorOf(b.Parent, a.Parent, rowB))
+                            {
+                                return 1;
+                            }
+                        }
+
+                        return Score(a, rowA).CompareTo(Score(b, rowB));
+
+                        int Score(RevisionGraphSegment segment, int row)
+                            => segment.Parent.Parents.IsEmpty ? row // initial revision
+                                : !segment.Parent.Parents.Pop().IsEmpty ? -2000 + row // merged into
+                                : !segment.Parent.Children.Pop().IsEmpty ? -1000 + row // branched from
+                                : row; // just a commit
+
+                        bool IsAncestorOf(RevisionGraphRevision ancestor, RevisionGraphRevision child, int stopRow)
+                        {
+                            if (child.Parents.Contains(ancestor))
+                            {
+                                return true;
+                            }
+
+                            foreach (RevisionGraphRevision parent in child.Parents)
+                            {
+                                if (GetRowIndex(parent) < stopRow && IsAncestorOf(ancestor, parent, stopRow))
+                                {
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        }
+                    })
+                    .ToArray();
+            }
+
+            static void StraightenLanes(int startIndex, int lastStraightenIndex, int lastLookAheadIndex, IList<RevisionGraphRow> localOrderedRowCache)
             {
                 // Try to detect this:
                 // | | |<-- previous lane
@@ -465,7 +580,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 // | |
                 // | |
                 // |\ \
-                // | | |<-- lookahead lane
+                // | | |<-- look-ahead lane
                 //
                 // And change it into this:
                 // | | |
@@ -483,39 +598,43 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 for (int currentIndex = startIndex; currentIndex <= lastStraightenIndex;)
                 {
                     goBackLimit = Math.Max(goBackLimit, currentIndex - _straightenLanesLookAhead);
-                    IRevisionGraphRow currentRow = localOrderedRowCache[currentIndex];
-                    if (currentRow.Segments.Count >= MaxLanes)
-                    {
-                        ++currentIndex;
-                        continue;
-                    }
-
                     bool moved = false;
+                    IRevisionGraphRow currentRow = localOrderedRowCache[currentIndex];
                     IRevisionGraphRow previousRow = localOrderedRowCache[currentIndex - 1];
-                    foreach (RevisionGraphSegment revisionGraphSegment in currentRow.Segments)
+                    foreach (RevisionGraphSegment revisionGraphSegment in currentRow.Segments.Take(MaxLanes))
                     {
-                        int previousLane = previousRow.GetLaneIndexForSegment(revisionGraphSegment);
-                        int currentLane = currentRow.GetLaneIndexForSegment(revisionGraphSegment);
+                        Lane currentRowLane = currentRow.GetLaneForSegment(revisionGraphSegment);
+                        if (currentRowLane.Sharing != LaneSharing.ExclusiveOrPrimary)
+                        {
+                            continue; // with next revisionGraphSegment
+                        }
+
+                        int currentLane = currentRowLane.Index;
+                        int previousLane = previousRow.GetLaneForSegment(revisionGraphSegment).Index;
                         if (previousLane <= currentLane)
                         {
                             continue; // with next revisionGraphSegment
                         }
 
                         int straightenedCurrentLane = currentLane + 1;
-                        int lookaheadLane = currentLane;
-                        for (int lookaheadIndex = currentIndex + 1; lookaheadLane == currentLane && lookaheadIndex <= Math.Min(currentIndex + _straightenLanesLookAhead, lastLookaheadIndex); ++lookaheadIndex)
+                        int lookAheadLane = currentLane;
+                        RevisionGraphSegment segmentOrAncestor = currentRow.FirstParentOrSelf(revisionGraphSegment);
+                        for (int lookAheadIndex = currentIndex + 1; lookAheadLane == currentLane && lookAheadIndex <= Math.Min(currentIndex + _straightenLanesLookAhead, lastLookAheadIndex); ++lookAheadIndex)
                         {
-                            lookaheadLane = localOrderedRowCache[lookaheadIndex].GetLaneIndexForSegment(revisionGraphSegment);
-                            if ((lookaheadLane == straightenedCurrentLane) || (lookaheadLane > straightenedCurrentLane && previousLane == straightenedCurrentLane))
+                            RevisionGraphRow lookAheadRow = localOrderedRowCache[lookAheadIndex];
+                            lookAheadLane = lookAheadRow.GetLaneForSegment(segmentOrAncestor).Index;
+                            if ((lookAheadLane == straightenedCurrentLane) || (lookAheadLane > straightenedCurrentLane && previousLane == straightenedCurrentLane))
                             {
-                                for (int moveIndex = currentIndex; moveIndex < lookaheadIndex; ++moveIndex)
+                                for (int moveIndex = currentIndex; moveIndex < lookAheadIndex; ++moveIndex)
                                 {
                                     localOrderedRowCache[moveIndex].MoveLanesRight(currentLane);
                                 }
 
                                 moved = true;
-                                break; // from for lookaheadIndex
+                                break; // from for lookAheadIndex
                             }
+
+                            segmentOrAncestor = lookAheadRow.FirstParentOrSelf(segmentOrAncestor);
                         }
 
                         if (moved)
@@ -526,6 +645,238 @@ namespace GitUI.UserControls.RevisionGrid.Graph
 
                     // if moved, check again whether the lanes of previous rows can be moved, too
                     currentIndex = moved ? Math.Max(currentIndex - _straightenLanesLookAhead, goBackLimit) : currentIndex + 1;
+                }
+            }
+
+            static void StraightenDiagonals(int startIndex, int lastStraightenIndex, int lastLookAheadIndex, int straightenDiagonalsLookAhead, IList<RevisionGraphRow> localOrderedRowCache)
+            {
+                List<MoveLaneBy> moveLaneBy = new(capacity: straightenDiagonalsLookAhead);
+                int goBackLimit = 1;
+                for (int currentIndex = startIndex; currentIndex <= lastStraightenIndex;)
+                {
+                    goBackLimit = Math.Max(goBackLimit, currentIndex - straightenDiagonalsLookAhead);
+                    int currentLastLookAheadIndex = Math.Min(currentIndex + straightenDiagonalsLookAhead, lastLookAheadIndex);
+                    bool moved = false;
+                    IRevisionGraphRow currentRow = localOrderedRowCache[currentIndex];
+                    IRevisionGraphRow previousRow = localOrderedRowCache[currentIndex - 1];
+                    foreach (RevisionGraphSegment revisionGraphSegment in currentRow.Segments.Take(MaxLanes))
+                    {
+                        Lane currentRowLane = currentRow.GetLaneForSegment(revisionGraphSegment);
+                        if (currentRowLane.Sharing != LaneSharing.ExclusiveOrPrimary)
+                        {
+                            continue; // with next revisionGraphSegment
+                        }
+
+                        int currentLane = currentRowLane.Index;
+                        int previousLane = previousRow.GetLaneForSegment(revisionGraphSegment).Index;
+
+                        // Unfold one-lane shift to diagonal (cannot be done together with TurnMultiLaneCrossingIntoDiagonal(diagonalDelta: -1))
+                        // Try to detect this:
+                        // * | | <-- previous lane
+                        // |/ /
+                        // * | <---- current lane
+                        // | |
+                        // * | <---- next lane
+                        // |/
+                        // * <------ end lane
+                        //
+                        // And change it into this:
+                        // * | | <-- previous lane
+                        // |/  |
+                        // *   | <-- current lane
+                        // |  /
+                        // * / <---- next lane
+                        // |/
+                        // * <------ end lane
+                        if (currentLane == previousLane - 1 && currentIndex + 2 <= currentLastLookAheadIndex)
+                        {
+                            RevisionGraphSegment segmentOrAncestor = currentRow.FirstParentOrSelf(revisionGraphSegment);
+                            IRevisionGraphRow nextRow = localOrderedRowCache[currentIndex + 1];
+                            int nextLane = nextRow.GetLaneForSegment(segmentOrAncestor).Index;
+                            if (nextLane == currentLane)
+                            {
+                                segmentOrAncestor = nextRow.FirstParentOrSelf(segmentOrAncestor);
+                                int endLane = localOrderedRowCache[currentIndex + 2].GetLaneForSegment(segmentOrAncestor).Index;
+                                if (endLane >= 0 && endLane == nextLane - 1 && !IsPrevLaneDiagonal())
+                                {
+                                    currentRow.MoveLanesRight(currentLane);
+                                    ++currentLane;
+                                    moved = true;
+                                    break; // from for revisionGraphSegment
+                                }
+                            }
+                        }
+
+                        moved = TurnMultiLaneCrossingIntoDiagonal(diagonalDelta: +1)
+                              || TurnMultiLaneCrossingIntoDiagonal(diagonalDelta: -1);
+                        if (moved)
+                        {
+                            break; // from for revisionGraphSegment
+                        }
+
+                        // Join multi-lane crossings
+                        // Try to detect this:
+                        // | | * | <-- previous lane (not diagonal)
+                        // | |/ /
+                        // | * | <---- current lane
+                        // |,-´
+                        // | <-------- next lane (not diagonal)
+                        //
+                        // And change it into this:
+                        // | | * | <-- previous lane
+                        // | |/  |
+                        // | *   | <-- current lane
+                        // |,---´
+                        // | <-------- next lane
+                        int deltaPrev = previousLane - currentLane;
+                        if (previousLane >= 0 && Math.Abs(deltaPrev) >= 1)
+                        {
+                            RevisionGraphSegment segmentOrAncestor = currentRow.FirstParentOrSelf(revisionGraphSegment);
+                            IRevisionGraphRow nextRow = localOrderedRowCache[currentIndex + 1];
+                            int nextLane = nextRow.GetLaneForSegment(segmentOrAncestor).Index;
+                            int deltaNext = currentLane - nextLane;
+                            if (nextLane >= 0 && Math.Sign(deltaNext) == Math.Sign(deltaPrev) && Math.Abs(deltaNext + deltaPrev) >= 3 && !IsPrevLaneDiagonal(Math.Sign(deltaPrev)) && !IsNextLaneDiagonal())
+                            {
+                                int moveBy = deltaNext < 0 ? -deltaNext : deltaPrev;
+                                currentRow.MoveLanesRight(currentLane, moveBy);
+                                currentLane += moveBy;
+                                moved = true;
+                                break; // from for revisionGraphSegment
+                            }
+
+                            bool IsNextLaneDiagonal()
+                            {
+                                if (currentIndex + 2 > currentLastLookAheadIndex)
+                                {
+                                    return false;
+                                }
+
+                                segmentOrAncestor = nextRow.FirstParentOrSelf(segmentOrAncestor);
+                                int nextNextLane = localOrderedRowCache[currentIndex + 2].GetLaneForSegment(segmentOrAncestor).Index;
+                                return nextNextLane >= 0 && nextNextLane == nextLane - Math.Sign(deltaNext);
+                            }
+                        }
+
+                        continue; // for revisionGraphSegment (added just as a separator for the local function)
+
+                        bool IsPrevLaneDiagonal(int diagonalDelta = 1)
+                        {
+                            if (currentIndex < 2)
+                            {
+                                return false;
+                            }
+
+                            int prevPrevLane = localOrderedRowCache[currentIndex - 2].GetLaneForSegment(revisionGraphSegment).Index;
+                            return prevPrevLane >= 0 && prevPrevLane == previousLane + diagonalDelta;
+                        }
+
+                        // Turn multi-lane crossings into diagonals
+                        // Try to detect this:
+                        // * | <------ previous lane
+                        // | |
+                        // * | <------ current lane
+                        // |\-.-.
+                        // * | | | <-- end lane
+                        //
+                        // And change it into this:
+                        // * | <------ previous lane
+                        // |  \
+                        // *   \ <---- current lane
+                        // |\-. \
+                        // * | | | <-- end lane
+                        //
+                        // Try to detect this:
+                        // * | | | <-- previous lane
+                        // |/-´-´
+                        // * | <------ current lane
+                        // | |
+                        // * | <------ end lane
+                        //
+                        // And change it into this:
+                        // * | | | <-- previous lane
+                        // |/-´ /
+                        // *   / <---- current lane
+                        // |  /
+                        // * | <------ end lane
+                        bool TurnMultiLaneCrossingIntoDiagonal(int diagonalDelta)
+                        {
+                            moveLaneBy.Clear();
+                            RevisionGraphSegment segmentOrAncestor = revisionGraphSegment;
+                            int diagonalLane = previousLane >= 0 ? previousLane : currentLane;
+                            for (int lookAheadIndex = currentIndex; lookAheadIndex <= currentLastLookAheadIndex; ++lookAheadIndex)
+                            {
+                                diagonalLane += diagonalDelta;
+                                IRevisionGraphRow endRow = localOrderedRowCache[lookAheadIndex];
+                                Lane endLane = endRow.GetLaneForSegment(segmentOrAncestor);
+                                int moveBy = diagonalLane - endLane.Index;
+                                bool lastChance = endLane.Sharing == LaneSharing.DifferentStart;
+                                if (moveBy < 0 || endLane.Index < 0 || !(endLane.Sharing == LaneSharing.ExclusiveOrPrimary || lastChance))
+                                {
+                                    return false;
+                                }
+
+                                // Unfold one-lane shift to diagonal, too
+                                // Try to detect this:
+                                // * <------ previous lane
+                                // |\
+                                // * | <---- current lane
+                                // | |
+                                // * | <---- move lane
+                                // |\ \
+                                // * | | <-- keep lane
+                                // | | |
+                                // * | | <-- end lane
+                                //
+                                // And change it into this:
+                                // * <------ previous lane
+                                // |\
+                                // * \ <---- current lane
+                                // |  \
+                                // *   | <-- move lane
+                                // |\  |
+                                // * | | <-- keep lane with moveBy == 1
+                                // | | |
+                                // * | | <-- end lane with moveBy >= 2
+                                if (moveBy >= 2 && moveLaneBy.Count == 2 && lookAheadIndex == currentIndex + 3 && moveLaneBy[1].By == 1)
+                                {
+                                    MoveLanes(moveLaneBy.Take(1));
+                                    return true;
+                                }
+
+                                // Diagonal ends
+                                if (moveBy == 0 && moveLaneBy.Count > 0)
+                                {
+                                    MoveLanes(moveLaneBy);
+                                    return true;
+                                }
+
+                                if (lastChance)
+                                {
+                                    return false;
+                                }
+
+                                if (moveBy > 0)
+                                {
+                                    moveLaneBy.Add(new MoveLaneBy(endRow, endLane.Index, moveBy));
+                                }
+
+                                segmentOrAncestor = endRow.FirstParentOrSelf(segmentOrAncestor);
+                            }
+
+                            return false;
+
+                            static void MoveLanes(IEnumerable<MoveLaneBy> moveLaneBy)
+                            {
+                                foreach ((IRevisionGraphRow row, int lane, int by) in moveLaneBy)
+                                {
+                                    row.MoveLanesRight(lane, by);
+                                }
+                            }
+                        }
+                    }
+
+                    // if moved, check again whether the lanes of previous rows can be moved, too
+                    currentIndex = moved ? Math.Max(currentIndex - straightenDiagonalsLookAhead, goBackLimit) : currentIndex + 1;
                 }
             }
         }
@@ -574,6 +925,8 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                 _reorder = true;
             }
         }
+
+        private readonly record struct MoveLaneBy(IRevisionGraphRow Row, int Lane, int By);
 
         internal TestAccessor GetTestAccessor() => new(this);
 
