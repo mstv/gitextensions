@@ -1,4 +1,5 @@
-﻿using GitCommands;
+﻿using System.Reflection;
+using GitCommands;
 using GitUI.CommandsDialogs.BrowseDialog;
 using GitUI.Hotkey;
 using GitUI.Properties;
@@ -209,7 +210,11 @@ namespace GitUI.UserControls.RevisionGrid
                     W   Show author date
                     X   Show build status text
                     Y   Draw non relatives gray
+                    0..9 GetLabel()
             */
+
+            int numericMnemonic = -1;
+            string GetLabel(string name) => ++numericMnemonic >= 10 ? name : $"&{numericMnemonic}: {name}";
 
             return new[]
             {
@@ -446,7 +451,50 @@ namespace GitUI.UserControls.RevisionGrid
                     Text = "Arrange c&ommits by topo order (ancestor order)",
                     ExecuteAction = () => _revisionGrid.ToggleTopoOrder(),
                     IsCheckedFunc = () => AppSettings.RevisionSortOrder == RevisionSortOrder.Topology
+                },
+                MenuCommand.CreateSeparator(),
+
+                MenuCommand.CreateGroupHeader("Experimental"),
+                CreateBoolViewSettingItem(AppSettings.MergeGraphLanesHavingCommonParent, GetLabel, reloadRevisions: true),
+                CreateBoolViewSettingItem(AppSettings.ReduceGraphCrossings, GetLabel, reloadRevisions: true),
+                CreateBoolViewSettingItem(AppSettings.DrawGraphWithDiagonals, GetLabel),
+                CreateBoolViewSettingItem(AppSettings.StraightOneLaneDiagonals, GetLabel),
+                CreateBoolViewSettingItem(AppSettings.StraightenGraphDiagonals, GetLabel, reloadRevisions: true),
+                CreateBoolViewSettingItem(AppSettings.StraightenOverCommits, GetLabel, reloadRevisions: true),
+                CreateBoolViewSettingItem(AppSettings.StraightenOverSecondaryCommits, GetLabel, reloadRevisions: true),
+                CreateBoolViewSettingItem(AppSettings.DebugGraphCurves, GetLabel),
+                CreateBoolViewSettingItem(AppSettings.DebugGraphPoints, GetLabel),
+                MenuCommand.CreateSeparator(),
+
+                MenuCommand.CreateGroupHeader("Settings"),
+                new MenuCommand
+                {
+                    Name = "SaveAsDefault",
+                    Text = "Save current view settings as default",
+                    ExecuteAction = SaveAsDefaultViewSettings
                 }
+            };
+        }
+
+        private MenuCommand CreateBoolViewSettingItem(BoolViewSetting viewSetting, Func<string, string> getLabelFromName, bool reloadRevisions = false)
+        {
+            return new MenuCommand
+            {
+                Name = $"_NO_TRANSLATE_{viewSetting.Name}",
+                Text = getLabelFromName(viewSetting.Name),
+                ExecuteAction = () =>
+                {
+                    viewSetting.Toggle();
+                    if (reloadRevisions)
+                    {
+                        _revisionGrid.PerformRefreshRevisions();
+                    }
+                    else
+                    {
+                        _revisionGrid.Refresh();
+                    }
+                },
+                IsCheckedFunc = () => viewSetting.Value
             };
         }
 
@@ -492,6 +540,17 @@ namespace GitUI.UserControls.RevisionGrid
             {
                 MessageBoxes.CannotFindGitRevision(owner: _revisionGrid);
             }
+        }
+
+        private void SaveAsDefaultViewSettings()
+        {
+            foreach (FieldInfo viewSettingField in typeof(AppSettings).GetFields(BindingFlags.Public | BindingFlags.NonPublic | System.Reflection.BindingFlags.Static))
+            {
+                IViewSetting viewSetting = viewSettingField.GetValue(null) as IViewSetting;
+                viewSetting?.Save();
+            }
+
+            AppSettings.SaveSettings();
         }
     }
 }

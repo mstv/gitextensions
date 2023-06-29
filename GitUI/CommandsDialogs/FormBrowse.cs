@@ -202,7 +202,7 @@ namespace GitUI.CommandsDialogs
         #endregion
 
         private readonly uint _closeAllMessage = NativeMethods.RegisterWindowMessageW("Global.GitExtensions.CloseAllInstances");
-        private readonly SplitterManager _splitterManager = new(new AppSettingsPath("FormBrowse"));
+        private readonly SplitterManager _splitterManager;
         private readonly GitStatusMonitor _gitStatusMonitor;
         private readonly FormBrowseMenus _formBrowseMenus;
         private readonly IFormBrowseController _controller;
@@ -245,8 +245,18 @@ namespace GitUI.CommandsDialogs
         /// <param name="commands">The commands in the current form.</param>
         /// <param name="args">The start up arguments.</param>
         public FormBrowse(GitUICommands commands, BrowseArguments args)
+#pragma warning disable CS0618 // Type or member is obsolete
+            : this(commands, args, new AppSettingsPath("FormBrowse"))
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+        }
+
+        [Obsolete("Test only!")]
+        internal FormBrowse(GitUICommands commands, BrowseArguments args, ISettingsSource settingsSource)
             : base(commands)
         {
+            _splitterManager = new(settingsSource);
+
             SystemEvents.SessionEnding += (sender, args) => SaveApplicationSettings();
 
             _isFileBlameHistory = args.IsFileBlameHistory;
@@ -277,8 +287,6 @@ namespace GitUI.CommandsDialogs
                 PluginRegistry.Initialize();
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RegisterPlugins();
-                revisionDiff.RegisterGitHostingPluginInBlameControl();
-                fileTree.RegisterGitHostingPluginInBlameControl();
             }).FileAndForget();
 
             InitCountArtificial(out _gitStatusMonitor);
@@ -321,11 +329,11 @@ namespace GitUI.CommandsDialogs
 
             _aheadBehindDataProvider = new AheadBehindDataProvider(() => Module.GitExecutable);
             toolStripButtonPush.Initialize(_aheadBehindDataProvider);
-            repoObjectsTree.Initialize(_aheadBehindDataProvider, filterRevisionGridBySpaceSeparatedRefs: ToolStripFilters.SetBranchFilter, RevisionGrid, RevisionGrid, RevisionGrid);
-            revisionDiff.Bind(RevisionGrid, fileTree, RefreshGitStatusMonitor);
+            repoObjectsTree.Initialize(_aheadBehindDataProvider, filterRevisionGridBySpaceSeparatedRefs: ToolStripFilters.SetBranchFilter, refsSource: RevisionGrid, revisionGridInfo: RevisionGrid, scriptRunner: RevisionGrid);
+            revisionDiff.Bind(revisionGridInfo: RevisionGrid, revisionGridUpdate: RevisionGrid, revisionFileTree: fileTree, () => RevisionGrid.CurrentFilter.PathFilter, RefreshGitStatusMonitor);
 
             // Show blame by default if not started from command line
-            fileTree.Bind(RevisionGrid, RefreshGitStatusMonitor, _isFileBlameHistory);
+            fileTree.Bind(revisionGridInfo: RevisionGrid, revisionGridUpdate: RevisionGrid, RefreshGitStatusMonitor, _isFileBlameHistory);
             RevisionGrid.ResumeRefreshRevisions();
 
             // Application is init, the repo related operations are triggered in OnLoad()
@@ -1716,6 +1724,9 @@ namespace GitUI.CommandsDialogs
             }
 
             RegisterPlugins();
+
+            revisionDiff.RegisterGitHostingPluginInBlameControl();
+            fileTree.RegisterGitHostingPluginInBlameControl();
         }
 
         private void FileExplorerToolStripMenuItemClick(object sender, EventArgs e)
@@ -2926,6 +2937,7 @@ namespace GitUI.CommandsDialogs
             public RevisionGridControl RevisionGrid => _form.RevisionGridControl;
             public SplitContainer RevisionsSplitContainer => _form.RevisionsSplitContainer;
             public SplitContainer RightSplitContainer => _form.RightSplitContainer;
+            public SplitterManager SplitterManager => _form._splitterManager;
             public TabPage TreeTabPage => _form.TreeTabPage;
             public FilterToolBar ToolStripFilters => _form.ToolStripFilters;
         }

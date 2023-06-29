@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -636,7 +637,7 @@ namespace GitCommands
                 }
             }
 
-            using var stream = File.Create(saveAs);
+            using FileStream stream = File.Create(saveAs);
             stream.Write(blobData, 0, blobData.Length);
         }
 
@@ -1370,7 +1371,12 @@ namespace GitCommands
             _gitExecutable.RunCommand(GitCommandHelpers.ResetCmd(mode, commit: null, file));
         }
 
-        public string ResetFiles(IReadOnlyList<string> files)
+        /// <summary>
+        /// Executes <c>checkout-index</c> ("reset") command which copies files from the index overwriting the working tree.
+        /// </summary>
+        /// <param name="files">List with (relative path) filenames.</param>
+        /// <returns>stdout from Git.</returns>
+        public string CheckoutIndexFiles(IReadOnlyList<string> files)
         {
             if (files is null || files.Count == 0)
             {
@@ -1389,26 +1395,51 @@ namespace GitCommands
         /// <summary>
         /// Reset changes to the selected files.
         /// </summary>
-        /// <param name="selectedItems">Items to reset, with Staged status set.</param>
+        /// <param name="resetId">Id to reset to, null for HEAD</param>
+        /// <param name="selectedItems">Items to reset.</param>
         /// <param name="resetAndDelete">Delete new (and renamed) files.</param>
         /// <param name="fullPathResolver"><see cref="IFullPathResolver"/></param>
-        /// <param name="filesInUse">Out put listing files in use, that cannot be deleted.</param>
         /// <param name="output">Error messages from the reset.</param>
         /// <param name="progressAction">Action when unstaging files (to update a progress bar).</param>
         /// <returns><see langword="true"/> if successfully executed</returns>
-        public bool ResetChanges(IEnumerable<GitItemStatus> selectedItems, bool resetAndDelete, IFullPathResolver fullPathResolver, out List<string> filesInUse, out StringBuilder output, Action<BatchProgressEventArgs>? progressAction = null)
+        public bool ResetChanges(ObjectId? resetId, IReadOnlyList<GitItemStatus> selectedItems, bool resetAndDelete, IFullPathResolver fullPathResolver, out StringBuilder output, Action<BatchProgressEventArgs>? progressAction = null)
         {
-            // If Staged was selected, unstage file first
-            IEnumerable<GitItemStatus> stagedFiles = selectedItems.Where(item => item.Staged == StagedStatus.Index);
-            BatchUnstageFiles(stagedFiles, progressAction);
+            if (resetId?.IsArtificial is true && resetId != ObjectId.IndexId)
+            {
+                throw new InvalidOperationException(nameof(resetId));
+            }
 
-            filesInUse = new();
+            // unstage first (to reset conflicts)
+            if (resetId != ObjectId.IndexId)
+            {
+                Lazy<List<GitItemStatus>> initialStatus = new(() => GetAllChangedFilesWithSubmodulesStatus().ToList());
+                List<GitItemStatus> filesToUnstage = new();
+                foreach (GitItemStatus item in selectedItems)
+                {
+                    if (item.Staged == StagedStatus.Index)
+                    {
+                        filesToUnstage.Add(item);
+                    }
+                    else if (initialStatus.Value.Where(i => i.Name == item.Name && i.Staged == StagedStatus.Index).FirstOrDefault() is GitItemStatus gitStatus)
+                    {
+                        filesToUnstage.Add(gitStatus);
+                    }
+                }
+
+                BatchUnstageFiles(filesToUnstage, progressAction);
+            }
+
+            List<string> filesInUse = new();
+            List<string> filesToCheckout = new();
             List<string> filesToReset = new();
-            List<string> conflictsToReset = new();
+            List<string> filesCannotCheckout = new();
             output = new();
+            Lazy<List<GitItemStatus>> postUnstageStatus = new(() => GetAllChangedFilesWithSubmodulesStatus().ToList());
+
             foreach (GitItemStatus item in selectedItems)
             {
-                if (resetAndDelete && DeletableItem(item))
+                if (resetAndDelete && (DeletableItem(item)
+                    || (resetId != ObjectId.IndexId && postUnstageStatus.Value.Any(i => DeletableItem(i) && i.Name == item.Name))))
                 {
                     try
                     {
@@ -1431,28 +1462,58 @@ namespace GitCommands
                     }
                 }
 
-                if (item.IsUnmerged)
+                if (resetId == ObjectId.IndexId)
                 {
-                    conflictsToReset.Add(item.Name);
+                    if (UnmergedIndex(item, postUnstageStatus))
+                    {
+                        filesCannotCheckout.Add(item.Name);
+                        continue;
+                    }
+
+                    filesToCheckout.Add(item.IsRenamed ? item.OldName : item.Name);
                 }
-                else if (!item.IsNew)
+                else if (!item.IsNew && !postUnstageStatus.Value.Any(i => i.IsNew && i.Name == item.Name))
                 {
-                    filesToReset.Add(item.IsRenamed ? item.OldName : item.Name);
+                    if (resetId is not null || UnmergedNotIndex(item, postUnstageStatus))
+                    {
+                        filesToCheckout.Add(item.IsRenamed ? item.OldName : item.Name);
+                    }
+                    else
+                    {
+                        // reset to head
+                        filesToReset.Add(item.IsRenamed ? item.OldName : item.Name);
+                    }
                 }
             }
 
-            output.Append(ResetFiles(filesToReset));
-            if (conflictsToReset.Count > 0)
+            output.Append(CheckoutIndexFiles(filesToReset));
+            output.Append(CheckoutFiles(filesToCheckout, resetId, force: false));
+
+            const char bullet = '\u2022';
+            const char noBreakSpace = '\u00a0';
+            string separator = $"{Environment.NewLine}{bullet}{noBreakSpace}";
+            if (filesInUse.Count > 0)
             {
-                // Special handling for conflicted files, shown in worktree (with the raw diff).
-                // Must be reset to HEAD as Index is just a status marker.
-                ObjectId headId = RevParse("HEAD");
-                CheckoutFiles(conflictsToReset, headId, force: false);
+                output.Append($"The following files are currently in use and will not be reset:{separator}{string.Join(separator, filesInUse)}");
+            }
+
+            if (filesCannotCheckout.Count > 0)
+            {
+                output.Append($"The following files are unmerged and will not be reset:{separator}{string.Join(separator, filesCannotCheckout)}");
             }
 
             return true;
 
             static bool DeletableItem(GitItemStatus item) => item.IsNew || item.IsRenamed;
+
+            // For normal commits: 'git-checkout <id> --' must be used for Unmerged but will not work on e.g. SkipWorktree.
+            static bool UnmergedNotIndex(GitItemStatus item, Lazy<List<GitItemStatus>> status)
+                => item.IsUnmerged && !status.Value.Any(i => !i.IsDeleted && !i.IsNew && i.Name == item.Name);
+
+            // 'git-checkout --' must be used for Index (git-reset will copy HEAD to Index, git-restore from 2.25 could be used).
+            // However, Unmerged (Conflict) files cannot be checked out to Index.
+            static bool UnmergedIndex(GitItemStatus item, Lazy<List<GitItemStatus>> status)
+                => status.Value.Any(i => (i.IsUnmerged || i.IsNew) && i.Name == item.Name) || !status.Value.Any(i => i.Name == item.Name);
         }
 
         /// <summary>
@@ -1481,30 +1542,33 @@ namespace GitCommands
                 });
         }
 
-        public void CheckoutFiles(IReadOnlyList<string> files, ObjectId revision, bool force)
+        /// <summary>
+        /// git-checkout files
+        /// </summary>
+        /// <param name="files">List of files to checkout.</param>
+        /// <param name="revision">Commit to checkout, null is handled as HEAD.</param>
+        /// <param name="force">Force checkout.</param>
+        public string CheckoutFiles(IReadOnlyList<string> files, ObjectId? revision, bool force)
         {
-            if (files.Count == 0)
+            if (files.Count == 0 || (revision?.IsArtificial is true && revision != ObjectId.IndexId))
             {
-                return;
+                return "";
             }
 
-            if (revision == ObjectId.IndexId)
-            {
-                // Reset to index has no revision
-                // All other artificial commits are errors
-                revision = null!;
-            }
+            // Reset to index has no revision string
+            string revStr = revision == ObjectId.IndexId ? "" : revision?.ToString() ?? RevParse("HEAD").ToString();
 
             // Run batch arguments to work around max command line length on Windows. Fix #6593
             // 3: double quotes + ' '
             // See https://referencesource.microsoft.com/#system/services/monitoring/system/diagnostics/Process.cs,1952
-            _gitExecutable.RunBatchCommand(new GitArgumentBuilder("checkout")
+            return _gitExecutable.RunBatchCommand(new GitArgumentBuilder("checkout")
                 {
                     { force, "--force" },
-                    revision,
+                    revStr,
                     "--"
                 }
-                .BuildBatchArgumentsForFiles(files));
+                .BuildBatchArgumentsForFiles(files))
+                ?.StandardOutput ?? "";
         }
 
         public string RemoveFiles(IReadOnlyList<string> files, bool force)
@@ -1916,7 +1980,7 @@ namespace GitCommands
         }
 
         /// <summary>
-        /// Batch unstage files using <see cref="ExecutableExtensions.RunBatchCommand(IExecutable, ICollection{BatchArgumentItem}, Action{BatchProgressEventArgs}, byte[], bool)"/>.
+        /// Batch unstage files using <see cref="ExecutableExtensions.RunBatchCommand(IExecutable, ICollection{BatchArgumentItem}, Action{BatchProgressEventArgs}, Action{StreamWriter})"/>.
         /// </summary>
         /// <param name="selectedItems">Selected file items.</param>
         /// <param name="action">Progress update callback.</param>

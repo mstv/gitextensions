@@ -65,10 +65,12 @@ namespace GitUI
                 else
                 {
                     // Get the parents for the selected revision
-                    var multipleParents = actualRev.ParentIds is null ? 0 : AppSettings.ShowDiffForAllParents ? actualRev.ParentIds.Count : 1;
+                    // Exclude the optional third group with the diff to the orphan commit containing the untracked files of a stash
+                    int multipleParents = actualRev.ParentIds is null ? 0 : AppSettings.ShowDiffForAllParents ? actualRev.ParentIds.Count : 1;
                     fileStatusDescs.AddRange(actualRev
                         .ParentIds
                         .Take(multipleParents)
+                        .Where(parentId => !(multipleParents == 3 && DescribeRevision?.Invoke(parentId).Contains(": untracked files on ") is true))
                         .Select(parentId =>
                             new FileStatusWithDescription(
                                 firstRev: new GitRevision(parentId),
@@ -124,16 +126,14 @@ namespace GitUI
             }
             else
             {
-                // check that the middle commit is base to the first/second
+                // Check whether the middle commit is base to the first/second
                 // Allow commits earlier to the actual base commit
-                ObjectId? testBaseRevId = GetMergeBase(firstRevHead, revisions[1].ObjectId);
-                if (testBaseRevId == revisions[1].ObjectId)
+                ObjectId middleId = revisions[1].ObjectId;
+                if (!middleId.IsArtificial
+                    && GetMergeBase(firstRevHead, middleId) == middleId
+                    && GetMergeBase(selectedRevHead, middleId) == middleId)
                 {
-                    testBaseRevId = GetMergeBase(selectedRevHead, revisions[1].ObjectId);
-                    if (testBaseRevId == revisions[1].ObjectId)
-                    {
-                        baseRevId = testBaseRevId;
-                    }
+                    baseRevId = middleId;
                 }
             }
 

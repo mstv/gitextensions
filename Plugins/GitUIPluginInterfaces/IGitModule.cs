@@ -145,5 +145,7 @@ namespace GitUIPluginInterfaces
         string? GetDescribe(ObjectId commitId);
 
         (int totalCount, Dictionary<string, int> countByName) GetCommitsByContributor(DateTime? since = null, DateTime? until = null);
+
+        void SaveBlobAs(string saveAs, string blob);
     }
 }
