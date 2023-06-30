@@ -1,6 +1,6 @@
 ﻿namespace GitUI.UserControls.RevisionGrid.Graph
 {
-    public class LaneInfo
+    public readonly struct LaneInfo
     {
         public LaneInfo(RevisionGraphSegment startSegment, LaneInfo? derivedFrom, RevisionGraphSegment? segmentToTheLeft)
         {
@@ -12,7 +12,7 @@
                 colorSeed ^= startSegment.Parent.Objectid.GetHashCode();
             }
 
-            int? leftLaneColor = segmentToTheLeft?.LaneInfo.Color;
+            int? leftLaneColor = segmentToTheLeft?.LaneInfo?.Color;
             do
             {
                 Color = RevisionGraphLaneColor.GetColorForLane(colorSeed);

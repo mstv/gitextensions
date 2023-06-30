@@ -449,7 +449,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                             {
                                 if (startSegment == revisionStartSegments[0])
                                 {
-                                    if (startSegment.LaneInfo is null || startSegment.LaneInfo.StartScore > segment.LaneInfo?.StartScore)
+                                    if (startSegment.LaneInfo is null || startSegment.LaneInfo.Value.StartScore > segment.LaneInfo?.StartScore)
                                     {
                                         startSegment.LaneInfo = segment.LaneInfo;
                                     }

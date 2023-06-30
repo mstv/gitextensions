@@ -411,7 +411,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
                 return RevisionGraphLaneColor.NonRelativeBrush;
             }
 
-            return RevisionGraphLaneColor.GetBrushForLane(laneInfo.Color);
+            return RevisionGraphLaneColor.GetBrushForLane(laneInfo.Value.Color);
         }
 
         private static int GetLaneForRow(IRevisionGraphRow? row, RevisionGraphSegment revisionGraphRevision)
