@@ -509,7 +509,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                                 RevisionGraphSegment startSegment = revisionStartSegments[j];
                                 if (startSegment == revisionStartSegments[0])
                                 {
-                                    if (startSegment.LaneInfo is null || startSegment.LaneInfo.StartScore > segment.LaneInfo?.StartScore)
+                                    if (startSegment.LaneInfo is null || startSegment.LaneInfo.Value.StartScore > segment.LaneInfo?.StartScore)
                                     {
                                         startSegment.LaneInfo = segment.LaneInfo;
                                     }
@@ -518,7 +518,7 @@ namespace GitUI.UserControls.RevisionGrid.Graph
                                 {
                                     startSegment.LaneInfo ??= segment.LaneInfo is null
                                             ? new LaneInfo(startSegment, prevSegment)
-                                            : new LaneInfo(startSegment, prevSegment, derivedFrom: segment.LaneInfo);
+                                            : new LaneInfo(startSegment, prevSegment, derivedFrom: segment.LaneInfo.Value);
                                 }
 
                                 prevSegment = startSegment;
