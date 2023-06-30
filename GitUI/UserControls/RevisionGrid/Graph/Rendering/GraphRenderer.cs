@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using GitCommands;
+using GitExtUtils;
 using GitExtUtils.GitUI;
 using GitUIPluginInterfaces;
 using Microsoft;
@@ -77,17 +78,17 @@ namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
 
                     if (AppSettings.DrawGraphWithDiagonals.Value)
                     {
-                        Lazy<SegmentLanesInfo> previousLanes = new(() =>
+                        LazyStruct<SegmentLanesInfo> previousLanes = new(() =>
                         {
                             Validates.NotNull(previousRow);
                             return GetLanesInfo(revisionGraphSegment, getSegmentsForRow(index - 2), previousRow, currentRow);
                         });
-                        Lazy<SegmentLanesInfo> nextLanes = new(() =>
+                        LazyStruct<SegmentLanesInfo> nextLanes = new(() =>
                         {
                             Validates.NotNull(nextRow);
                             return GetLanesInfo(revisionGraphSegment, currentRow, nextRow, getSegmentsForRow(index + 2));
                         });
-                        Lazy<SegmentLanesInfo> farLanesDontMatter = null;
+                        LazyStruct<SegmentLanesInfo> farLanesDontMatter = null;
 
                         Lazy<SegmentLaneFlags> previousLaneFlags = new(() => GetDiagonalLaneFlags(previousLanes: farLanesDontMatter, currentLanes: previousLanes.Value, nextLanes: new(() => lanes)));
                         Lazy<SegmentLaneFlags> nextLaneFlags = new(() => GetDiagonalLaneFlags(previousLanes: new(() => lanes), currentLanes: nextLanes.Value, nextLanes: farLanesDontMatter));
@@ -215,9 +216,9 @@ namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
                 drawToEnd: endLane >= 0 && centerLane >= 0 && (endLane <= MaxLanes || centerLane <= MaxLanes));
         }
 
-        private static SegmentLaneFlags GetDiagonalLaneFlags(Lazy<SegmentLanesInfo>? previousLanes,
+        private static SegmentLaneFlags GetDiagonalLaneFlags(LazyStruct<SegmentLanesInfo>? previousLanes,
             SegmentLanesInfo currentLanes,
-            Lazy<SegmentLanesInfo>? nextLanes)
+            LazyStruct<SegmentLanesInfo>? nextLanes)
         {
             SegmentLaneFlags flags = new()
             {

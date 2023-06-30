@@ -1,6 +1,6 @@
 ﻿namespace GitUI.UserControls.RevisionGrid.Graph.Rendering
 {
-    internal readonly struct SegmentLanesInfo
+    internal readonly ref struct SegmentLanesInfo
     {
         public readonly int StartLane;
         public readonly int CenterLane;
