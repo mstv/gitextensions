@@ -73,11 +73,8 @@ public partial class FormCherryPick : GitExtensionsDialog
 
     private void SaveSettings()
     {
-        if (DialogResult == DialogResult.OK)
-        {
-            AppSettings.CommitAutomaticallyAfterCherryPick = cbxAutoCommit.Checked;
-            AppSettings.AddCommitReferenceToCherryPick = cbxAddReference.Checked;
-        }
+        AppSettings.CommitAutomaticallyAfterCherryPick = cbxAutoCommit.Checked;
+        AppSettings.AddCommitReferenceToCherryPick = cbxAddReference.Checked;
     }
 
     private void OnRevisionChanged()
