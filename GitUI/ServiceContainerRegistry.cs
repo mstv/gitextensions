@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.Design;
+using CommunityToolkit.Mvvm.Messaging;
 using GitCommands.UserRepositoryHistory;
 using GitUI.Hotkey;
 using GitUI.ScriptsEngine;
+using GitUI.ViewModels;
 using ResourceManager;
 
 namespace GitUI;
@@ -18,5 +20,7 @@ public static class ServiceContainerRegistry
         serviceContainer.AddService<IScriptsRunner>(scriptsManager);
         serviceContainer.AddService<IHotkeySettingsManager>(hotkeySettingsManager);
         serviceContainer.AddService<IHotkeySettingsLoader>(hotkeySettingsManager);
+        serviceContainer.AddService<IMessenger>(WeakReferenceMessenger.Default);
+        ProcessHistoryViewModel.Register(serviceContainer);
     }
 }
