@@ -11,6 +11,8 @@ internal static class ServiceContainerRegistry
 {
     public static void RegisterServices(ServiceContainer serviceContainer)
     {
+        GitExtUtils.ServiceContainerRegistry.RegisterServices(serviceContainer);
+
         FileSystem fileSystem = new();
         GitDirectoryResolver gitDirectoryResolver = new(fileSystem);
         RepositoryDescriptionProvider repositoryDescriptionProvider = new(gitDirectoryResolver);
