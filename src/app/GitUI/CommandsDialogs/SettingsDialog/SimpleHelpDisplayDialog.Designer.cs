@@ -49,8 +49,6 @@ partial class SimpleHelpDisplayDialog
         AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(299, 439);
         Controls.Add(textBox1);
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "SimpleHelpDisplayDialog";
         ShowIcon = false;
         ShowInTaskbar = false;

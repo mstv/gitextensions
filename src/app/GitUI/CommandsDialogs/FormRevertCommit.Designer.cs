@@ -194,8 +194,6 @@ partial class FormRevertCommit
         AutoSize = true;
         CancelButton = btnAbort;
         ClientSize = new Size(614, 352);
-        MaximizeBox = false;
-        MinimizeBox = false;
         MinimumSize = new Size(630, 362);
         Name = "FormRevertCommit";
         SizeGripStyle = SizeGripStyle.Hide;

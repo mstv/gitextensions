@@ -104,8 +104,6 @@ partial class FormBisect
         Controls.Add(Good);
         Controls.Add(Start);
         FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "FormBisect";
         StartPosition = FormStartPosition.CenterParent;
         Text = "Bisect";

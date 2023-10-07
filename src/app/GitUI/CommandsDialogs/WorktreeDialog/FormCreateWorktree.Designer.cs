@@ -207,8 +207,6 @@ partial class FormCreateWorktree
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(608, 208);
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "FormCreateWorktree";
         StartPosition = FormStartPosition.CenterParent;
         Text = "Create a new worktree";

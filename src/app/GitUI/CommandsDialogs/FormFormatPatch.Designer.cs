@@ -181,8 +181,6 @@ partial class FormFormatPatch
         ClientSize = new Size(1030, 665);
         Controls.Add(tableLayoutPanelForm);
         Margin = new Padding(4, 4, 4, 4);
-        MaximizeBox = false;
-        MinimizeBox = false;
         MinimumSize = new Size(558, 395);
         Name = "FormFormatPatch";
         StartPosition = FormStartPosition.CenterParent;

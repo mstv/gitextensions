@@ -71,8 +71,6 @@ partial class SearchWindow<T>
         ControlBox = false;
         Controls.Add(tableLayoutPanel1);
         FormBorderStyle = FormBorderStyle.None;
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "SearchWindow";
         ShowIcon = false;
         ShowInTaskbar = false;
