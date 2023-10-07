@@ -553,8 +553,6 @@
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(408, 527);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormRevisionFilter";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Filter";

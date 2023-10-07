@@ -171,8 +171,6 @@
             Controls.Add(lblReplaceWith);
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FindAndReplaceForm";
             StartPosition = FormStartPosition.Manual;
             Text = "Find and replace";

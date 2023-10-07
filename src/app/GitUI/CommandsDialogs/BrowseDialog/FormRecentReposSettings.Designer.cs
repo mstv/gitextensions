@@ -451,8 +451,6 @@
             Controls.Add(comboPanel);
             Controls.Add(tableLayoutPanel1);
             Controls.Add(flpnlControls);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(700, 400);
             Name = "FormRecentReposSettings";
             Padding = new Padding(0, 0, 8, 0);

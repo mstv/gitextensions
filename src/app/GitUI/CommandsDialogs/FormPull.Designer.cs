@@ -541,8 +541,6 @@
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(674, 525);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(690, 564);
             Name = "FormPull";
             StartPosition = FormStartPosition.CenterParent;
