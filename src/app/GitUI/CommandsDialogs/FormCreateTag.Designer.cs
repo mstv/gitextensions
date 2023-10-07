@@ -210,8 +210,6 @@ namespace GitUI.CommandsDialogs
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(464, 245);
             Controls.Add(tableLayoutPanel2);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(455, 260);
             Name = "FormCreateTag";
             Padding = new Padding(8);

@@ -197,8 +197,6 @@
             CancelButton = ButtonCancel;
             ClientSize = new Size(605, 315);
             Controls.Add(tableLayoutPanel1);
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormAvailableEncodings";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Configure available encodings";

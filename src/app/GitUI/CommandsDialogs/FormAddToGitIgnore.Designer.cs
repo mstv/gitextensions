@@ -205,7 +205,6 @@
             Controls.Add(groupBox1);
             Controls.Add(groupFilePattern);
             Controls.Add(panel1);
-            MinimizeBox = false;
             Name = "FormAddToGitIgnore";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Add file(s) to .gitignore";

@@ -83,8 +83,6 @@
             Controls.Add(buttonOK);
             Controls.Add(treeViewTeamCityProjects);
             Margin = new Padding(2, 2, 2, 2);
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "TeamCityBuildChooser";
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;

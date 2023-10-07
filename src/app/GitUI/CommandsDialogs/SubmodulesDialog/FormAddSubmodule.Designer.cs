@@ -143,8 +143,6 @@
             Controls.Add(Browse);
             Controls.Add(Directory);
             Controls.Add(label1);
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormAddSubmodule";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Add submodule";
