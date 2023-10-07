@@ -7,8 +7,6 @@ public partial class FormCompareToBranch : GitModuleForm
     public FormCompareToBranch(IGitUICommands commands, ObjectId? selectedCommit)
         : base(commands)
     {
-        MinimizeBox = false;
-        MaximizeBox = false;
         ShowInTaskbar = false;
         InitializeComponent();
         InitializeComplete();

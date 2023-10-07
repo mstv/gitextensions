@@ -148,8 +148,6 @@ partial class FormDeleteTag
         Controls.Add(Ok);
         Controls.Add(Tags);
         Controls.Add(label1);
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "FormDeleteTag";
         StartPosition = FormStartPosition.CenterParent;
         Text = "Delete tag";

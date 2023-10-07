@@ -204,8 +204,6 @@ partial class FormCreateWorktree
         ClientSize = new Size(608, 208);
         Controls.Add(tableLayoutPanel1);
         FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "FormCreateWorktree";
         SizeGripStyle = SizeGripStyle.Hide;
         StartPosition = FormStartPosition.CenterParent;
