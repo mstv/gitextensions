@@ -160,8 +160,6 @@
             HelpButton = true;
             ManualSectionAnchorName = "delete-branch";
             ManualSectionSubfolder = "branches";
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(403, 102);
             Name = "FormDeleteRemoteBranch";
             StartPosition = FormStartPosition.CenterParent;

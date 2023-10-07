@@ -162,8 +162,6 @@
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(341, 106);
             Controls.Add(tableLayoutPanel1);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(357, 144);
             Name = "ProxySwitcherForm";
             ShowIcon = false;

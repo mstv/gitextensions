@@ -113,8 +113,6 @@
             ClientSize = new Size(549, 78);
             Controls.Add(tableLayoutPanel1);
             Icon = ((Icon)(resources.GetObject("$this.Icon")));
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormFilePrompt";
             Padding = new Padding(8);
             SizeGripStyle = SizeGripStyle.Show;

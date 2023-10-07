@@ -301,8 +301,6 @@
             Controls.Add(AddInclusivePath);
             Controls.Add(CleanSubmodules);
             Margin = new Padding(4);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(558, 738);
             Name = "FormCleanupRepository";
             StartPosition = FormStartPosition.CenterParent;

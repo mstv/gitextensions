@@ -251,8 +251,6 @@
             HelpButton = true;
             ManualSectionAnchorName = "cherry-pick-commit";
             ManualSectionSubfolder = "modify_history";
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(630, 370);
             Name = "FormCherryPick";
             SizeGripStyle = SizeGripStyle.Hide;

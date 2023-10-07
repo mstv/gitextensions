@@ -188,8 +188,6 @@ namespace GitUI.CommandsDialogs
             HelpButton = true;
             ManualSectionAnchorName = "create-new-repository";
             ManualSectionSubfolder = "getting_started";
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormInit";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Create new repository";

@@ -154,8 +154,6 @@
             Controls.Add(label1);
             Controls.Add(textboxCommitExpression);
             Controls.Add(goButton);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(620, 340);
             Name = "FormGoToCommit";
             SizeGripStyle = SizeGripStyle.Hide;

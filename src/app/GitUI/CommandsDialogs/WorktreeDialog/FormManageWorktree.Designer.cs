@@ -215,8 +215,6 @@ namespace GitUI.CommandsDialogs.WorktreeDialog
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(697, 361);
             Controls.Add(buttonPruneWorktrees);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(710, 200);
             Name = "FormManageWorktree";
             StartPosition = FormStartPosition.CenterParent;

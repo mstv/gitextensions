@@ -214,8 +214,6 @@ namespace GitUI.CommandsDialogs
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(958, 646);
             Controls.Add(tableLayoutPanel3);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(966, 785);
             Name = "FormSettings";
             SizeGripStyle = SizeGripStyle.Show;

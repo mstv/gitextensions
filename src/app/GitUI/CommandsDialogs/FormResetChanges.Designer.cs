@@ -114,8 +114,6 @@
             Controls.Add(label2);
             Controls.Add(cbDeleteNewFilesAndDirectories);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormResetChanges";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Reset changes";

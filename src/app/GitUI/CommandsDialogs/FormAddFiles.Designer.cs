@@ -102,9 +102,7 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.SizableToolWindow;
             Margin = new Padding(4, 4, 4, 4);
-            MaximizeBox = false;
             MaximumSize = new Size(10000, 120);
-            MinimizeBox = false;
             MinimumSize = new Size(570, 120);
             Name = "FormAddFiles";
             StartPosition = FormStartPosition.CenterParent;
