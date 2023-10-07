@@ -121,7 +121,6 @@ partial class FormResetChanges
         Controls.Add(lblDeleteHint);
         Controls.Add(cbDeleteNewFilesAndDirectories);
         Controls.Add(flowLayoutPanel1);
-        MinimizeBox = false;
         Name = "FormResetChanges";
         Padding = new Padding(8, 8, 0, 0);
         StartPosition = FormStartPosition.CenterParent;

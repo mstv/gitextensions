@@ -405,8 +405,6 @@ partial class FormCheckoutBranch
         HelpButton = true;
         ManualSectionAnchorName = "checkout-branch";
         ManualSectionSubfolder = "branches";
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "FormCheckoutBranch";
         StartPosition = FormStartPosition.CenterParent;
         Text = "Checkout branch";

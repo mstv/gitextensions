@@ -75,7 +75,6 @@ partial class FormCommandlineHelp
         AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(394, 662);
         Controls.Add(flowLayoutPanel1);
-        MaximizeBox = false;
         MinimumSize = new Size(410, 700);
         Name = "FormCommandlineHelp";
         StartPosition = FormStartPosition.CenterParent;

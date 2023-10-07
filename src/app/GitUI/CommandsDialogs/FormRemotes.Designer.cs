@@ -788,8 +788,6 @@ partial class FormRemotes
         AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(744, 361);
         Controls.Add(tabControl1);
-        MaximizeBox = false;
-        MinimizeBox = false;
         MinimumSize = new Size(950, 400);
         Name = "FormRemotes";
         SizeGripStyle = SizeGripStyle.Show;

@@ -49,8 +49,6 @@ public sealed partial class FormContributors : GitExtensionsForm
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(624, 442);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             Text = _caption.Text;
 
