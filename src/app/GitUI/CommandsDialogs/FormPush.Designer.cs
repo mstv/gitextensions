@@ -577,7 +577,6 @@
             Controls.Add(groupBox2);
             Controls.Add(Push);
             Controls.Add(Pull);
-            MinimizeBox = false;
             MinimumSize = new Size(600, 329);
             Name = "FormPush";
             StartPosition = FormStartPosition.CenterParent;

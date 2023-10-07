@@ -359,9 +359,7 @@
             HelpButton = true;
             ManualSectionAnchorName = "clone-repository";
             ManualSectionSubfolder = "getting_started";
-            MaximizeBox = false;
             MaximumSize = new Size(950, 398);
-            MinimizeBox = false;
             MinimumSize = new Size(450, 398);
             Name = "FormClone";
             StartPosition = FormStartPosition.CenterParent;

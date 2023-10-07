@@ -412,8 +412,6 @@
             ClientSize = new Size(772, 460);
             Controls.Add(tableLayoutPanel1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(478, 380);
             Name = "FormMergeBranch";
             StartPosition = FormStartPosition.CenterParent;

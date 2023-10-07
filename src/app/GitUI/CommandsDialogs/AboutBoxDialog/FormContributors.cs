@@ -49,8 +49,6 @@ namespace GitUI.CommandsDialogs.AboutBoxDialog
                 AutoScaleMode = AutoScaleMode.Dpi;
                 ClientSize = new Size(624, 442);
                 FormBorderStyle = FormBorderStyle.FixedDialog;
-                MaximizeBox = false;
-                MinimizeBox = false;
                 StartPosition = FormStartPosition.CenterParent;
                 Text = _caption.Text;
 

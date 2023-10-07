@@ -218,8 +218,6 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Margin = new Padding(4, 4, 4, 4);
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormMergeSubmodule";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Submodule conflict";
