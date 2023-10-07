@@ -117,8 +117,6 @@ partial class FormOpenDirectory
         Controls.Add(Load);
         Controls.Add(_NO_TRANSLATE_Directory);
         Controls.Add(label1);
-        MaximizeBox = false;
-        MinimizeBox = false;
         Name = "FormOpenDirectory";
         SizeGripStyle = SizeGripStyle.Show;
         StartPosition = FormStartPosition.CenterParent;

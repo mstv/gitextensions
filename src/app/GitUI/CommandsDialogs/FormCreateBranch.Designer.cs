@@ -241,8 +241,6 @@ partial class FormCreateBranch
         HelpButton = true;
         ManualSectionAnchorName = "create-branch";
         ManualSectionSubfolder = "branches";
-        MaximizeBox = false;
-        MinimizeBox = false;
         MinimumSize = new Size(580, 425);
         Name = "FormCreateBranch";
         StartPosition = FormStartPosition.CenterParent;
