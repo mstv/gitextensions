@@ -114,8 +114,6 @@
             Controls.Add(pictureBox1);
             Controls.Add(lblMustAuthenticate);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormPuttyError";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Authentication error";

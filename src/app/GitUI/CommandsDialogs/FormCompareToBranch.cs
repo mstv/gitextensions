@@ -7,8 +7,6 @@ namespace GitUI.CommandsDialogs
         public FormCompareToBranch(IGitUICommands commands, ObjectId? selectedCommit)
             : base(commands)
         {
-            MinimizeBox = false;
-            MaximizeBox = false;
             ShowInTaskbar = false;
             InitializeComponent();
             InitializeComplete();

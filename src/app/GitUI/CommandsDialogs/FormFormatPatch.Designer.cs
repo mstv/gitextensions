@@ -344,8 +344,6 @@ namespace GitUI.CommandsDialogs
             ClientSize = new Size(1030, 665);
             Controls.Add(splitContainer1);
             Margin = new Padding(4, 4, 4, 4);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(558, 395);
             Name = "FormFormatPatch";
             StartPosition = FormStartPosition.CenterParent;
