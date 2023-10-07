@@ -187,8 +187,6 @@
             Controls.Add(labelHeader);
             Controls.Add(buttonCancel);
             Controls.Add(buttonOK);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(373, 210);
             Name = "FormBuildServerCredentials";
             StartPosition = FormStartPosition.CenterParent;

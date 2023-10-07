@@ -128,8 +128,6 @@
             Controls.Add(flpnlControls);
             Controls.Add(tableLayoutPanel1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(400, 80);
             Name = "FormDashboardCategoryTitle";
             StartPosition = FormStartPosition.CenterParent;

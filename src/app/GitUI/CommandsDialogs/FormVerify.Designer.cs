@@ -418,7 +418,6 @@
             Controls.Add(panel2);
             Controls.Add(splitContainer1);
             Controls.Add(panel1);
-            MinimizeBox = false;
             Name = "FormVerify";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Verify database";

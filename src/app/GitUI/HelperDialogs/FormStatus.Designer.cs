@@ -137,8 +137,6 @@ namespace GitUI.HelperDialogs
             ClientSize = new Size(549, 327);
             Controls.Add(ProgressBar);
             Controls.Add(PasswordInput);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(500, 200);
             Name = "FormStatus";
             StartPosition = FormStartPosition.CenterParent;

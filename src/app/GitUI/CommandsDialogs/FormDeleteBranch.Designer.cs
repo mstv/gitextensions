@@ -114,9 +114,7 @@
             HelpButton = true;
             ManualSectionAnchorName = "delete-branch";
             ManualSectionSubfolder = "branches";
-            MaximizeBox = false;
             MaximumSize = new Size(950, 130);
-            MinimizeBox = false;
             MinimumSize = new Size(420, 130);
             Name = "FormDeleteBranch";
             StartPosition = FormStartPosition.CenterParent;

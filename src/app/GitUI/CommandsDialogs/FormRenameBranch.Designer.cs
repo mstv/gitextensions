@@ -95,8 +95,6 @@
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(484, 42);
             Controls.Add(tableLayoutPanel1);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(400, 80);
             Name = "FormRenameBranch";
             RightToLeft = RightToLeft.No;

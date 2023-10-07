@@ -159,8 +159,6 @@ namespace GitUI.CommandsDialogs.BrowseDialog
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(462, 135);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormUpdates";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Check for update";

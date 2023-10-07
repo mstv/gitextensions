@@ -250,8 +250,6 @@
             Controls.Add(panel1);
             Controls.Add(flowLayoutPanel1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormAbout";
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterParent;

@@ -77,7 +77,6 @@
             Controls.Add(button1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Margin = new Padding(4, 4, 4, 4);
-            MaximizeBox = false;
             Name = "CreateLocalBranchesForm";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Create local tracking branches";

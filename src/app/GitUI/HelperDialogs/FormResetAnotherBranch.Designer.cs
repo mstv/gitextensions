@@ -225,8 +225,6 @@
             ClientSize = new Size(535, 381);
             Controls.Add(tableLayoutPanel1);
             FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormResetAnotherBranch";
             Padding = new Padding(8);
             StartPosition = FormStartPosition.CenterParent;
