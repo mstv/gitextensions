@@ -108,8 +108,6 @@
             CancelButton = Abort;
             ClientSize = new Size(549, 288);
             Controls.Add(ProgressBar);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(500, 200);
             Name = "FormStatus";
             StartPosition = FormStartPosition.CenterParent;

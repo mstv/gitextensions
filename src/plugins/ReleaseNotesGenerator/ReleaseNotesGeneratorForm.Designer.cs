@@ -373,7 +373,6 @@
             Controls.Add(_NO_TRANSLATE_textBoxRevTo);
             Controls.Add(label2);
             Controls.Add(label1);
-            MinimizeBox = false;
             MinimumSize = new Size(630, 470);
             Name = "ReleaseNotesGeneratorForm";
             Text = "Release Notes Generator";

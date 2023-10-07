@@ -261,8 +261,6 @@
             Controls.Add(tableLayoutPanel1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             HelpButton = true;
-            MaximizeBox = false;
-            MinimizeBox = false;
             Name = "FormResetCurrentBranch";
             Padding = new Padding(5);
             StartPosition = FormStartPosition.CenterParent;

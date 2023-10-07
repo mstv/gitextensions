@@ -212,7 +212,6 @@
             Controls.Add(button1);
             FormBorderStyle = FormBorderStyle.SizableToolWindow;
             Margin = new Padding(4, 4, 4, 4);
-            MaximizeBox = false;
             Name = "GourceStart";
             SizeGripStyle = SizeGripStyle.Hide;
             StartPosition = FormStartPosition.CenterParent;

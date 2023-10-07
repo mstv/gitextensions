@@ -148,8 +148,6 @@
             Controls.Add(groupBox8);
             Controls.Add(flowLayoutPanel1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(620, 240);
             Name = "FormFixHome";
             Padding = new Padding(8);

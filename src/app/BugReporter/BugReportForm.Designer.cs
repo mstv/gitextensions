@@ -562,7 +562,6 @@
             ClientSize = new Size(558, 469);
             Controls.Add(mainTabs);
             Controls.Add(tableLayoutPanel1);
-            MinimizeBox = false;
             Name = "BugReportForm";
             Padding = new Padding(4);
             SizeGripStyle = SizeGripStyle.Show;

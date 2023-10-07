@@ -258,7 +258,6 @@ namespace GitUI.CommandsDialogs
             ClientSize = new Size(782, 555);
             Controls.Add(tableLayoutPanel1);
             Margin = new Padding(4);
-            MinimizeBox = false;
             MinimumSize = new Size(400, 200);
             Name = "FormReflog";
             StartPosition = FormStartPosition.CenterParent;

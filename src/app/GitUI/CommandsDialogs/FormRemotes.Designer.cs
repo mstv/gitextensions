@@ -719,8 +719,6 @@ namespace GitUI.CommandsDialogs
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(744, 331);
             Controls.Add(tabControl1);
-            MaximizeBox = false;
-            MinimizeBox = false;
             MinimumSize = new Size(760, 370);
             Name = "FormRemotes";
             SizeGripStyle = SizeGripStyle.Show;
