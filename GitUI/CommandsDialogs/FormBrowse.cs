@@ -27,6 +27,7 @@ using GitUI.ScriptsEngine;
 using GitUI.Shells;
 using GitUI.UserControls;
 using GitUI.UserControls.RevisionGrid;
+using GitUI.ViewModels;
 using GitUIPluginInterfaces;
 using GitUIPluginInterfaces.RepositoryHosts;
 using Microsoft;
@@ -36,6 +37,10 @@ using ResourceManager;
 
 namespace GitUI.CommandsDialogs
 {
+    public class GitOutputControl : GitExtensionsControl
+    {
+    }
+
     public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     {
         #region Mnemonics
@@ -223,6 +228,7 @@ namespace GitUI.CommandsDialogs
         private bool _fileBlameHistoryLeftPanelStartupState;
 
         private TabPage? _consoleTabPage;
+        private readonly Control _gitOutputControl;
 
         private readonly Dictionary<Brush, Icon> _overlayIconByBrush = new();
 
@@ -271,6 +277,8 @@ namespace GitUI.CommandsDialogs
 
             MainSplitContainer.Visible = false;
             MainSplitContainer.SplitterDistance = DpiUtil.Scale(260);
+
+            _gitOutputControl = CreateGitOutputControl(toolPanel.ContentPanel, LeftSplitContainer, revisionDiff.HorizontalSplitter);
 
             ThreadHelper.FileAndForget(async () =>
             {
@@ -324,6 +332,84 @@ namespace GitUI.CommandsDialogs
 
             // Application is init, the repo related operations are triggered in OnLoad()
             return;
+
+            Control CreateGitOutputControl(Panel panel, SplitContainer verticalSplitContainer, SplitContainer horizontalSplitContainer)
+            {
+                RichTextBox gitOutputControl = new()
+                {
+                    Anchor = AnchorStyles.Left | AnchorStyles.Bottom,
+                    BackColor = Color.WhiteSmoke,
+                    Font = AppSettings.FixedWidthFont,
+                    Name = nameof(gitOutputControl),
+                    ReadOnly = true,
+                    WordWrap = false
+                };
+                Control heightVictimControl = horizontalSplitContainer.Panel1.Controls[0];
+                verticalSplitContainer.Invalidated += (_, _) => SetSize();
+                horizontalSplitContainer.Invalidated += (_, _) => SetSize();
+                horizontalSplitContainer.Parent.Parent.VisibleChanged += (_, _) => SetSize();
+                horizontalSplitContainer.Parent.Parent.Parent.Parent.VisibleChanged += (_, _) => SetSize();
+                ProcessHistoryViewModel processHistoryViewModel = commands.GetRequiredService<ProcessHistoryViewModel>();
+                processHistoryViewModel.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == nameof(processHistoryViewModel.History))
+                    {
+                        Update();
+                    }
+                };
+                Update();
+
+                gitOutputControl.LinkClicked += (_, e) => OsShellUtil.OpenUrlInDefaultBrowser(e.LinkText);
+
+                panel.Controls.Add(gitOutputControl);
+                panel.Controls.SetChildIndex(gitOutputControl, 0);
+
+                return gitOutputControl;
+
+                void Update()
+                {
+                    string history = processHistoryViewModel.History;
+                    gitOutputControl.Text = history;
+                    gitOutputControl.SelectionStart = history.Length;
+                    gitOutputControl.ScrollToCaret();
+                }
+
+                void SetSize()
+                {
+                    const int margin = 6;
+                    const int offset = 1;
+                    const int h1offset = 1;
+
+                    gitOutputControl.Visible = !verticalSplitContainer.Panel2Collapsed;
+                    if (gitOutputControl.Visible)
+                    {
+                        int height = verticalSplitContainer.Panel2.Height;
+                        int width = (2 * offset) + GetWidth();
+                        gitOutputControl.SetBounds(margin, panel.Height - height - offset - margin, width, (2 * offset) + height);
+
+                        heightVictimControl.Dock = DockStyle.Top;
+                        heightVictimControl.Height = horizontalSplitContainer.Height - height;
+                    }
+                    else
+                    {
+                        heightVictimControl.Dock = DockStyle.Fill;
+                    }
+
+                    return;
+
+                    int GetWidth()
+                    {
+                        if (!horizontalSplitContainer.Visible)
+                        {
+                            return h1offset + verticalSplitContainer.Panel2.ClientSize.Width;
+                        }
+
+                        int left = verticalSplitContainer.Panel2.PointToScreen(new(horizontalSplitContainer.Panel1.ClientRectangle.Left, 0)).X;
+                        int right = horizontalSplitContainer.Panel1.PointToScreen(new(horizontalSplitContainer.Panel1.ClientRectangle.Right, 0)).X;
+                        return right - left;
+                    }
+                }
+            }
 
             void InitCountArtificial(out GitStatusMonitor gitStatusMonitor)
             {
@@ -2174,6 +2260,11 @@ namespace GitUI.CommandsDialogs
 
             void ToggleGitOutputControl()
             {
+                LeftSplitContainer.Panel2Collapsed = !LeftSplitContainer.Panel2Collapsed;
+                if (!LeftSplitContainer.Panel2Collapsed)
+                {
+                    ActiveControl = _gitOutputControl;
+                }
             }
         }
 
