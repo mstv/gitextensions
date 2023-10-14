@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -1121,7 +1120,7 @@ namespace GitCommands
         {
             if (localPath is null)
             {
-                Debug.Fail("No path for submodule - incorrectly parsed status?");
+                DebugHelpers.Fail("No path for submodule - incorrectly parsed status?");
                 return "";
             }
 

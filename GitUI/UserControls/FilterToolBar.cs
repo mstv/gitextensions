@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using GitCommands;
+using GitExtUtils;
 using GitUI.UserControls.RevisionGrid;
 using GitUIPluginInterfaces;
-using Microsoft.VisualStudio.Threading;
 
 namespace GitUI.UserControls
 {
@@ -285,7 +285,7 @@ namespace GitUI.UserControls
             {
                 if (_getRefs is null)
                 {
-                    Debug.Fail("getRefs is unexpectedly null");
+                    DebugHelpers.Fail("getRefs is unexpectedly null");
                     return;
                 }
 

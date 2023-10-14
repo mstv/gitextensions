@@ -2564,7 +2564,7 @@ namespace GitUI.CommandsDialogs
                 }
                 else
                 {
-                    Debug.Fail($"Status info for {path} ({1 + result.AllSubmodules.Count} records) has no match in current nodes ({_currentSubmoduleMenuItems.Count})");
+                    DebugHelpers.Fail($"Status info for {path} ({1 + result.AllSubmodules.Count} records) has no match in current nodes ({_currentSubmoduleMenuItems.Count})");
                 }
             }
         }
