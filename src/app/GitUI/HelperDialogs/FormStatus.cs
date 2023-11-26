@@ -169,7 +169,8 @@ namespace GitUI.HelperDialogs
 
                 _errorOccurred = !isSuccess;
 
-                if (isSuccess && (_useDialogSettings && AppSettings.CloseProcessDialog))
+                if ((isSuccess || (Module.InTheMiddleOfRebase() && !Module.InTheMiddleOfConflictedMerge() && GetOutputString().Contains("using previous resolution")))
+                    && (_useDialogSettings && AppSettings.CloseProcessDialog))
                 {
                     Close();
                 }
