@@ -246,9 +246,7 @@ namespace GitUI.CommandsDialogs
         {
             using (WaitCursorScope.Enter())
             {
-                Dictionary<string, string> envVariables = new() { { "GIT_EDITOR", "true" } };
-                FormProcess.ShowDialog(this, UICommands, arguments: Commands.ContinueRebase(), Module.WorkingDir, input: null, useDialogSettings: true,
-                                        null, chkInteractive.Checked ? null : envVariables);
+                FormProcess.ShowDialog(this, UICommands, arguments: Commands.ContinueRebase(), Module.WorkingDir, input: null, useDialogSettings: true, out string cmdOutput);
 
                 if (!Module.InTheMiddleOfRebase())
                 {
@@ -257,13 +255,9 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
-                string cmdOutput = envVariables["_output_string"];
-                if (Module.InTheMiddleOfRebase() && !Module.InTheMiddleOfConflictedMerge() && cmdOutput.Contains("using previous resolution") && cmdOutput.Trim() != "Aborted")
+                if (Module.CanContinueAction(cmdOutput))
                 {
-                    BeginInvoke((Action)(() =>
-                    {
-                        btnContinueRebase.PerformClick();
-                    }));
+                    BeginInvoke(btnContinueRebase.PerformClick);
                 }
             }
         }
@@ -385,12 +379,9 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
-                if (Module.InTheMiddleOfRebase() && !Module.InTheMiddleOfConflictedMerge() && cmdOutput.Contains("using previous resolution") && cmdOutput.Trim() != "Aborted")
+                if (Module.CanContinueAction(cmdOutput))
                 {
-                    BeginInvoke((Action)(() =>
-                    {
-                        btnContinueRebase.PerformClick();
-                    }));
+                    BeginInvoke(btnContinueRebase.PerformClick);
                 }
             }
         }

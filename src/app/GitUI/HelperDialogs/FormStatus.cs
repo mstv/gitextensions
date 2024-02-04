@@ -156,6 +156,8 @@ namespace GitUI.HelperDialogs
         {
             try
             {
+                _errorOccurred = !isSuccess;
+
                 AppendMessage("Done");
                 ProgressBar.Visible = false;
                 Ok.Enabled = true;
@@ -167,10 +169,7 @@ namespace GitUI.HelperDialogs
                 Bitmap image = isSuccess ? Images.StatusBadgeSuccess : Images.StatusBadgeError;
                 SetIcon(image);
 
-                _errorOccurred = !isSuccess;
-
-                if ((isSuccess || (Module.InTheMiddleOfRebase() && !Module.InTheMiddleOfConflictedMerge() && GetOutputString().Contains("using previous resolution")))
-                    && (_useDialogSettings && AppSettings.CloseProcessDialog))
+                if (_useDialogSettings && AppSettings.CloseProcessDialog && (isSuccess || Module.CanContinueAction(GetOutputString())))
                 {
                     Close();
                 }
