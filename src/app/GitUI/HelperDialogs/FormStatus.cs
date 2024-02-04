@@ -169,7 +169,7 @@ namespace GitUI.HelperDialogs
                 Bitmap image = isSuccess ? Images.StatusBadgeSuccess : Images.StatusBadgeError;
                 SetIcon(image);
 
-                if (_useDialogSettings && AppSettings.CloseProcessDialog && (isSuccess || Module.CanContinueAction(GetOutputString())))
+                if (isSuccess && (_useDialogSettings && AppSettings.CloseProcessDialog))
                 {
                     Close();
                 }
