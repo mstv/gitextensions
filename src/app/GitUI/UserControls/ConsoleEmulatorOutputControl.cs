@@ -43,7 +43,7 @@ namespace GitUI.UserControls
             _terminal.RunningSession?.WriteOutputTextAsync(text);
         }
 
-        public override void AppendInputFreeThreaded(string text)
+        public override void AppendInput(string text)
         {
             Validates.NotNull(_terminal);
             _terminal.RunningSession?.WriteInputTextAsync(text);

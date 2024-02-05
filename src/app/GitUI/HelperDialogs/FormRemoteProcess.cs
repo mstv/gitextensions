@@ -60,8 +60,6 @@ Do you want to register the host's fingerprint and restart the process?");
         {
             _restart = false;
             Plink = GitSshHelpers.IsPlink;
-            ShowPassword.Visible = true;
-            PasswordPanel.Visible = ShowPassword.Checked;
             base.BeforeProcessStart();
         }
 

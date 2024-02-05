@@ -104,7 +104,7 @@
             Abort.Name = "Abort";
             Abort.Size = new Size(75, 23);
             Abort.TabIndex = 1;
-            Abort.Text = "Abort";
+            Abort.Text = "&Abort";
             Abort.UseCompatibleTextRendering = true;
             Abort.UseVisualStyleBackColor = true;
             Abort.Click += Abort_Click;

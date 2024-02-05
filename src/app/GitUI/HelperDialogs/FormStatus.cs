@@ -197,11 +197,11 @@ namespace GitUI.HelperDialogs
             SetIcon(Images.StatusBadgeWaiting);
             ConsoleOutput.Reset();
             OutputLog.Clear();
-            PasswordPanel.Visible = false;
-            ShowPassword.Visible = false;
+            ShowPassword.Visible = true;
+            PasswordPanel.Visible = ShowPassword.Checked;
             ProgressBar.Visible = true;
             Ok.Enabled = false;
-            ActiveControl = null;
+            ActiveControl = Password.Visible ? Password : null;
         }
 
         private void SetIcon(Bitmap image)
@@ -286,7 +286,7 @@ namespace GitUI.HelperDialogs
         {
             if (!Ok.Enabled)
             {
-                ConsoleOutput.AppendInputFreeThreaded(Password.Text + "\n");
+                ConsoleOutput.AppendInput(Password.Text + "\n");
                 Password.Text = "";
             }
         }

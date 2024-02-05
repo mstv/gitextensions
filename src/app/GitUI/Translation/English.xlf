@@ -6355,7 +6355,7 @@ Stash them before if you don't want to lose them.</source>
         <target />
       </trans-unit>
       <trans-unit id="Abort.Text">
-        <source>Abort</source>
+        <source>&amp;Abort</source>
         <target />
       </trans-unit>
       <trans-unit id="KeepDialogOpen.Text">
@@ -7435,7 +7435,7 @@ Therefore the Cancel button does NOT revert any changes made.</source>
         <target />
       </trans-unit>
       <trans-unit id="Abort.Text">
-        <source>Abort</source>
+        <source>&amp;Abort</source>
         <target />
       </trans-unit>
       <trans-unit id="KeepDialogOpen.Text">

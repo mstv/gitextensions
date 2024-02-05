@@ -4,6 +4,7 @@ using GitCommands;
 using GitCommands.Git.Extensions;
 using GitCommands.Logging;
 using GitExtensions.Extensibility;
+using Microsoft;
 using Timer = System.Windows.Forms.Timer;
 
 namespace GitUI.UserControls
@@ -62,9 +63,10 @@ namespace GitUI.UserControls
             _outputThrottle?.Append(text);
         }
 
-        public override void AppendInputFreeThreaded(string text)
+        public override void AppendInput(string text)
         {
-            _input?.Write(text);
+            Validates.NotNull(_input);
+            _input.Write(text);
         }
 
         public override void KillProcess()
