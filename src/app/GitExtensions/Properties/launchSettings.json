@@ -4,6 +4,14 @@
       "commandName": "Project",
       "commandLineArgs": "browse ."
     },
+    "Linux repo": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\linux"
+    },
+    "Diff test": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\gerhardol_tmp_tests"
+    },
     "Dashboard": {
       "commandName": "Project"
     },
