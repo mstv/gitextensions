@@ -4,6 +4,18 @@
       "commandName": "Project",
       "commandLineArgs": "browse ."
     },
+    "Linux repo": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\linux"
+    },
+    "LFS test": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\test_lfs"
+    },
+    "Diff test": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\gerhardol_tmp_tests"
+    },
     "Dashboard": {
       "commandName": "Project"
     },
