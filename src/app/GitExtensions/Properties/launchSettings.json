@@ -4,6 +4,22 @@
       "commandName": "Project",
       "commandLineArgs": "browse ."
     },
+    "Linux repo": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\linux"
+    },
+    "LFS test": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\test_lfs"
+    },
+    "WSL test": {
+      "commandName": "Project",
+      "commandLineArgs": "browse \\\\wsl.localhost\\Ubuntu-24.04\\srv\\ge"
+    },
+    "Diff test": {
+      "commandName": "Project",
+      "commandLineArgs": "browse D:\\Build\\gerhardol_tmp_tests"
+    },
     "Dashboard": {
       "commandName": "Project"
     },
