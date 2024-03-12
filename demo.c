@@ -1,4 +1,4 @@
-    uint16 u16RdPos = 0;
+    CallFunction(6);
 #if 1
-#else
+    vDeliver();
 #endif
