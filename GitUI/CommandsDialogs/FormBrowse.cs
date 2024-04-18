@@ -2312,10 +2312,7 @@ namespace GitUI.CommandsDialogs
                 }
             }
 
-            if (AppSettings.ProcessHistoryAsTab.Value || AppSettings.ProcessHistoryDepth.Value <= 0)
-            {
-                LeftSplitContainer.Panel2Collapsed = true;
-            }
+            LeftSplitContainer.Panel2Collapsed = !AppSettings.ProcessHistoryPanelVisible.Value;
         }
 
         private void CommandsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)

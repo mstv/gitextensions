@@ -472,6 +472,7 @@ namespace GitCommands
         public static ISetting<string> ConEmuTerminal { get; } = Setting.Create(DetailedSettingsPath, nameof(ConEmuTerminal), "bash");
         public static ISetting<bool> ProcessHistoryAsTab { get; } = Setting.Create(DetailedSettingsPath, nameof(ProcessHistoryAsTab), true);
         public static ISetting<int> ProcessHistoryDepth { get; } = Setting.Create(DetailedSettingsPath, nameof(ProcessHistoryDepth), 20);
+        public static ISetting<bool> ProcessHistoryPanelVisible { get; } = Setting.Create(DetailedSettingsPath, nameof(ProcessHistoryPanelVisible), false);
         public static ISetting<bool> UseBrowseForFileHistory { get; } = Setting.Create(DetailedSettingsPath, nameof(UseBrowseForFileHistory), true);
         public static ISetting<bool> UseDiffViewerForBlame { get; } = Setting.Create(DetailedSettingsPath, nameof(UseDiffViewerForBlame), false);
         public static ISetting<bool> ShowGpgInformation { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowGpgInformation), true);

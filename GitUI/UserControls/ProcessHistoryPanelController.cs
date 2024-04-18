@@ -1,4 +1,5 @@
-﻿using GitUI.Models;
+﻿using GitCommands;
+using GitUI.Models;
 
 namespace GitUI.UserControls;
 
@@ -76,7 +77,8 @@ public partial class ProcessHistoryPanelController : ProcessHistoryControllerBas
             return false;
         }
 
-        bool show = _verticalSplitContainer.Panel2Collapsed;
+        bool show = !AppSettings.ProcessHistoryPanelVisible.Value;
+        AppSettings.ProcessHistoryPanelVisible.Value = show;
         _verticalSplitContainer.Panel2Collapsed = !show;
         if (show)
         {
