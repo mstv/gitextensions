@@ -17,7 +17,6 @@ public partial class ProcessHistoryPanelController : ProcessHistoryControllerBas
 
         if (!processHistoryModel.Enabled)
         {
-            _verticalSplitContainer.Panel2Collapsed = true;
             return;
         }
 
@@ -70,13 +69,20 @@ public partial class ProcessHistoryPanelController : ProcessHistoryControllerBas
         }
     }
 
-    public override void ToggleControl()
+    public override bool ToggleControl()
     {
-        bool show = _processHistoryModel.Enabled && _verticalSplitContainer.Panel2Collapsed;
+        if (!_processHistoryModel.Enabled)
+        {
+            return false;
+        }
+
+        bool show = _verticalSplitContainer.Panel2Collapsed;
         _verticalSplitContainer.Panel2Collapsed = !show;
         if (show)
         {
             _textBox.FindForm().ActiveControl = _textBox;
         }
+
+        return true;
     }
 }

@@ -26,7 +26,7 @@ public abstract class ProcessHistoryControllerBase : IDisposable
         _processHistoryModel.HistoryChanged -= Update;
     }
 
-    public abstract void ToggleControl();
+    public abstract bool ToggleControl();
 
     private void Update(object sender, EventArgs args)
     {

@@ -160,7 +160,7 @@ namespace GitUI.CommandsDialogs
             MainSplitContainer.Panel1.SuspendLayout();
             MainSplitContainer.Panel2.SuspendLayout();
             MainSplitContainer.SuspendLayout();
-            ((ISupportInitialize)(LeftSplitContainer)).BeginInit();
+            ((ISupportInitialize)LeftSplitContainer).BeginInit();
             LeftSplitContainer.Panel1.SuspendLayout();
             LeftSplitContainer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(RightSplitContainer)).BeginInit();
@@ -560,6 +560,7 @@ namespace GitUI.CommandsDialogs
             // LeftSplitContainer
             // 
             LeftSplitContainer.Dock = DockStyle.Fill;
+            LeftSplitContainer.FixedPanel = FixedPanel.Panel2;
             LeftSplitContainer.Location = new Point(1, 1);
             LeftSplitContainer.Margin = new Padding(0);
             LeftSplitContainer.Name = "LeftSplitContainer";
@@ -568,9 +569,6 @@ namespace GitUI.CommandsDialogs
             // LeftSplitContainer.Panel1
             // 
             LeftSplitContainer.Panel1.Controls.Add(repoObjectsTree);
-            // 
-            // LeftSplitContainer.Panel2
-            // 
             LeftSplitContainer.Panel2Collapsed = true;
             LeftSplitContainer.Panel2MinSize = 0;
             LeftSplitContainer.Size = new Size(190, 480);
@@ -1433,7 +1431,7 @@ namespace GitUI.CommandsDialogs
             ((System.ComponentModel.ISupportInitialize)(MainSplitContainer)).EndInit();
             MainSplitContainer.ResumeLayout(false);
             LeftSplitContainer.Panel1.ResumeLayout(false);
-            ((ISupportInitialize)(LeftSplitContainer)).EndInit();
+            ((ISupportInitialize)LeftSplitContainer).EndInit();
             LeftSplitContainer.ResumeLayout(false);
             RightSplitContainer.Panel1.ResumeLayout(false);
             RightSplitContainer.Panel2.ResumeLayout(false);

@@ -2135,7 +2135,7 @@ namespace GitUI.CommandsDialogs
                 case Command.GoToSuperproject: toolStripButtonLevelUp.PerformClick(); break;
                 case Command.GoToSubmodule: toolStripButtonLevelUp.ShowDropDown(); break;
                 case Command.ToggleBetweenArtificialAndHeadCommits: RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.ToggleBetweenArtificialAndHeadCommits); break;
-                case Command.ToggleHistory: _historyController.ToggleControl(); break;
+                case Command.ToggleHistory: return _historyController.ToggleControl();
                 case Command.GoToChild: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToChild)); break;
                 case Command.GoToParent: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToParent)); break;
                 case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction, isSilent: false); break;
@@ -2312,7 +2312,7 @@ namespace GitUI.CommandsDialogs
                 }
             }
 
-            if (AppSettings.ProcessHistoryAsTab.Value)
+            if (AppSettings.ProcessHistoryAsTab.Value || AppSettings.ProcessHistoryDepth.Value <= 0)
             {
                 LeftSplitContainer.Panel2Collapsed = true;
             }

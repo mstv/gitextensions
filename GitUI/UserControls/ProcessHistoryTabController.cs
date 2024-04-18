@@ -29,14 +29,15 @@ public partial class ProcessHistoryTabController : ProcessHistoryControllerBase
         _tabPage.ImageKey = nameof(Images.GitCommandLog);
     }
 
-    public override void ToggleControl()
+    public override bool ToggleControl()
     {
         if (_tabPage is null)
         {
-            return;
+            return false;
         }
 
         ((TabControl)_tabPage.Parent).SelectedTab = _tabPage;
         _tabPage.Controls[0].Focus();
+        return true;
     }
 }
