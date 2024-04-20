@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using GitUI.UserControls.Settings;
 
 namespace GitUI.CommandsDialogs.SettingsDialog.Pages
 {
@@ -40,7 +41,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             gbTabs = new GroupBox();
             _NO_TRANSLATE_ProcessHistoryDepth = new NumericUpDown();
             lblProcessHistoryDepth = new Label();
-            chkProcessHistoryAsTab = new CheckBox();
+            chkProcessHistoryAsTab = new SettingsCheckBox();
             gbGeneral.SuspendLayout();
             gbTabs.SuspendLayout();
             ((ISupportInitialize)_NO_TRANSLATE_ProcessHistoryDepth).BeginInit();
@@ -155,12 +156,17 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             // chkProcessHistoryAsTab
             // 
             chkProcessHistoryAsTab.AutoSize = true;
+            chkProcessHistoryAsTab.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            chkProcessHistoryAsTab.Checked = false;
             chkProcessHistoryAsTab.Location = new Point(9, 72);
+            chkProcessHistoryAsTab.Margin = new Padding(4, 3, 4, 3);
             chkProcessHistoryAsTab.Name = "chkProcessHistoryAsTab";
-            chkProcessHistoryAsTab.Size = new Size(247, 19);
+            chkProcessHistoryAsTab.Size = new Size(249, 19);
             chkProcessHistoryAsTab.TabIndex = 8;
             chkProcessHistoryAsTab.Text = "Process history as tab (otherwise as panel)";
-            chkProcessHistoryAsTab.UseVisualStyleBackColor = true;
+            chkProcessHistoryAsTab.ToolTipIcon = UserControls.Settings.ToolTipIcon.Information;
+            chkProcessHistoryAsTab.ToolTipText = null;
+            chkProcessHistoryAsTab.InfoClicked += chkProcessHistoryAsTab_InfoClicked;
             // 
             // FormBrowseRepoSettingsPage
             // 
@@ -191,7 +197,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
         private CheckBox chkUseDiffViewerForBlame;
         private GroupBox gbGeneral;
         private GroupBox gbTabs;
-        private CheckBox chkProcessHistoryAsTab;
+        private SettingsCheckBox chkProcessHistoryAsTab;
         private Label lblProcessHistoryDepth;
         private NumericUpDown _NO_TRANSLATE_ProcessHistoryDepth;
     }

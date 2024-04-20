@@ -1,10 +1,25 @@
 ﻿using GitCommands;
+using GitUI.Hotkey;
 using GitUI.Shells;
+using GitUIPluginInterfaces;
+using ResourceManager;
+using ResourceManager.Hotkey;
 
 namespace GitUI.CommandsDialogs.SettingsDialog.Pages
 {
     public partial class FormBrowseRepoSettingsPage : SettingsPageWithHeader
     {
+        private const string _processHistoryUrl = "https://git-extensions-documentation.readthedocs.io/settings.html#process-history-as-tab-otherwise-as-panel";
+        private readonly TranslationString _processHistoryTooltip
+            = new("""
+                  The output displayed in the process dialog and the trace output is retained and shown in the Process History.
+                  Focus the Process History or toggle its visibility using the hotkey {0}.
+                  With this set, the Process History is displayed in a tab in the lower pane of the Browse Repository window.
+                  With this unset, the Process History is displayed in a panel docked to the lower left corner of the Browse Repository window.
+                  The panel also uses some space of the file status list of the Diff tab.
+                  The panel height can be adapted using the splitter control of the Left Panel.
+                  The Process History can be disabled by setting the process history depth to 0.
+                  """);
         private readonly ShellProvider _shellProvider = new();
         private int _cboTerminalPreviousIndex = -1;
 
@@ -14,6 +29,10 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             InitializeComponent();
             cboTerminal.DisplayMember = "Name";
             InitializeComplete();
+            string hotkey = serviceProvider.GetRequiredService<IHotkeySettingsManager>()
+                .LoadHotkeys(FormBrowse.HotkeySettingsName)
+                .GetShortcutDisplay(FormBrowse.Command.ToggleHistory);
+            chkProcessHistoryAsTab.ToolTipText = string.Format(_processHistoryTooltip.Text, hotkey);
         }
 
         protected override void Init(ISettingsPageHost pageHost)
@@ -87,6 +106,11 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
         private void cboTerminal_Enter(object sender, EventArgs e)
         {
             _cboTerminalPreviousIndex = cboTerminal.SelectedIndex;
+        }
+
+        private void chkProcessHistoryAsTab_InfoClicked(object sender, EventArgs e)
+        {
+            OsShellUtil.OpenUrlInDefaultBrowser(_processHistoryUrl);
         }
     }
 }
