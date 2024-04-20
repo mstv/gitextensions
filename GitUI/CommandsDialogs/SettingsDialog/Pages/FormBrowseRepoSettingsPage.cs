@@ -14,10 +14,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             = new("""
                   The output displayed in the process dialog and the trace output is retained and shown in the Process History.
                   Focus the Process History or toggle its visibility using the hotkey {0}.
-                  With this set, the Process History is displayed in a tab in the lower pane of the Browse Repository window.
-                  With this unset, the Process History is displayed in a panel docked to the lower left corner of the Browse Repository window.
-                  The panel also uses some space of the file status list of the Diff tab.
-                  The panel height can be adapted using the splitter control of the Left Panel.
+                  - With this set, the Process History is displayed in a tab in the lower pane of the Browse Repository window.
+                  - With this unset, the Process History is displayed in a panel docked to the lower left corner of the Browse Repository window.
                   The Process History can be disabled by setting the process history depth to 0.
                   """);
         private readonly ShellProvider _shellProvider = new();
