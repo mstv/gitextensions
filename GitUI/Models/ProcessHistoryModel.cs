@@ -5,10 +5,10 @@ namespace GitUI.Models;
 
 public interface IProcessHistoryModel
 {
+    event EventHandler HistoryChanged;
+
     bool Enabled { get; }
     string History { get; }
-
-    event EventHandler HistoryChanged;
 
     void Clear();
     void Trace(in RunProcessInfo runProcess);
@@ -22,6 +22,8 @@ public sealed class ProcessHistoryModel : IProcessHistoryModel
     private const string _noExecutable = "---";
 
     private List<StringBuilder> _processHistory;
+
+    public event EventHandler HistoryChanged;
 
     public ProcessHistoryModel(in int historyDepth)
     {
@@ -48,8 +50,6 @@ public sealed class ProcessHistoryModel : IProcessHistoryModel
             return sb.ToString();
         }
     }
-
-    public event EventHandler HistoryChanged;
 
     public void Clear()
     {
