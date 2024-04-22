@@ -17,6 +17,8 @@ public class SubscribableTraceListener : TraceListener, ISubscribableTraceListen
 {
     private readonly StringBuilder _trace = new();
 
+    public event TraceHandler TraceReceived;
+
     public SubscribableTraceListener()
     {
         Trace.Listeners.Add(this);
@@ -31,8 +33,6 @@ public class SubscribableTraceListener : TraceListener, ISubscribableTraceListen
 
         base.Dispose(disposing);
     }
-
-    public event TraceHandler TraceReceived;
 
     public override void Write(string? message)
     {
