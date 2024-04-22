@@ -39,12 +39,12 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             chkUseDiffViewerForBlame = new CheckBox();
             gbGeneral = new GroupBox();
             gbTabs = new GroupBox();
-            _NO_TRANSLATE_ProcessHistoryDepth = new NumericUpDown();
-            lblProcessHistoryDepth = new Label();
-            chkProcessHistoryAsTab = new SettingsCheckBox();
+            _NO_TRANSLATE_OutputHistoryDepth = new NumericUpDown();
+            lblOutputHistoryDepth = new Label();
+            chkShowOutputHistoryAsTab = new SettingsCheckBox();
             gbGeneral.SuspendLayout();
             gbTabs.SuspendLayout();
-            ((ISupportInitialize)_NO_TRANSLATE_ProcessHistoryDepth).BeginInit();
+            ((ISupportInitialize)_NO_TRANSLATE_OutputHistoryDepth).BeginInit();
             SuspendLayout();
             // 
             // chkShowGpgInformation
@@ -123,9 +123,9 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             // gbTabs
             // 
             gbTabs.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            gbTabs.Controls.Add(_NO_TRANSLATE_ProcessHistoryDepth);
-            gbTabs.Controls.Add(lblProcessHistoryDepth);
-            gbTabs.Controls.Add(chkProcessHistoryAsTab);
+            gbTabs.Controls.Add(_NO_TRANSLATE_OutputHistoryDepth);
+            gbTabs.Controls.Add(lblOutputHistoryDepth);
+            gbTabs.Controls.Add(chkShowOutputHistoryAsTab);
             gbTabs.Controls.Add(chkShowGpgInformation);
             gbTabs.Controls.Add(chkChowConsoleTab);
             gbTabs.Location = new Point(11, 121);
@@ -135,38 +135,38 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             gbTabs.TabStop = false;
             gbTabs.Text = "Tabs (restart required)";
             // 
-            // _NO_TRANSLATE_ProcessHistoryDepth
+            // _NO_TRANSLATE_OutputHistoryDepth
             // 
-            _NO_TRANSLATE_ProcessHistoryDepth.Location = new Point(146, 92);
-            _NO_TRANSLATE_ProcessHistoryDepth.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
-            _NO_TRANSLATE_ProcessHistoryDepth.Name = "_NO_TRANSLATE_ProcessHistoryDepth";
-            _NO_TRANSLATE_ProcessHistoryDepth.Size = new Size(48, 23);
-            _NO_TRANSLATE_ProcessHistoryDepth.TabIndex = 10;
-            _NO_TRANSLATE_ProcessHistoryDepth.Value = new decimal(new int[] { 1000, 0, 0, 0 });
+            _NO_TRANSLATE_OutputHistoryDepth.Location = new Point(360, 92);
+            _NO_TRANSLATE_OutputHistoryDepth.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            _NO_TRANSLATE_OutputHistoryDepth.Name = "_NO_TRANSLATE_OutputHistoryDepth";
+            _NO_TRANSLATE_OutputHistoryDepth.Size = new Size(48, 23);
+            _NO_TRANSLATE_OutputHistoryDepth.TabIndex = 10;
+            _NO_TRANSLATE_OutputHistoryDepth.Value = new decimal(new int[] { 1000, 0, 0, 0 });
             // 
-            // lblProcessHistoryDepth
+            // lblOutputHistoryDepth
             // 
-            lblProcessHistoryDepth.AutoSize = true;
-            lblProcessHistoryDepth.Location = new Point(9, 94);
-            lblProcessHistoryDepth.Name = "lblProcessHistoryDepth";
-            lblProcessHistoryDepth.Size = new Size(123, 15);
-            lblProcessHistoryDepth.TabIndex = 9;
-            lblProcessHistoryDepth.Text = "Process history depth:";
+            lblOutputHistoryDepth.AutoSize = true;
+            lblOutputHistoryDepth.Location = new Point(9, 94);
+            lblOutputHistoryDepth.Name = "lblOutputHistoryDepth";
+            lblOutputHistoryDepth.Size = new Size(192, 15);
+            lblOutputHistoryDepth.TabIndex = 9;
+            lblOutputHistoryDepth.Text = "Output history depth (0 to disable):";
             // 
-            // chkProcessHistoryAsTab
+            // chkShowOutputHistoryAsTab
             // 
-            chkProcessHistoryAsTab.AutoSize = true;
-            chkProcessHistoryAsTab.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            chkProcessHistoryAsTab.Checked = false;
-            chkProcessHistoryAsTab.Location = new Point(9, 72);
-            chkProcessHistoryAsTab.Margin = new Padding(4, 3, 4, 3);
-            chkProcessHistoryAsTab.Name = "chkProcessHistoryAsTab";
-            chkProcessHistoryAsTab.Size = new Size(249, 19);
-            chkProcessHistoryAsTab.TabIndex = 8;
-            chkProcessHistoryAsTab.Text = "Process history as tab (otherwise as panel)";
-            chkProcessHistoryAsTab.ToolTipIcon = UserControls.Settings.ToolTipIcon.Information;
-            chkProcessHistoryAsTab.ToolTipText = null;
-            chkProcessHistoryAsTab.InfoClicked += chkProcessHistoryAsTab_InfoClicked;
+            chkShowOutputHistoryAsTab.AutoSize = true;
+            chkShowOutputHistoryAsTab.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            chkShowOutputHistoryAsTab.Checked = false;
+            chkShowOutputHistoryAsTab.Location = new Point(9, 72);
+            chkShowOutputHistoryAsTab.Margin = new Padding(4, 3, 4, 3);
+            chkShowOutputHistoryAsTab.Name = "chkShowOutputHistoryAsTab";
+            chkShowOutputHistoryAsTab.Size = new Size(277, 19);
+            chkShowOutputHistoryAsTab.TabIndex = 8;
+            chkShowOutputHistoryAsTab.Text = "Show output history as tab (otherwise as panel)";
+            chkShowOutputHistoryAsTab.ToolTipIcon = UserControls.Settings.ToolTipIcon.Information;
+            chkShowOutputHistoryAsTab.ToolTipText = null;
+            chkShowOutputHistoryAsTab.InfoClicked += chkProcessHistoryAsTab_InfoClicked;
             // 
             // FormBrowseRepoSettingsPage
             // 
@@ -182,7 +182,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             gbGeneral.PerformLayout();
             gbTabs.ResumeLayout(false);
             gbTabs.PerformLayout();
-            ((ISupportInitialize)_NO_TRANSLATE_ProcessHistoryDepth).EndInit();
+            ((ISupportInitialize)_NO_TRANSLATE_OutputHistoryDepth).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -197,8 +197,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
         private CheckBox chkUseDiffViewerForBlame;
         private GroupBox gbGeneral;
         private GroupBox gbTabs;
-        private SettingsCheckBox chkProcessHistoryAsTab;
-        private Label lblProcessHistoryDepth;
-        private NumericUpDown _NO_TRANSLATE_ProcessHistoryDepth;
+        private SettingsCheckBox chkShowOutputHistoryAsTab;
+        private Label lblOutputHistoryDepth;
+        private NumericUpDown _NO_TRANSLATE_OutputHistoryDepth;
     }
 }

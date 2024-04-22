@@ -48,9 +48,9 @@ namespace GitUI.CommandsDialogs
             // Populate terminal tab after translation within InitializeComplete
             FillTerminalTab();
 
-            _historyController = AppSettings.ProcessHistoryAsTab.Value
+            _outputHistoryController = AppSettings.ProcessHistoryAsTab.Value
                 ? new ProcessHistoryTabController(UICommands.GetRequiredService<IProcessHistoryModel>(), new ProcessHistoryControl(),
-                    parent: CommitInfoTabControl, tabCaption: _historyTabCaption.Text)
+                    parent: CommitInfoTabControl, tabCaption: _outputHistoryTabCaption.Text)
                 : new ProcessHistoryPanelController(UICommands.GetRequiredService<IProcessHistoryModel>(), new ProcessHistoryControl(),
                     parent: toolPanel.ContentPanel, verticalSplitContainer: LeftSplitContainer, horizontalSplitContainer: revisionDiff.HorizontalSplitter);
         }

@@ -10,13 +10,14 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
     public partial class FormBrowseRepoSettingsPage : SettingsPageWithHeader
     {
         private const string _processHistoryUrl = "https://git-extensions-documentation.readthedocs.io/settings.html#process-history-as-tab-otherwise-as-panel";
-        private readonly TranslationString _processHistoryTooltip
+        private readonly TranslationString _outputHistoryTooltip
             = new("""
-                  The output displayed in the process dialog and the trace output is retained and shown in the Process History.
-                  Focus the Process History or toggle its visibility using the hotkey {0}.
-                  - With this set, the Process History is displayed in a tab in the lower pane of the Browse Repository window.
-                  - With this unset, the Process History is displayed in a panel docked to the lower left corner of the Browse Repository window.
-                  The Process History can be disabled by setting the process history depth to 0.
+                  The output displayed in the process dialog and some trace output is retained and shown in the output history.
+
+                  - With this set, the output history is displayed in a tab in the lower pane of the Browse Repository window.
+                  - With this unset, the output history is displayed in a panel docked to the lower left corner of the Browse Repository window.
+
+                  Focus the output history or toggle the panel visibility using the hotkey {0}.
                   """);
         private readonly ShellProvider _shellProvider = new();
         private int _cboTerminalPreviousIndex = -1;
@@ -29,8 +30,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             InitializeComplete();
             string hotkey = serviceProvider.GetRequiredService<IHotkeySettingsManager>()
                 .LoadHotkeys(FormBrowse.HotkeySettingsName)
-                .GetShortcutDisplay(FormBrowse.Command.ToggleHistory);
-            chkProcessHistoryAsTab.ToolTipText = string.Format(_processHistoryTooltip.Text, hotkey);
+                .GetShortcutDisplay(FormBrowse.Command.ToggleAndFocusOutputHistory);
+            chkShowOutputHistoryAsTab.ToolTipText = string.Format(_outputHistoryTooltip.Text, hotkey);
         }
 
         protected override void Init(ISettingsPageHost pageHost)
@@ -45,13 +46,13 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             AppSettings.UseDiffViewerForBlame.Value = chkUseDiffViewerForBlame.Checked;
             AppSettings.ShowGpgInformation.Value = chkShowGpgInformation.Checked;
 
-            int processHistoryDepth = (int)_NO_TRANSLATE_ProcessHistoryDepth.Value;
-            bool changed = AppSettings.ProcessHistoryAsTab.Value != chkProcessHistoryAsTab.Checked || AppSettings.ProcessHistoryDepth.Value != processHistoryDepth;
+            int processHistoryDepth = (int)_NO_TRANSLATE_OutputHistoryDepth.Value;
+            bool changed = AppSettings.ProcessHistoryAsTab.Value != chkShowOutputHistoryAsTab.Checked || AppSettings.ProcessHistoryDepth.Value != processHistoryDepth;
             if (changed)
             {
-                AppSettings.ProcessHistoryAsTab.Value = chkProcessHistoryAsTab.Checked;
+                AppSettings.ProcessHistoryAsTab.Value = chkShowOutputHistoryAsTab.Checked;
                 AppSettings.ProcessHistoryDepth.Value = processHistoryDepth;
-                AppSettings.ProcessHistoryPanelVisible.Value = !chkProcessHistoryAsTab.Checked && processHistoryDepth > 0;
+                AppSettings.ProcessHistoryPanelVisible.Value = !chkShowOutputHistoryAsTab.Checked && processHistoryDepth > 0;
             }
 
             AppSettings.ConEmuTerminal.Value = ((IShellDescriptor)cboTerminal.SelectedItem).Name.ToLowerInvariant();
@@ -64,8 +65,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             chkUseBrowseForFileHistory.Checked = AppSettings.UseBrowseForFileHistory.Value;
             chkUseDiffViewerForBlame.Checked = AppSettings.UseDiffViewerForBlame.Value;
             chkShowGpgInformation.Checked = AppSettings.ShowGpgInformation.Value;
-            chkProcessHistoryAsTab.Checked = AppSettings.ProcessHistoryAsTab.Value;
-            _NO_TRANSLATE_ProcessHistoryDepth.Value = Math.Clamp(AppSettings.ProcessHistoryDepth.Value, _NO_TRANSLATE_ProcessHistoryDepth.Minimum, _NO_TRANSLATE_ProcessHistoryDepth.Maximum);
+            chkShowOutputHistoryAsTab.Checked = AppSettings.ProcessHistoryAsTab.Value;
+            _NO_TRANSLATE_OutputHistoryDepth.Value = Math.Clamp(AppSettings.ProcessHistoryDepth.Value, _NO_TRANSLATE_OutputHistoryDepth.Minimum, _NO_TRANSLATE_OutputHistoryDepth.Maximum);
 
             foreach (IShellDescriptor shell in _shellProvider.GetShells())
             {

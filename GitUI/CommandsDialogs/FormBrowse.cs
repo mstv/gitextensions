@@ -194,7 +194,7 @@ namespace GitUI.CommandsDialogs
 
         private readonly TranslationString _buildReportTabCaption = new("Build Report");
         private readonly TranslationString _consoleTabCaption = new("Console");
-        private readonly TranslationString _historyTabCaption = new("History");
+        private readonly TranslationString _outputHistoryTabCaption = new("Output");
 
         private readonly TranslationString _noWorkingFolderText = new("No working directory");
         private readonly TranslationString _commitButtonText = new("Commit");
@@ -226,7 +226,7 @@ namespace GitUI.CommandsDialogs
         private bool _fileBlameHistoryLeftPanelStartupState;
 
         private TabPage? _consoleTabPage;
-        private ProcessHistoryControllerBase _historyController;
+        private ProcessHistoryControllerBase _outputHistoryController;
 
         private readonly Dictionary<Brush, Icon> _overlayIconByBrush = [];
 
@@ -1956,7 +1956,7 @@ namespace GitUI.CommandsDialogs
 
             FocusFilter = 18,
 
-            ToggleHistory = 47,
+            ToggleAndFocusOutputHistory = 47,
             ToggleLeftPanel = 21,
 
             // START menu
@@ -2135,7 +2135,7 @@ namespace GitUI.CommandsDialogs
                 case Command.GoToSuperproject: toolStripButtonLevelUp.PerformClick(); break;
                 case Command.GoToSubmodule: toolStripButtonLevelUp.ShowDropDown(); break;
                 case Command.ToggleBetweenArtificialAndHeadCommits: RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.ToggleBetweenArtificialAndHeadCommits); break;
-                case Command.ToggleHistory: return _historyController.ToggleControl();
+                case Command.ToggleAndFocusOutputHistory: return _outputHistoryController.ToggleControl();
                 case Command.GoToChild: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToChild)); break;
                 case Command.GoToParent: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToParent)); break;
                 case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction, isSilent: false); break;

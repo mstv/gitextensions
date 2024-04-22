@@ -2355,10 +2355,6 @@ compare with first:</source>
         <source>Go to superproject</source>
         <target />
       </trans-unit>
-      <trans-unit id="_historyTabCaption.Text">
-        <source>History</source>
-        <target />
-      </trans-unit>
       <trans-unit id="_indexLockCantDelete.Text">
         <source>Failed to delete index.lock</source>
         <target />
@@ -2381,6 +2377,10 @@ compare with first:</source>
       </trans-unit>
       <trans-unit id="_noWorkingFolderText.Text">
         <source>No working directory</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_outputHistoryTabCaption.Text">
+        <source>Output</source>
         <target />
       </trans-unit>
       <trans-unit id="_pullFetch.Text">
@@ -3009,24 +3009,25 @@ Do you want to continue?</source>
         <source>Browse repository window</source>
         <target />
       </trans-unit>
-      <trans-unit id="_processHistoryTooltip.Text">
-        <source>The output displayed in the process dialog and the trace output is retained and shown in the Process History.
-Focus the Process History or toggle its visibility using the hotkey {0}.
-- With this set, the Process History is displayed in a tab in the lower pane of the Browse Repository window.
-- With this unset, the Process History is displayed in a panel docked to the lower left corner of the Browse Repository window.
-The Process History can be disabled by setting the process history depth to 0.</source>
+      <trans-unit id="_outputHistoryTooltip.Text">
+        <source>The output displayed in the process dialog and some trace output is retained and shown in the output history.
+
+- With this set, the output history is displayed in a tab in the lower pane of the Browse Repository window.
+- With this unset, the output history is displayed in a panel docked to the lower left corner of the Browse Repository window.
+
+Focus the output history or toggle the panel visibility using the hotkey {0}.</source>
         <target />
       </trans-unit>
       <trans-unit id="chkChowConsoleTab.Text">
         <source>Show the Console tab</source>
         <target />
       </trans-unit>
-      <trans-unit id="chkProcessHistoryAsTab.Text">
-        <source>Process history as tab (otherwise as panel)</source>
-        <target />
-      </trans-unit>
       <trans-unit id="chkShowGpgInformation.Text">
         <source>Show GPG information</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="chkShowOutputHistoryAsTab.Text">
+        <source>Show output history as tab (otherwise as panel)</source>
         <target />
       </trans-unit>
       <trans-unit id="chkUseBrowseForFileHistory.Text">
@@ -3049,8 +3050,8 @@ The Process History can be disabled by setting the process history depth to 0.</
         <source>Default shell</source>
         <target />
       </trans-unit>
-      <trans-unit id="lblProcessHistoryDepth.Text">
-        <source>Process history depth:</source>
+      <trans-unit id="lblOutputHistoryDepth.Text">
+        <source>Output history depth (0 to disable):</source>
         <target />
       </trans-unit>
     </body>
