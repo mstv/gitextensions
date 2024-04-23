@@ -17,7 +17,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
                   - With this set, the output history is displayed in a tab in the lower pane of the Browse Repository window.
                   - With this unset, the output history is displayed in a panel docked to the lower left corner of the Browse Repository window.
 
-                  Focus the output history or toggle the panel visibility using the hotkey {0}.
+                  Focus the output history and (when displayed as panel) toggle its visibility using the hotkey {0}.
                   """);
         private readonly ShellProvider _shellProvider = new();
         private int _cboTerminalPreviousIndex = -1;
@@ -30,7 +30,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             InitializeComplete();
             string hotkey = serviceProvider.GetRequiredService<IHotkeySettingsManager>()
                 .LoadHotkeys(FormBrowse.HotkeySettingsName)
-                .GetShortcutDisplay(FormBrowse.Command.ToggleAndFocusOutputHistory);
+                .GetShortcutDisplay(FormBrowse.Command.FocusOutputHistoryAndToggleIfPanel);
             chkShowOutputHistoryAsTab.ToolTipText = string.Format(_outputHistoryTooltip.Text, hotkey);
         }
 

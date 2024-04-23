@@ -1951,12 +1951,12 @@ namespace GitUI.CommandsDialogs
             FocusGpgInfo = 26,
             FocusGitConsole = 29,
             FocusBuildServerStatus = 30,
+            FocusOutputHistoryAndToggleIfPanel = 47,
             FocusNextTab = 31,
             FocusPrevTab = 32,
 
             FocusFilter = 18,
 
-            ToggleAndFocusOutputHistory = 47,
             ToggleLeftPanel = 21,
 
             // START menu
@@ -2135,7 +2135,7 @@ namespace GitUI.CommandsDialogs
                 case Command.GoToSuperproject: toolStripButtonLevelUp.PerformClick(); break;
                 case Command.GoToSubmodule: toolStripButtonLevelUp.ShowDropDown(); break;
                 case Command.ToggleBetweenArtificialAndHeadCommits: RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.ToggleBetweenArtificialAndHeadCommits); break;
-                case Command.ToggleAndFocusOutputHistory: return _outputHistoryController.ToggleControl();
+                case Command.FocusOutputHistoryAndToggleIfPanel: return _outputHistoryController.ToggleControl();
                 case Command.GoToChild: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToChild)); break;
                 case Command.GoToParent: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToParent)); break;
                 case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction, isSilent: false); break;
