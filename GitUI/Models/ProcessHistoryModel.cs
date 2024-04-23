@@ -63,7 +63,8 @@ public sealed class ProcessHistoryModel : IProcessHistoryModel
 
     public void Trace(in string message)
     {
-        Add(new StringBuilder().Append(DateTime.Now.ToShortTimeString()).Append(' ').AppendLine(message));
+        string time = DateTime.Now.ToShortTimeString();
+        Add(new StringBuilder(time, capacity: time.Length + 1 + message.Length).Append(' ').AppendLine(message));
     }
 
     public void Trace(in Exception exception)
