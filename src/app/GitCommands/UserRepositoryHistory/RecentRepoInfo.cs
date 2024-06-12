@@ -42,6 +42,7 @@
     public class RecentRepoSplitter
     {
         public int MaxPinnedRepositories { get; set; }
+        public bool HidePinnedFromRecentList { get; set; }
         public ShorteningRecentRepoPathStrategy ShorteningStrategy { get; set; }
         public bool SortPinnedRepos { get; set; }
         public bool SortAllRecentRepos { get; set; }
@@ -52,6 +53,7 @@
         public RecentRepoSplitter()
         {
             MaxPinnedRepositories = AppSettings.MaxPinnedRepositories;
+            HidePinnedFromRecentList = AppSettings.HidePinnedFromRecentList;
             ShorteningStrategy = AppSettings.ShorteningRecentRepoPathStrategy;
             SortPinnedRepos = AppSettings.SortPinnedRepos;
             SortAllRecentRepos = AppSettings.SortAllRecentRepos;
@@ -81,7 +83,10 @@
                     pinnedRepos.Add(ri);
                 }
 
-                allRecentRepos.Add(ri);
+                if (!HidePinnedFromRecentList || !ri.MostRecent)
+                {
+                    allRecentRepos.Add(ri);
+                }
 
                 if (middleDot)
                 {

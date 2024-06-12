@@ -331,6 +331,7 @@ namespace GitCommandsTests.Settings
                 yield return (properties[nameof(AppSettings.RecursiveSubmodules)], 1, false, false);
                 yield return (properties[nameof(AppSettings.ShorteningRecentRepoPathStrategy)], ShorteningRecentRepoPathStrategy.None, false, false);
                 yield return (properties[nameof(AppSettings.MaxPinnedRepositories)], 0, false, false);
+                yield return (properties[nameof(AppSettings.HidePinnedFromRecentList)], false, false, false);
                 yield return (properties[nameof(AppSettings.RecentRepositoriesHistorySize)], 30, false, false);
                 yield return (properties[nameof(AppSettings.RecentReposComboMinWidth)], 0, false, false);
                 yield return (properties[nameof(AppSettings.SerializedHotkeys)], null, true, false);

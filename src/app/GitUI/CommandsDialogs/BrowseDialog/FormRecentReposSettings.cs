@@ -30,6 +30,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
             SetShorteningStrategy(AppSettings.ShorteningRecentRepoPathStrategy);
             sortPinnedRepos.Checked = AppSettings.SortPinnedRepos;
             sortAllRecentRepos.Checked = AppSettings.SortAllRecentRepos;
+            hidePinnedFromRecentList.Checked = AppSettings.HidePinnedFromRecentList;
             comboMinWidthEdit.Value = AppSettings.RecentReposComboMinWidth;
             SetNumericUpDownValue(_NO_TRANSLATE_maxRecentRepositories, AppSettings.MaxPinnedRepositories);
             SetNumericUpDownValue(_NO_TRANSLATE_RecentRepositoriesHistorySize, AppSettings.RecentRepositoriesHistorySize);
@@ -68,6 +69,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
 
             AppSettings.ShorteningRecentRepoPathStrategy = GetShorteningStrategy();
             AppSettings.SortPinnedRepos = sortPinnedRepos.Checked;
+            AppSettings.HidePinnedFromRecentList = hidePinnedFromRecentList.Checked;
             AppSettings.SortAllRecentRepos = sortAllRecentRepos.Checked;
             AppSettings.MaxPinnedRepositories = (int)_NO_TRANSLATE_maxRecentRepositories.Value;
             AppSettings.RecentReposComboMinWidth = (int)comboMinWidthEdit.Value;
@@ -114,6 +116,7 @@ namespace GitUI.CommandsDialogs.BrowseDialog
                 RecentRepoSplitter splitter = new()
                 {
                     MaxPinnedRepositories = (int)_NO_TRANSLATE_maxRecentRepositories.Value,
+                    HidePinnedFromRecentList = hidePinnedFromRecentList.Checked,
                     ShorteningStrategy = GetShorteningStrategy(),
                     SortAllRecentRepos = sortAllRecentRepos.Checked,
                     SortPinnedRepos = sortPinnedRepos.Checked,

@@ -1690,6 +1690,12 @@ namespace GitCommands
             set => SetInt("history size", value);
         }
 
+        public static bool HidePinnedFromRecentList
+        {
+            get => GetBool("HidePinnedFromRecentList", false);
+            set => SetBool("HidePinnedFromRecentList", value);
+        }
+
         // (Currently) hidden configuration
         public static int RemotesCacheLength
         {
