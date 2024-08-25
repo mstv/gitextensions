@@ -226,11 +226,22 @@ public abstract class DiffHighlightService : TextHighlightService
 
     private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, Func<ISegment, string> getText, IReadOnlyList<ISegment> linesRemoved, IReadOnlyList<ISegment> linesAdded, int beginOffset)
     {
-        foreach ((ISegment lineRemoved, ISegment lineAdded) in LinesMatcher.FindLinePairs(getText, linesRemoved, linesAdded))
+        foreach ((ISegment? lineRemoved, ISegment? lineAdded) in LinesMatcher.FindLinePairs(getText, linesRemoved, linesAdded))
         {
-            foreach (TextMarker marker in GetDifferenceMarkers(getCharAt, lineRemoved, lineAdded, beginOffset))
+            if (lineRemoved is not null && lineAdded is not null)
             {
-                yield return marker;
+                foreach (TextMarker marker in GetDifferenceMarkers(getCharAt, lineRemoved, lineAdded, beginOffset))
+                {
+                    yield return marker;
+                }
+            }
+            else if (lineRemoved is null)
+            {
+                yield return CreateTextMarker(lineAdded.Offset + beginOffset, lineAdded.Length - beginOffset, AppColor.AnsiTerminalGreenBackBold.GetThemeColor());
+            }
+            else if (lineAdded is null)
+            {
+                yield return CreateTextMarker(lineRemoved.Offset + beginOffset, lineRemoved.Length - beginOffset, AppColor.AnsiTerminalRedBackBold.GetThemeColor());
             }
         }
     }
@@ -290,12 +301,10 @@ public abstract class DiffHighlightService : TextHighlightService
         {
             yield return CreateTextMarker(lineRemoved.Offset + beginOffset, removedLength, AppColor.AnsiTerminalRedBackBold.GetThemeColor());
         }
-
-        yield break;
-
-        static TextMarker CreateTextMarker(int offset, int length, Color color)
-            => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
     }
+
+    private static TextMarker CreateTextMarker(int offset, int length, Color color)
+        => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
 
     private void AddExtraPatchHighlighting(IDocument document)
     {

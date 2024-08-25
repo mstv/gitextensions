@@ -6,7 +6,7 @@ namespace GitUI.Editor.Diff;
 
 internal static class LinesMatcher
 {
-    internal static IEnumerable<(ISegment RemovedLine, ISegment AddedLine)> FindLinePairs(
+    internal static IEnumerable<(ISegment? RemovedLine, ISegment? AddedLine)> FindLinePairs(
         Func<ISegment, string> getText, IReadOnlyList<ISegment> removedLines, IReadOnlyList<ISegment> addedLines)
     {
         int numberOfCombinations = removedLines.Count * addedLines.Count;
@@ -31,21 +31,33 @@ internal static class LinesMatcher
         LineData[] removed = removedLines.Select(line => new LineData(line, getText(line))).ToArray();
         LineData[] added = addedLines.Select(line => new LineData(line, getText(line))).ToArray();
 
-        foreach ((ISegment, ISegment) linePair in FindLinePairs(removed, added))
+        foreach ((ISegment?, ISegment?) linePair in FindLinePairs(removed, added))
         {
             yield return linePair;
         }
     }
 
-    private static IEnumerable<(ISegment RemovedLine, ISegment AddedLine)> FindLinePairs(LineData[] removed, LineData[] added)
+    private static IEnumerable<(ISegment? RemovedLine, ISegment? AddedLine)> FindLinePairs(LineData[] removed, LineData[] added)
     {
         (int removedIndex, int addedIndex) = FindBestMatch(removed, added);
 
         if (removedIndex > 0 && addedIndex > 0)
         {
-            foreach ((ISegment, ISegment) linePair in FindLinePairs(removed[0..removedIndex], added[0..addedIndex]))
+            foreach ((ISegment?, ISegment?) linePair in FindLinePairs(removed[0..removedIndex], added[0..addedIndex]))
             {
                 yield return linePair;
+            }
+        }
+        else
+        {
+            foreach (LineData unmatchedRemoved in removed[0..removedIndex])
+            {
+                yield return (unmatchedRemoved.Line, AddedLine: null);
+            }
+
+            foreach (LineData unmatchedAdded in added[0..addedIndex])
+            {
+                yield return (RemovedLine: null, unmatchedAdded.Line);
             }
         }
 
@@ -55,9 +67,21 @@ internal static class LinesMatcher
         ++addedIndex;
         if (removedIndex < removed.Length && addedIndex < added.Length)
         {
-            foreach ((ISegment, ISegment) linePair in FindLinePairs(removed[removedIndex..], added[addedIndex..]))
+            foreach ((ISegment?, ISegment?) linePair in FindLinePairs(removed[removedIndex..], added[addedIndex..]))
             {
                 yield return linePair;
+            }
+        }
+        else
+        {
+            foreach (LineData unmatchedRemoved in removed[removedIndex..])
+            {
+                yield return (unmatchedRemoved.Line, AddedLine: null);
+            }
+
+            foreach (LineData unmatchedAdded in added[addedIndex..])
+            {
+                yield return (RemovedLine: null, unmatchedAdded.Line);
             }
         }
     }
