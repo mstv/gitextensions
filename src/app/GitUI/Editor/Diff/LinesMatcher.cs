@@ -91,7 +91,8 @@ internal static class LinesMatcher
             }
         }
 
-        return (removedMaxScoreIndex, addedMaxScoreIndex);
+        const float insignificantWordMatchScore = 0.1f;
+        return maxScore <= insignificantWordMatchScore ? (0, 0) : (removedMaxScoreIndex, addedMaxScoreIndex);
 
         static float GetWordMatchScore(LineData r, LineData a)
         {
