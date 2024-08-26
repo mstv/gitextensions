@@ -235,11 +235,12 @@ public abstract class DiffHighlightService : TextHighlightService
         }
     }
 
-    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, ISegment lineRemoved, ISegment lineAdded, int beginOffset)
+    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, ISegment lineRemoved, ISegment lineAdded, int lineStartOffset)
     {
         int lineRemovedEndOffset = lineRemoved.Length;
         int lineAddedEndOffset = lineAdded.Length;
         int endOffsetMin = Math.Min(lineRemovedEndOffset, lineAddedEndOffset);
+        int beginOffset = lineStartOffset;
         int reverseOffset = 0;
 
         while (beginOffset < endOffsetMin)
@@ -282,16 +283,57 @@ public abstract class DiffHighlightService : TextHighlightService
         int addedLength = lineAdded.Length - beginOffset - reverseOffset;
         if (addedLength > 0)
         {
-            yield return CreateTextMarker(lineAdded.Offset + beginOffset, addedLength, AppColor.AnsiTerminalGreenBackBold.GetThemeColor());
+            int beforeLength = beginOffset - lineStartOffset;
+            if (beforeLength > 0)
+            {
+                yield return CreateUnmarker(lineAdded.Offset + lineStartOffset, beforeLength);
+            }
+
+            int afterBegin = beginOffset + addedLength;
+            int afterLength = lineAdded.Length - afterBegin;
+            if (afterLength > 0)
+            {
+                yield return CreateUnmarker(lineAdded.Offset + afterBegin, afterLength);
+            }
+        }
+        else
+        {
+            int length = lineAdded.Length - lineStartOffset;
+            if (length > 0)
+            {
+                yield return CreateUnmarker(lineAdded.Offset + lineStartOffset, length);
+            }
         }
 
         int removedLength = lineRemoved.Length - beginOffset - reverseOffset;
         if (removedLength > 0)
         {
-            yield return CreateTextMarker(lineRemoved.Offset + beginOffset, removedLength, AppColor.AnsiTerminalRedBackBold.GetThemeColor());
+            int beforeLength = beginOffset - lineStartOffset;
+            if (beforeLength > 0)
+            {
+                yield return CreateUnmarker(lineRemoved.Offset + lineStartOffset, beforeLength);
+            }
+
+            int afterBegin = beginOffset + removedLength;
+            int afterLength = lineRemoved.Length - afterBegin;
+            if (afterLength > 0)
+            {
+                yield return CreateUnmarker(lineRemoved.Offset + afterBegin, afterLength);
+            }
+        }
+        else
+        {
+            int length = lineRemoved.Length - lineStartOffset;
+            if (length > 0)
+            {
+                yield return CreateUnmarker(lineRemoved.Offset + lineStartOffset, length);
+            }
         }
 
         yield break;
+
+        static TextMarker CreateUnmarker(int offset, int length)
+            => CreateTextMarker(offset, length, AppColor.AnsiTerminalWhiteBackBold.GetThemeColor());
 
         static TextMarker CreateTextMarker(int offset, int length, Color color)
             => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
