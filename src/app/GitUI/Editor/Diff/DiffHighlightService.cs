@@ -218,119 +218,99 @@ public abstract class DiffHighlightService : TextHighlightService
         MarkerStrategy markerStrategy = document.MarkerStrategy;
 
         Func<ISegment, string> getText = line => document.GetText(line.Offset + beginOffset, line.Length - beginOffset);
-        foreach (TextMarker marker in GetDifferenceMarkers(document.GetCharAt, getText, linesRemoved, linesAdded, beginOffset))
+        foreach (TextMarker marker in GetDifferenceMarkers(getText, linesRemoved, linesAdded, beginOffset))
         {
             markerStrategy.AddMarker(marker);
         }
     }
 
-    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, Func<ISegment, string> getText, IReadOnlyList<ISegment> linesRemoved, IReadOnlyList<ISegment> linesAdded, int beginOffset)
+    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<ISegment, string> getText, IReadOnlyList<ISegment> linesRemoved, IReadOnlyList<ISegment> linesAdded, int beginOffset)
     {
         foreach ((ISegment lineRemoved, ISegment lineAdded) in LinesMatcher.FindLinePairs(getText, linesRemoved, linesAdded))
         {
-            foreach (TextMarker marker in GetDifferenceMarkers(getCharAt, lineRemoved, lineAdded, beginOffset))
+            foreach (TextMarker marker in GetDifferenceMarkers(getText, lineRemoved, lineAdded, beginOffset))
             {
                 yield return marker;
             }
         }
     }
 
-    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, ISegment lineRemoved, ISegment lineAdded, int lineStartOffset)
+    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<ISegment, string> getText, ISegment lineRemoved, ISegment lineAdded, int lineStartOffset)
     {
-        int lineRemovedEndOffset = lineRemoved.Length;
-        int lineAddedEndOffset = lineAdded.Length;
-        int endOffsetMin = Math.Min(lineRemovedEndOffset, lineAddedEndOffset);
-        int beginOffset = lineStartOffset;
-        int reverseOffset = 0;
+        string textRemoved = getText(lineRemoved);
+        string textAdded = getText(lineAdded);
+        int endRemoved = textRemoved.Length;
+        int endAdded = textAdded.Length;
+        int startIndexRemoved = 0;
+        int startIndexAdded = 0;
 
-        while (beginOffset < endOffsetMin)
+        while (startIndexRemoved < endRemoved && startIndexAdded < endAdded)
         {
-            char a = getCharAt(lineAdded.Offset + beginOffset);
-            char r = getCharAt(lineRemoved.Offset + beginOffset);
-
-            if (a != r)
+            // find end of identical part
+            int endIndexIdenticalRemoved = startIndexRemoved;
+            int endIndexIdenticalAdded = startIndexAdded;
+            while (endIndexIdenticalRemoved < endRemoved && endIndexIdenticalAdded < endAdded
+                && textRemoved[endIndexIdenticalRemoved] == textAdded[endIndexIdenticalAdded])
             {
-                break;
+                ++endIndexIdenticalRemoved;
+                ++endIndexIdenticalAdded;
             }
 
-            beginOffset++;
-        }
-
-        while (lineAddedEndOffset >= beginOffset && lineRemovedEndOffset >= beginOffset)
-        {
-            reverseOffset = lineAdded.Length - lineAddedEndOffset;
-
-            int addedOffset = lineAdded.Length - 1 - reverseOffset;
-            int removedOffset = lineRemoved.Length - 1 - reverseOffset;
-
-            if (addedOffset < beginOffset || removedOffset < beginOffset)
+            int lengthIdentical = endIndexIdenticalRemoved - startIndexRemoved;
+            if (lengthIdentical > 0)
             {
-                break;
+                yield return CreatePaleMarker(lineRemoved.Offset + lineStartOffset + startIndexRemoved, lengthIdentical, GetRemovedBackColor());
+                yield return CreatePaleMarker(lineAdded.Offset + lineStartOffset + startIndexAdded, lengthIdentical, GetAddedBackColor());
+                startIndexRemoved = endIndexIdenticalRemoved;
+                startIndexAdded = endIndexIdenticalAdded;
             }
 
-            char a = getCharAt(lineAdded.Offset + addedOffset);
-            char r = getCharAt(lineRemoved.Offset + removedOffset);
+            // match on next word
+            int endIndexDifferentRemoved;
+            int endIndexDifferentAdded;
 
-            if (a != r)
+            (string Word, int Offset)[] wordsRemoved = LinesMatcher.GetWords(textRemoved[startIndexRemoved..]).ToArray();
+            (string? commonWord, int offsetOfWordAdded) = LinesMatcher.GetWords(textAdded[startIndexAdded..])
+                .IntersectBy(wordsRemoved.Select(LinesMatcher.SelectWord), LinesMatcher.SelectWord)
+                .FirstOrDefault();
+            if (commonWord is not null)
             {
-                break;
+                endIndexDifferentRemoved = startIndexRemoved + wordsRemoved.First(pair => pair.Word == commonWord).Offset;
+                endIndexDifferentAdded = startIndexAdded + offsetOfWordAdded;
             }
-
-            lineRemovedEndOffset--;
-            lineAddedEndOffset--;
-        }
-
-        int addedLength = lineAdded.Length - beginOffset - reverseOffset;
-        if (addedLength > 0)
-        {
-            int beforeLength = beginOffset - lineStartOffset;
-            if (beforeLength > 0)
+            else
             {
-                yield return CreatePaleMarker(lineAdded.Offset + lineStartOffset, beforeLength, GetAddedBackColor());
+                endIndexDifferentRemoved = endRemoved;
+                endIndexDifferentAdded = endAdded;
             }
 
-            int afterBegin = beginOffset + addedLength;
-            int afterLength = lineAdded.Length - afterBegin;
-            if (afterLength > 0)
+            // find end of different part
+            while (endIndexDifferentRemoved > startIndexRemoved && endIndexDifferentAdded > startIndexAdded
+                && textRemoved[endIndexDifferentRemoved - 1] == textAdded[endIndexDifferentAdded - 1])
             {
-                yield return CreatePaleMarker(lineAdded.Offset + afterBegin, afterLength, GetAddedBackColor());
-            }
-        }
-        else
-        {
-            int length = lineAdded.Length - lineStartOffset;
-            if (length > 0)
-            {
-                yield return CreatePaleMarker(lineAdded.Offset + lineStartOffset, length, GetAddedBackColor());
-            }
-        }
-
-        int removedLength = lineRemoved.Length - beginOffset - reverseOffset;
-        if (removedLength > 0)
-        {
-            int beforeLength = beginOffset - lineStartOffset;
-            if (beforeLength > 0)
-            {
-                yield return CreatePaleMarker(lineRemoved.Offset + lineStartOffset, beforeLength, GetRemovedBackColor());
+                --endIndexDifferentRemoved;
+                --endIndexDifferentAdded;
             }
 
-            int afterBegin = beginOffset + removedLength;
-            int afterLength = lineRemoved.Length - afterBegin;
-            if (afterLength > 0)
+            int lengthRemoved = endIndexDifferentRemoved - startIndexRemoved;
+            int lengthAdded = endIndexDifferentAdded - startIndexAdded;
+            if (lengthRemoved == 0 && lengthAdded > 0)
             {
-                yield return CreatePaleMarker(lineRemoved.Offset + afterBegin, afterLength, GetRemovedBackColor());
+                yield return CreateAnchorMarker(lineRemoved, startIndexRemoved, GetAddedForeColor());
             }
-        }
-        else
-        {
-            int length = lineRemoved.Length - lineStartOffset;
-            if (length > 0)
+            else if (lengthRemoved > 0 && lengthAdded == 0)
             {
-                yield return CreatePaleMarker(lineRemoved.Offset + lineStartOffset, length, GetRemovedBackColor());
+                yield return CreateAnchorMarker(lineAdded, startIndexAdded, GetRemovedForeColor());
             }
+
+            startIndexRemoved = endIndexDifferentRemoved;
+            startIndexAdded = endIndexDifferentAdded;
         }
 
         yield break;
+
+        TextMarker CreateAnchorMarker(ISegment line, int offset, Color color)
+            => new(line.Offset + lineStartOffset + offset, length: 0, TextMarkerType.InterChar, color);
 
         static TextMarker CreatePaleMarker(int offset, int length, Color color)
             => CreateTextMarker(offset, length, ColorHelper.DimColor(ColorHelper.DimColor(color)));
@@ -339,7 +319,9 @@ public abstract class DiffHighlightService : TextHighlightService
             => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
 
         static Color GetAddedBackColor() => AppColor.AnsiTerminalGreenBackNormal.GetThemeColor();
+        static Color GetAddedForeColor() => AppColor.AnsiTerminalGreenForeBold.GetThemeColor();
         static Color GetRemovedBackColor() => AppColor.AnsiTerminalRedBackNormal.GetThemeColor();
+        static Color GetRemovedForeColor() => AppColor.AnsiTerminalRedForeBold.GetThemeColor();
     }
 
     private void AddExtraPatchHighlighting(IDocument document)

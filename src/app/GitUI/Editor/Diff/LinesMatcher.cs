@@ -128,7 +128,9 @@ internal static class LinesMatcher
         }
     }
 
-    internal static IEnumerable<string> GetWords(string text, Func<char, bool> isWordChar)
+    internal static IEnumerable<(string Word, int Offset)> GetWords(string text) => GetWords(text, TextUtilities.IsLetterDigitOrUnderscore);
+
+    internal static IEnumerable<(string Word, int Offset)> GetWords(string text, Func<char, bool> isWordChar)
     {
         int length = text.Length;
         int start = 0;
@@ -155,13 +157,16 @@ internal static class LinesMatcher
                 if (end >= length || !isWordChar(text[end]))
                 {
                     // word end found, yield and find next word
-                    yield return text[start..end];
+                    yield return (text[start..end], start);
                     start = end + 1;
                     break;
                 }
             }
         }
     }
+
+    internal static string SelectWord((string Word, int Offset) pair) => pair.Word;
+    internal static int SelectOffset((string Word, int Offset) pair) => pair.Offset;
 
     [DebuggerDisplay("{Line.Offset}: {Trimmed}")]
     private readonly struct LineData
@@ -177,7 +182,7 @@ internal static class LinesMatcher
             Line = line;
             Full = text;
             Trimmed = text.Trim();
-            Words = GetWords(Trimmed, TextUtilities.IsLetterDigitOrUnderscore).ToHashSet();
+            Words = GetWords(Trimmed).Select(SelectWord).ToHashSet();
             WordsTotalLength = Words.Sum(w => w.Length);
         }
     }
