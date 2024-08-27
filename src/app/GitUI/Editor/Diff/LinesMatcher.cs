@@ -101,7 +101,7 @@ internal static class LinesMatcher
                 return -1;
             }
 
-            return (float)r.Words.Intersect(a.Words).Count() / Math.Max(r.Words.Count, a.Words.Count);
+            return (float)r.Words.Intersect(a.Words).Sum(w => w.Length) / Math.Max(r.WordsTotalLength, a.WordsTotalLength);
         }
     }
 
@@ -170,6 +170,7 @@ internal static class LinesMatcher
         internal string Full { get; }
         internal string Trimmed { get; }
         internal IReadOnlySet<string> Words { get; }
+        internal int WordsTotalLength { get; }
 
         internal LineData(ISegment line, string text)
         {
@@ -177,6 +178,7 @@ internal static class LinesMatcher
             Full = text;
             Trimmed = text.Trim();
             Words = GetWords(Trimmed, TextUtilities.IsLetterDigitOrUnderscore).ToHashSet();
+            WordsTotalLength = Words.Sum(w => w.Length);
         }
     }
 }
