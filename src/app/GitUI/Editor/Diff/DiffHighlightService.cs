@@ -286,14 +286,14 @@ public abstract class DiffHighlightService : TextHighlightService
             int beforeLength = beginOffset - lineStartOffset;
             if (beforeLength > 0)
             {
-                yield return CreateUnmarker(lineAdded.Offset + lineStartOffset, beforeLength);
+                yield return CreatePaleMarker(lineAdded.Offset + lineStartOffset, beforeLength, GetAddedBackColor());
             }
 
             int afterBegin = beginOffset + addedLength;
             int afterLength = lineAdded.Length - afterBegin;
             if (afterLength > 0)
             {
-                yield return CreateUnmarker(lineAdded.Offset + afterBegin, afterLength);
+                yield return CreatePaleMarker(lineAdded.Offset + afterBegin, afterLength, GetAddedBackColor());
             }
         }
         else
@@ -301,7 +301,7 @@ public abstract class DiffHighlightService : TextHighlightService
             int length = lineAdded.Length - lineStartOffset;
             if (length > 0)
             {
-                yield return CreateUnmarker(lineAdded.Offset + lineStartOffset, length);
+                yield return CreatePaleMarker(lineAdded.Offset + lineStartOffset, length, GetAddedBackColor());
             }
         }
 
@@ -311,14 +311,14 @@ public abstract class DiffHighlightService : TextHighlightService
             int beforeLength = beginOffset - lineStartOffset;
             if (beforeLength > 0)
             {
-                yield return CreateUnmarker(lineRemoved.Offset + lineStartOffset, beforeLength);
+                yield return CreatePaleMarker(lineRemoved.Offset + lineStartOffset, beforeLength, GetRemovedBackColor());
             }
 
             int afterBegin = beginOffset + removedLength;
             int afterLength = lineRemoved.Length - afterBegin;
             if (afterLength > 0)
             {
-                yield return CreateUnmarker(lineRemoved.Offset + afterBegin, afterLength);
+                yield return CreatePaleMarker(lineRemoved.Offset + afterBegin, afterLength, GetRemovedBackColor());
             }
         }
         else
@@ -326,17 +326,20 @@ public abstract class DiffHighlightService : TextHighlightService
             int length = lineRemoved.Length - lineStartOffset;
             if (length > 0)
             {
-                yield return CreateUnmarker(lineRemoved.Offset + lineStartOffset, length);
+                yield return CreatePaleMarker(lineRemoved.Offset + lineStartOffset, length, GetRemovedBackColor());
             }
         }
 
         yield break;
 
-        static TextMarker CreateUnmarker(int offset, int length)
-            => CreateTextMarker(offset, length, AppColor.AnsiTerminalWhiteBackBold.GetThemeColor());
+        static TextMarker CreatePaleMarker(int offset, int length, Color color)
+            => CreateTextMarker(offset, length, new HslColor(color).WithLuminosity(0.5 + (0.47 * (ColorHelper.IsLightTheme() ? 1 : -1))).ToColor());
 
         static TextMarker CreateTextMarker(int offset, int length, Color color)
             => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
+
+        static Color GetAddedBackColor() => AppColor.AnsiTerminalGreenBackBold.GetThemeColor();
+        static Color GetRemovedBackColor() => AppColor.AnsiTerminalRedBackBold.GetThemeColor();
     }
 
     private void AddExtraPatchHighlighting(IDocument document)
