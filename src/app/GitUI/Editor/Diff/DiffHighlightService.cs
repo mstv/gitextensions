@@ -333,13 +333,13 @@ public abstract class DiffHighlightService : TextHighlightService
         yield break;
 
         static TextMarker CreatePaleMarker(int offset, int length, Color color)
-            => CreateTextMarker(offset, length, new HslColor(color).WithLuminosity(0.5 + (0.47 * (ColorHelper.IsLightTheme() ? 1 : -1))).ToColor());
+            => CreateTextMarker(offset, length, ColorHelper.DimColor(ColorHelper.DimColor(color)));
 
         static TextMarker CreateTextMarker(int offset, int length, Color color)
             => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
 
-        static Color GetAddedBackColor() => AppColor.AnsiTerminalGreenBackBold.GetThemeColor();
-        static Color GetRemovedBackColor() => AppColor.AnsiTerminalRedBackBold.GetThemeColor();
+        static Color GetAddedBackColor() => AppColor.AnsiTerminalGreenBackNormal.GetThemeColor();
+        static Color GetRemovedBackColor() => AppColor.AnsiTerminalRedBackNormal.GetThemeColor();
     }
 
     private void AddExtraPatchHighlighting(IDocument document)

@@ -463,7 +463,7 @@ public partial class AnsiEscapeUtilities
 
         if (dim)
         {
-            color = DimColor(color);
+            color = ColorHelper.DimColor(color);
         }
 
         return color;
@@ -488,15 +488,6 @@ public partial class AnsiEscapeUtilities
             int i = (level - 232) * 11;
             return Color.FromArgb(i, i, i);
         }
-    }
-
-    private static Color DimColor(Color color)
-    {
-        // Blend the color with the background, halve each value first
-        // Note: With themes, defaultBackground must be dynamic
-        const uint defaultBackground = 0xff_ffff;
-        int dimCode = (int)(((color.ToArgb() & 0xFEFEFEFE) >> 1) + ((defaultBackground & 0xFEFEFEFE) >> 1));
-        return Color.FromArgb((dimCode >> 16) & 0xff, (dimCode >> 8) & 0xff, dimCode & 0xff);
     }
 
     /// <summary>
