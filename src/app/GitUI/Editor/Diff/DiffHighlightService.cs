@@ -22,6 +22,11 @@ public abstract class DiffHighlightService : TextHighlightService
     {
         _useGitColoring = useGitColoring;
         SetText(ref text);
+
+        if (!_useGitColoring)
+        {
+            HighlightAddedAndDeletedLines(_textMarkers);
+        }
     }
 
     public static IGitCommandConfiguration GetGitCommandConfiguration(IGitModule module, bool useGitColoring, string command)
@@ -104,24 +109,16 @@ public abstract class DiffHighlightService : TextHighlightService
 
     public override void AddTextHighlighting(IDocument document)
     {
-        if (_useGitColoring)
+        // Apply GE word highlighting for Patch display (may apply to Difftastic setting, if not available for a repo)
+        if (!_useGitColoring || AppSettings.DiffDisplayAppearance.Value != GitCommands.Settings.DiffDisplayAppearance.GitWordDiff)
         {
-            // Apply GE word highlighting for Patch display (may apply to Difftastic setting, if not available for a repo)
-            if (AppSettings.DiffDisplayAppearance.Value != GitCommands.Settings.DiffDisplayAppearance.GitWordDiff)
-            {
-                MarkInlineDifferences(document);
-            }
-
-            foreach (TextMarker tm in _textMarkers)
-            {
-                document.MarkerStrategy.AddMarker(tm);
-            }
-
-            return;
+            MarkInlineDifferences(document);
         }
 
-        MarkInlineDifferences(document);
-        HighlightAddedAndDeletedLines(document);
+        foreach (TextMarker tm in _textMarkers)
+        {
+            document.MarkerStrategy.AddMarker(tm);
+        }
 
         return;
     }
@@ -148,21 +145,22 @@ public abstract class DiffHighlightService : TextHighlightService
     /// Highlight lines that are added, removed and header lines.
     /// This is an alternative configuration to use the Git diff coloring (that has more features).
     /// </summary>
-    private void HighlightAddedAndDeletedLines(IDocument document)
+    /// <param name="textMarkers">The markers to append to.</param>
+    private void HighlightAddedAndDeletedLines(List<TextMarker> textMarkers)
     {
         foreach (ISegment segment in GetAllLines(DiffLineType.Minus))
         {
-            document.MarkerStrategy.AddMarker(CreateTextMarker(segment, AppColor.AnsiTerminalRedBackNormal.GetThemeColor()));
+            textMarkers.Add(CreateTextMarker(segment, AppColor.AnsiTerminalRedBackNormal.GetThemeColor()));
         }
 
         foreach (ISegment segment in GetAllLines(DiffLineType.Plus))
         {
-            document.MarkerStrategy.AddMarker(CreateTextMarker(segment, AppColor.AnsiTerminalGreenBackNormal.GetThemeColor()));
+            textMarkers.Add(CreateTextMarker(segment, AppColor.AnsiTerminalGreenBackNormal.GetThemeColor()));
         }
 
         foreach (ISegment segment in GetAllLines(DiffLineType.Header))
         {
-            document.MarkerStrategy.AddMarker(CreateTextMarker(segment, AppColor.DiffSection.GetThemeColor()));
+            textMarkers.Add(CreateTextMarker(segment, AppColor.DiffSection.GetThemeColor()));
         }
 
         return;
