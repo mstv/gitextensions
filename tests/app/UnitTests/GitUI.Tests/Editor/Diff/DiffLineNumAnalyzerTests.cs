@@ -17,6 +17,7 @@ public class DiffLineNumAnalyzerTests
     private readonly string _sampleGitWordDiff;
     private readonly string _sampleDifftastic;
     private readonly TextEditorControl _textEditor;
+    private readonly DiffViewerLineNumberControl _diffViewerLineNumber;
 
     public DiffLineNumAnalyzerTests()
     {
@@ -32,6 +33,7 @@ public class DiffLineNumAnalyzerTests
             .Replace(@";255;200;200m", $";{removed.R};{removed.G};{removed.B}m");
         _sampleDifftastic = File.ReadAllText(Path.Combine(_testDataDir, "SampleDifftastic.diff"));
         _textEditor = new TextEditorControl();
+        _diffViewerLineNumber = new(_textEditor.ActiveTextAreaControl.TextArea);
     }
 
     [TearDown]
@@ -44,7 +46,7 @@ public class DiffLineNumAnalyzerTests
     public void CanGetHeaders()
     {
         _textEditor.Text = _sampleDiff;
-        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor, isCombinedDiff: true);
+        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor.Text, allTextMarkers: [], isCombinedDiff: true);
         List<int> headerLines = [5, 17];
         foreach (int header in headerLines)
         {
@@ -58,7 +60,7 @@ public class DiffLineNumAnalyzerTests
     public void CanGetContextLines()
     {
         _textEditor.Text = _sampleDiff;
-        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor, isCombinedDiff: false);
+        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor.Text, allTextMarkers: [], isCombinedDiff: false);
 
         result.DiffLines[6].LineNumInDiff.Should().Be(6);
         result.DiffLines[6].LineType.Should().Be(DiffLineType.Context);
@@ -85,7 +87,7 @@ public class DiffLineNumAnalyzerTests
     public void CanGetMinusLines()
     {
         _textEditor.Text = _sampleDiff;
-        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor, isCombinedDiff: false);
+        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor.Text, allTextMarkers: [], isCombinedDiff: false);
 
         result.DiffLines[9].LineNumInDiff.Should().Be(9);
         result.DiffLines[9].LineType.Should().Be(DiffLineType.Minus);
@@ -102,7 +104,7 @@ public class DiffLineNumAnalyzerTests
     public void CanGetPlusLines()
     {
         _textEditor.Text = _sampleDiff;
-        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor, isCombinedDiff: false);
+        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor.Text, allTextMarkers: [], isCombinedDiff: false);
 
         result.DiffLines[12].LineNumInDiff.Should().Be(12);
         result.DiffLines[12].LineType.Should().Be(DiffLineType.Plus);
@@ -124,7 +126,7 @@ public class DiffLineNumAnalyzerTests
     public void CanGetLineNumbersForCombinedDiff()
     {
         _textEditor.Text = _sampleCombinedDiff;
-        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor, isCombinedDiff: true);
+        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor.Text, allTextMarkers: [], isCombinedDiff: true);
 
         result.DiffLines[6].LeftLineNumber.Should().Be(DiffLineInfo.NotApplicableLineNum);
         result.DiffLines[6].RightLineNumber.Should().Be(70);
@@ -158,10 +160,9 @@ public class DiffLineNumAnalyzerTests
         AppSettings.DiffDisplayAppearance.Value = GitCommands.Settings.DiffDisplayAppearance.GitWordDiff;
 
         string text = _sampleGitWordDiff;
-        DiffHighlightService diffHighlightService = new PatchHighlightService(ref text, useGitColoring: true);
+        DiffHighlightService diffHighlightService = new PatchHighlightService(ref text, useGitColoring: true, _diffViewerLineNumber);
         _textEditor.Text = text;
-        diffHighlightService.AddTextHighlighting(_textEditor.Document);
-        DiffLinesInfo result = DiffLineNumAnalyzer.Analyze(_textEditor, isCombinedDiff: false, isGitWordDiff: true);
+        DiffLinesInfo result = _diffViewerLineNumber.GetTestAccessor().Result;
 
         result.DiffLines[5].LeftLineNumber.Should().Be(DiffLineInfo.NotApplicableLineNum);
         result.DiffLines[5].RightLineNumber.Should().Be(DiffLineInfo.NotApplicableLineNum);
@@ -214,13 +215,9 @@ public class DiffLineNumAnalyzerTests
         bool theme = AppSettings.ReverseGitColoring.Value;
         AppSettings.ReverseGitColoring.Value = false;
 
-        DifftasticHighlightService diffHighlightService = new(ref text);
+        DifftasticHighlightService diffHighlightService = new(ref text, _diffViewerLineNumber);
         _textEditor.Text = text;
-
-        diffHighlightService.AddTextHighlighting(_textEditor.Document);
-        DiffViewerLineNumberControl lineNumbersControl = new(_textEditor.ActiveTextAreaControl.TextArea);
-        diffHighlightService.SetLineControl(lineNumbersControl, _textEditor);
-        DiffLinesInfo result = lineNumbersControl.GetTestAccessor().Result;
+        DiffLinesInfo result = _diffViewerLineNumber.GetTestAccessor().Result;
 
         result.DiffLines[5].LeftLineNumber.Should().Be(DiffLineInfo.NotApplicableLineNum);
         result.DiffLines[5].RightLineNumber.Should().Be(16);
