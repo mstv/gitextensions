@@ -176,21 +176,21 @@ public abstract class DiffHighlightService : TextHighlightService
     /// </summary>
     private void MarkInlineDifferences(IDocument document)
     {
-        int lineInDiff = _diffLinesInfo.DiffLines.Count > 0 ? _diffLinesInfo.DiffLines.Keys.Min() : 0;
-        int maxLine = _diffLinesInfo.DiffLines.Count > 0 ? _diffLinesInfo.DiffLines.Keys.Max() : 0;
+        int index = 0;
+        List<DiffLineInfo> diffLines = [.. _diffLinesInfo.DiffLines.Values.OrderBy(i => i.LineNumInDiff)];
         bool found = false;
 
         const int diffContentOffset = 1; // in order to skip the prefixes '-' / '+'
         MarkerStrategy markerStrategy = document.MarkerStrategy;
 
-        // Process the next blocks of removed / added lines and mark in-line differences
-        while (lineInDiff < maxLine)
+        // Process the next blocks of removed / added diffLines and mark in-line differences
+        while (index < diffLines.Count)
         {
             found = false;
 
-            // git-diff presents the removed lines followed by added lines in a "block"
-            IReadOnlyList<ISegment> linesRemoved = GetBlockOfLines(DiffLineType.Minus, ref lineInDiff, ref found, maxLine);
-            IReadOnlyList<ISegment> linesAdded = GetBlockOfLines(DiffLineType.Plus, ref lineInDiff, ref found, maxLine);
+            // git-diff presents the removed lines directly followed by the added in a "block"
+            IReadOnlyList<ISegment> linesRemoved = GetBlockOfLines(diffLines, DiffLineType.Minus, ref index, ref found);
+            IReadOnlyList<ISegment> linesAdded = GetBlockOfLines(diffLines, DiffLineType.Plus, ref index, ref found);
 
             foreach (TextMarker marker in GetDifferenceMarkers(document, linesRemoved, linesAdded, diffContentOffset))
             {
@@ -206,33 +206,47 @@ public abstract class DiffHighlightService : TextHighlightService
             ?? [];
 
     /// <summary>
-    /// Get next block of lines following beginline
+    /// Get next block of diffLines following beginline
     /// </summary>
-    /// <param name="diffLineType">The type of lines to find (e.g. added/removed).</param>
-    /// <param name="lineInDiff">The lineInDiff index to start with.</param>
-    /// <param name="found">If a lineInDiff was found. This is also used to get the added lines just after the removed.</param>
-    /// <param name="maxLine">The maxLine lineno in diff in diffLineType.</param>
+    /// <param name="diffLines">The parsed diffLines for the document.</param>
+    /// <param name="diffLineType">The type of diffLines to find (e.g. added/removed).</param>
+    /// <param name="index">The index in diffLines to start with.</param>
+    /// <param name="found">If a lineInDiff was found. This is also used to get the added diffLines just after the removed.</param>
     /// <returns>The block of segments.</returns>
-    private List<ISegment> GetBlockOfLines(DiffLineType diffLineType, ref int lineInDiff, ref bool found, int maxLine)
+    private static List<ISegment> GetBlockOfLines(List<DiffLineInfo> diffLines, DiffLineType diffLineType, ref int index, ref bool found)
     {
         List<ISegment> result = [];
+        int gapLines = 0;
 
-        while (lineInDiff < maxLine)
+        for (; index < diffLines.Count; ++index)
         {
-            if (!_diffLinesInfo.DiffLines.TryGetValue(lineInDiff, out DiffLineInfo diffLine) || diffLine.Segment is null || diffLine.LineType != diffLineType)
+            DiffLineInfo diffLine = diffLines[index];
+            if (diffLine.LineType != diffLineType)
             {
-                if (found)
+                if (!found)
                 {
-                    // Block ended, no more to add (not updating lineInDiff, next start search here)
-                    break;
+                    // Start of block is not found yet.
+                    continue;
                 }
 
-                // Start of block not found yet.
-                ++lineInDiff;
-                continue;
+                const int maxGapLines = 5;
+                if (diffLine?.LineType != DiffLineType.Context)
+                {
+                    // Block cannot start or continue
+                    break;
+                }
+                else if (gapLines < maxGapLines)
+                {
+                    // A gap context diffLines, the block can be extended
+                    ++gapLines;
+                    continue;
+                }
+
+                // Block ended, no more to add (next start search here)
+                break;
             }
 
-            ++lineInDiff;
+            ArgumentNullException.ThrowIfNull(diffLine.Segment);
             gapLines = 0;
             if (diffLine.IsMovedLine)
             {
