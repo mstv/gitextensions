@@ -1,6 +1,6 @@
 #        Clear               true
-#	EndObject
+#  EndObject
 
-	Object              42
+   Object              42
         MemoryRegion
         Name                SomeRegion
