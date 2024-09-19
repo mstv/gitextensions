@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using GitCommands;
 using GitExtensions.Extensibility.Git;
+using GitExtUtils;
+using GitUI.Models;
 using GitUI.Properties;
 using GitUI.UserControls;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -58,6 +61,9 @@ namespace GitUI.HelperDialogs
 
             InitializeComplete();
         }
+
+        public string? ProcessString { get; protected init; }
+        public string? ProcessArguments { get; set; }
 
         /// <summary>
         /// Clean up any resources being used.
@@ -131,7 +137,7 @@ namespace GitUI.HelperDialogs
             form.StartPosition = FormStartPosition.CenterParent;
 
             // We know that an operation (whatever it may have been) has failed, so set the error state.
-            form.Done(false);
+            form.Done(isSuccess: false);
 
             form.ShowDialog(owner);
         }
@@ -168,6 +174,16 @@ namespace GitUI.HelperDialogs
             {
                 _errorOccurred = !isSuccess;
 
+                try
+                {
+                    RunProcessInfo runProcessInfo = new(ProcessString, ProcessArguments, GetOutputString(), DateTime.Now);
+                    UICommands.GetRequiredService<IOutputHistoryModel>().RecordHistory(runProcessInfo);
+                }
+                catch (Exception exception)
+                {
+                    Trace.WriteLine(exception);
+                }
+
                 AppendMessage("Done");
                 PasswordPanel.Visible = false;
                 ShowPassword.Visible = false;
@@ -186,9 +202,10 @@ namespace GitUI.HelperDialogs
                     Close();
                 }
             }
-            catch (ConEmu.WinForms.GuiMacroExecutor.GuiMacroException)
+            catch (ConEmu.WinForms.GuiMacroExecutor.GuiMacroException guiMacroException)
             {
                 // Do nothing
+                Trace.WriteLine(guiMacroException);
             }
         }
 
@@ -256,7 +273,7 @@ namespace GitUI.HelperDialogs
             {
                 AbortCallback?.Invoke(this);
                 OutputLog.Append(Environment.NewLine + "Aborted");  // TODO: write to display control also, if we pull the function up to this base class
-                Done(false);
+                Done(isSuccess: false);
                 DialogResult = DialogResult.Abort;
             }
             catch
