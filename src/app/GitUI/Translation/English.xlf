@@ -3068,7 +3068,7 @@ Focus the output history and (when displayed as panel) toggle its visibility usi
         <target />
       </trans-unit>
       <trans-unit id="chkShowFindInCommitFilesGitGrep.Text">
-        <source>&amp;Show 'Find in commit files using git-grep'</source>
+        <source>Show 'Find in commit files using git-grep'</source>
         <target />
       </trans-unit>
       <trans-unit id="chkShowGpgInformation.Text">
@@ -9139,7 +9139,7 @@ Reset the filter via View &gt; Show all branches.</source>
         <target />
       </trans-unit>
       <trans-unit id="showFindInCommitFilesGitGrepToolStripMenuItem.Text">
-        <source>Show 'Find in commit files using git-grep'</source>
+        <source>Show 'Find in commit fi&amp;les using git-grep'</source>
         <target />
       </trans-unit>
       <trans-unit id="stageFileToolStripMenuItem.Text">

@@ -151,7 +151,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             chkShowFindInCommitFilesGitGrep.Name = "chkShowFindInCommitFilesGitGrep";
             chkShowFindInCommitFilesGitGrep.Size = new Size(249, 19);
             chkShowFindInCommitFilesGitGrep.TabIndex = 4;
-            chkShowFindInCommitFilesGitGrep.Text = "&Show 'Find in commit files using git-grep'";
+            chkShowFindInCommitFilesGitGrep.Text = "Show 'Find in commit files using git-grep'";
             chkShowFindInCommitFilesGitGrep.ToolTipIcon = UserControls.Settings.ToolTipIcon.Information;
             chkShowFindInCommitFilesGitGrep.ToolTipText = null;
             // 

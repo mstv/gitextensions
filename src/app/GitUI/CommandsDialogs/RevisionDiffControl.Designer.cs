@@ -430,7 +430,7 @@ namespace GitUI.CommandsDialogs
             showFindInCommitFilesGitGrepToolStripMenuItem.CheckOnClick = true;
             showFindInCommitFilesGitGrepToolStripMenuItem.Name = "showFindInCommitFilesGitGrepToolStripMenuItem";
             showFindInCommitFilesGitGrepToolStripMenuItem.Size = new Size(295, 22);
-            showFindInCommitFilesGitGrepToolStripMenuItem.Text = "Show 'Find in commit files using git-grep'";
+            showFindInCommitFilesGitGrepToolStripMenuItem.Text = "Show 'Find in commit fi&les using git-grep'";
             showFindInCommitFilesGitGrepToolStripMenuItem.Click += showFindInCommitFilesGitGrepToolStripMenuItem_Click;
             // 
             // toolStripSeparatorScript
