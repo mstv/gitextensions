@@ -3,7 +3,6 @@ using GitCommands;
 using GitExtensions.Extensibility;
 using GitExtUtils.GitUI.Theming;
 using GitUI.Theming;
-using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Document;
 
 namespace GitUI.Editor.Diff;
@@ -13,7 +12,7 @@ public partial class DiffLineNumAnalyzer
     [GeneratedRegex(@"\-(?<leftStart>\d{1,})\,{0,}(?<leftCount>\d{0,})\s\+(?<rightStart>\d{1,})\,{0,}(?<rightCount>\d{0,})", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture)]
     private static partial Regex DiffRegex();
 
-    public static DiffLinesInfo Analyze(TextEditorControl textEditor, bool isCombinedDiff, bool isGitWordDiff = false)
+    public static DiffLinesInfo Analyze(string text, List<TextMarker> allTextMarkers, bool isCombinedDiff, bool isGitWordDiff = false)
     {
         DiffLinesInfo ret = new();
         bool reverseGitColoring = AppSettings.ReverseGitColoring.Value;
@@ -21,8 +20,8 @@ public partial class DiffLineNumAnalyzer
         int leftLineNum = DiffLineInfo.NotApplicableLineNum;
         int rightLineNum = DiffLineInfo.NotApplicableLineNum;
         bool isHeaderLineLocated = false;
-        string[] lines = textEditor.Text.Split(Delimiters.LineFeed);
-        int textOffset = 0; // for git-diff-word
+        string[] lines = text.Split(Delimiters.LineFeed);
+        int textOffset = 0;
         for (int i = 0; i < lines.Length; i++)
         {
             string line = lines[i];
@@ -32,7 +31,8 @@ public partial class DiffLineNumAnalyzer
             }
 
             int textLength = lines[i].Length + 1;
-            Lazy<List<TextMarker>> textMarkers = new(() => textEditor.Document.MarkerStrategy.GetMarkers(textOffset, textLength));
+            Lazy<List<TextMarker>> textMarkers = new(()
+                => allTextMarkers.Where(i => (i.Offset < textOffset + textLength && i.EndOffset >= textOffset)).ToList());
 
             lineNumInDiff++;
             if (line.StartsWith("@@"))
@@ -63,6 +63,8 @@ public partial class DiffLineNumAnalyzer
                     LineNumInDiff = lineNumInDiff,
                     LeftLineNumber = DiffLineInfo.NotApplicableLineNum,
                     RightLineNumber = DiffLineInfo.NotApplicableLineNum,
+                    Segment = new Segment() { Offset = textOffset, Length = textLength },
+                    IsMovedLine = false,
                 };
 
                 if (IsMinusLineInCombinedDiff(line))
@@ -92,8 +94,10 @@ public partial class DiffLineNumAnalyzer
                     LineNumInDiff = lineNumInDiff,
                     LeftLineNumber = leftLineNum,
                     RightLineNumber = DiffLineInfo.NotApplicableLineNum,
-                    LineType = isGitWordDiff ? DiffLineType.MinusLeft : DiffLineType.Minus
+                    LineType = isGitWordDiff ? DiffLineType.MinusLeft : DiffLineType.Minus,
+                    Segment = new Segment() { Offset = textOffset, Length = textLength },
                 };
+                meta.IsMovedLine = IsMovedLine(textMarkers.Value, meta);
                 ret.Add(meta);
 
                 leftLineNum++;
@@ -106,7 +110,9 @@ public partial class DiffLineNumAnalyzer
                     LeftLineNumber = DiffLineInfo.NotApplicableLineNum,
                     RightLineNumber = rightLineNum,
                     LineType = isGitWordDiff ? DiffLineType.PlusRight : DiffLineType.Plus,
+                    Segment = new Segment() { Offset = textOffset, Length = textLength },
                 };
+                meta.IsMovedLine = IsMovedLine(textMarkers.Value, meta);
                 ret.Add(meta);
                 rightLineNum++;
             }
@@ -155,6 +161,14 @@ public partial class DiffLineNumAnalyzer
         }
 
         return ret;
+
+        // git-diff colors moved lines in other than red green
+        // However, Git may mark trailing whitespaces (diff.colorMovedWS is ignored)
+        bool IsMovedLine(List<TextMarker> textMarkers, DiffLineInfo meta)
+            => textMarkers.Count > 0
+                && !MarkerColorMatch(textMarkers[0], meta.LineType)
+                && (textMarkers.Count <= 1 || !MarkerColorMatch(textMarkers[^1], meta.LineType) || text.AsSpan()[textMarkers[^1].Offset..textMarkers[^1].EndOffset].IsWhiteSpace())
+                && (textMarkers.Count <= 2 || !textMarkers[1..^1].All(i => MarkerColorMatch(i, meta.LineType)));
 
         bool IsGitWordMatch(DiffLineType lineType, string line, int textOffset, int textLength, List<TextMarker> textMarkers)
         {
