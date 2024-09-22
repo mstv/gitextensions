@@ -241,7 +241,7 @@ public abstract class DiffHighlightService : TextHighlightService
         }
     }
 
-    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, ISegment lineRemoved, ISegment lineAdded, int lineStartOffset)
+    internal static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, ISegment lineRemoved, ISegment lineAdded, int lineStartOffset)
     {
         int lineRemovedEndOffset = lineRemoved.Length;
         int lineAddedEndOffset = lineAdded.Length;
