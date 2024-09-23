@@ -286,13 +286,12 @@ public abstract class DiffHighlightService : TextHighlightService
             int endIndexDifferentRemoved;
             int endIndexDifferentAdded;
 
-            (string Word, int Offset)[] wordsRemoved = LinesMatcher.GetWords(textRemoved[endIndexIdenticalRemoved..endRemoved]).ToArray();
-            (string? commonWord, int offsetOfWordAdded) = LinesMatcher.GetWords(textAdded[endIndexIdenticalAdded..endAdded])
-                .IntersectBy(wordsRemoved.Select(LinesMatcher.SelectWord), LinesMatcher.SelectWord)
-                .FirstOrDefault();
+            (string? commonWord, int offsetOfWordRemoved, int offsetOfWordAdded)
+                = LinesMatcher.FindBestMatch(textRemoved[endIndexIdenticalRemoved..endRemoved],
+                                             textAdded[endIndexIdenticalAdded..endAdded]);
             if (commonWord is not null)
             {
-                endIndexDifferentRemoved = endIndexIdenticalRemoved + wordsRemoved.First(pair => pair.Word == commonWord).Offset;
+                endIndexDifferentRemoved = endIndexIdenticalRemoved + offsetOfWordRemoved;
                 endIndexDifferentAdded = endIndexIdenticalAdded + offsetOfWordAdded;
             }
             else

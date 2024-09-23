@@ -106,6 +106,20 @@ internal static class LinesMatcher
         }
     }
 
+    internal static (string? CommonWord, int OffsetOfWordRemoved, int OffsetOfWordAdded) FindBestMatch(string textRemoved, string textAdded)
+    {
+        (string Word, int Offset)[] wordsRemoved = LinesMatcher.GetWords(textRemoved).ToArray();
+        (string? commonWord, int offsetOfWordAdded) = LinesMatcher.GetWords(textAdded)
+            .IntersectBy(wordsRemoved.Select(LinesMatcher.SelectWord), LinesMatcher.SelectWord)
+            .FirstOrDefault();
+        if (commonWord is not null)
+        {
+            return (commonWord, wordsRemoved.First(pair => pair.Word == commonWord).Offset, offsetOfWordAdded);
+        }
+
+        return (null, 0, 0);
+    }
+
     /// <summary>
     ///  Iterates all combinations of indices - starting with (0,0), (1,0), (0,1), (2,0), (1,1), ...
     /// </summary>
