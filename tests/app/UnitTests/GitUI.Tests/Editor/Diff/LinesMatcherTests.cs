@@ -41,6 +41,6 @@ public class LinesMatcherTests
     {
         (string Word, int Offset)[] result = LinesMatcher.GetWords(text, TextUtilities.IsLetterDigitOrUnderscore).ToArray();
         result.Select(LinesMatcher.SelectWord).Should().BeEquivalentTo(words);
-        result.Select(LinesMatcher.SelectOffset).Should().BeEquivalentTo(offsets);
+        result.Select(LinesMatcher.SelectStartIndex).Should().BeEquivalentTo(offsets);
     }
 }
