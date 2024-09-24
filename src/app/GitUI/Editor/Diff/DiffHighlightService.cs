@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using GitCommands;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils;
@@ -241,121 +242,133 @@ public abstract class DiffHighlightService : TextHighlightService
         }
     }
 
-    internal static IEnumerable<TextMarker> GetDifferenceMarkers(Func<ISegment, string> getText, ISegment lineRemoved, ISegment lineAdded, int beginOffset)
+    internal static IReadOnlyList<TextMarker> GetDifferenceMarkers(Func<ISegment, string> getText, ISegment lineRemoved, ISegment lineAdded, int beginOffset)
     {
         string textRemoved = getText(lineRemoved);
         string textAdded = getText(lineAdded);
-        int endRemoved = textRemoved.Length;
-        int endAdded = textAdded.Length;
-        int startIndexIdenticalRemoved = 0;
-        int startIndexIdenticalAdded = 0;
+        int offsetRemoved = lineRemoved.Offset + beginOffset;
+        int offsetAdded = lineAdded.Offset + beginOffset;
+        List<TextMarker> markers = [];
+        (int lengthIdenticalAtStart, int lengthIdenticalAtEnd) = AddDifferenceMarkers(markers, textRemoved, textAdded, offsetRemoved, offsetAdded);
 
-        while (startIndexIdenticalRemoved < endRemoved || startIndexIdenticalAdded < endAdded)
+        if (lengthIdenticalAtStart > 0)
         {
-            // find end of identical part (but exclude start of next word in order to match common words entirely)
-            int endIndexIdenticalRemoved = startIndexIdenticalRemoved;
-            int endIndexIdenticalAdded = startIndexIdenticalAdded;
-            while (endIndexIdenticalRemoved < endRemoved && endIndexIdenticalAdded < endAdded
-                && textRemoved[endIndexIdenticalRemoved] == textAdded[endIndexIdenticalAdded]
-                && !LinesMatcher.IsWordChar(textRemoved[endIndexIdenticalRemoved]))
-            {
-                ++endIndexIdenticalRemoved;
-                ++endIndexIdenticalAdded;
-            }
-
-            // find start of identical part at end of line
-            int startIndexIdenticalAtEolRemoved = endRemoved;
-            int startIndexIdenticalAtEolAdded = endAdded;
-            while (startIndexIdenticalAtEolRemoved > endIndexIdenticalRemoved && startIndexIdenticalAtEolAdded > endIndexIdenticalAdded
-                && textRemoved[startIndexIdenticalAtEolRemoved - 1] == textAdded[startIndexIdenticalAtEolAdded - 1])
-            {
-                --startIndexIdenticalAtEolRemoved;
-                --startIndexIdenticalAtEolAdded;
-            }
-
-            int lengthIdenticalAtEol = endRemoved - startIndexIdenticalAtEolRemoved;
-            if (lengthIdenticalAtEol > 0)
-            {
-                yield return CreateDimmedMarker(lineRemoved, startIndexIdenticalAtEolRemoved, lengthIdenticalAtEol, GetRemovedBackColor());
-                yield return CreateDimmedMarker(lineAdded, startIndexIdenticalAtEolAdded, lengthIdenticalAtEol, GetAddedBackColor());
-                endRemoved = startIndexIdenticalAtEolRemoved;
-                endAdded = startIndexIdenticalAtEolAdded;
-            }
-
-            // match on next word
-            int endIndexDifferentRemoved;
-            int endIndexDifferentAdded;
-
-            (string? commonWord, int offsetOfWordRemoved, int offsetOfWordAdded)
-                = LinesMatcher.FindBestMatch(textRemoved[endIndexIdenticalRemoved..endRemoved],
-                                             textAdded[endIndexIdenticalAdded..endAdded]);
-            if (commonWord is not null)
-            {
-                endIndexDifferentRemoved = endIndexIdenticalRemoved + offsetOfWordRemoved;
-                endIndexDifferentAdded = endIndexIdenticalAdded + offsetOfWordAdded;
-            }
-            else
-            {
-                endIndexDifferentRemoved = endRemoved;
-                endIndexDifferentAdded = endAdded;
-            }
-
-            // find end of different part
-            while (endIndexDifferentRemoved > endIndexIdenticalRemoved && endIndexDifferentAdded > endIndexIdenticalAdded
-                && textRemoved[endIndexDifferentRemoved - 1] == textAdded[endIndexDifferentAdded - 1])
-            {
-                --endIndexDifferentRemoved;
-                --endIndexDifferentAdded;
-            }
-
-            // find end of identical part (including partial word)
-            while (endIndexIdenticalRemoved < endRemoved && endIndexIdenticalAdded < endAdded
-                && textRemoved[endIndexIdenticalRemoved] == textAdded[endIndexIdenticalAdded])
-            {
-                ++endIndexIdenticalRemoved;
-                ++endIndexIdenticalAdded;
-            }
-
-            int lengthIdentical = endIndexIdenticalRemoved - startIndexIdenticalRemoved;
-            if (lengthIdentical > 0)
-            {
-                yield return CreateDimmedMarker(lineRemoved, startIndexIdenticalRemoved, lengthIdentical, GetRemovedBackColor());
-                yield return CreateDimmedMarker(lineAdded, startIndexIdenticalAdded, lengthIdentical, GetAddedBackColor());
-                endIndexDifferentRemoved = Math.Max(endIndexDifferentRemoved, endIndexIdenticalRemoved);
-                endIndexDifferentAdded = Math.Max(endIndexDifferentAdded, endIndexIdenticalAdded);
-            }
-
-            int lengthRemoved = endIndexDifferentRemoved - endIndexIdenticalRemoved;
-            int lengthAdded = endIndexDifferentAdded - endIndexIdenticalAdded;
-            if (lengthRemoved == 0 && lengthAdded > 0)
-            {
-                yield return CreateAnchorMarker(lineRemoved, endIndexIdenticalRemoved, GetAddedForeColor());
-            }
-            else if (lengthRemoved > 0 && lengthAdded == 0)
-            {
-                yield return CreateAnchorMarker(lineAdded, endIndexIdenticalAdded, GetRemovedForeColor());
-            }
-
-            startIndexIdenticalRemoved = endIndexDifferentRemoved;
-            startIndexIdenticalAdded = endIndexDifferentAdded;
+            markers.Add(CreateDimmedMarker(offsetRemoved, lengthIdenticalAtStart, GetRemovedBackColor()));
+            markers.Add(CreateDimmedMarker(offsetAdded, lengthIdenticalAtStart, GetAddedBackColor()));
         }
 
-        yield break;
+        if (lengthIdenticalAtEnd > 0)
+        {
+            markers.Add(CreateDimmedMarker(offsetRemoved + textRemoved.Length - lengthIdenticalAtEnd, lengthIdenticalAtEnd, GetRemovedBackColor()));
+            markers.Add(CreateDimmedMarker(offsetAdded + textAdded.Length - lengthIdenticalAtEnd, lengthIdenticalAtEnd, GetAddedBackColor()));
+        }
 
-        TextMarker CreateAnchorMarker(ISegment line, int offset, Color color)
-            => new(line.Offset + beginOffset + offset, length: 0, TextMarkerType.InterChar, color);
-
-        TextMarker CreateDimmedMarker(ISegment line, int offset, int length, Color color)
-            => CreateTextMarker(line.Offset + beginOffset + offset, length, ColorHelper.DimColor(ColorHelper.DimColor(color)));
-
-        static TextMarker CreateTextMarker(int offset, int length, Color color)
-            => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
-
-        static Color GetAddedBackColor() => AppColor.AnsiTerminalGreenBackNormal.GetThemeColor();
-        static Color GetAddedForeColor() => AppColor.AnsiTerminalGreenForeBold.GetThemeColor();
-        static Color GetRemovedBackColor() => AppColor.AnsiTerminalRedBackNormal.GetThemeColor();
-        static Color GetRemovedForeColor() => AppColor.AnsiTerminalRedForeBold.GetThemeColor();
+        return markers;
     }
+
+    private static (int LengthIdenticalAtStart, int LengthIdenticalAtEnd) AddDifferenceMarkers(List<TextMarker> markers, string textRemoved, string textAdded, int offsetRemoved, int offsetAdded)
+    {
+        // removed:             added:              "d" stands for "deleted" / "i" for "inserted" -> anchor marker in added / removed
+        // "d b R a "           " b A a i"          split at "b" (stands for "before")
+        // 1.                   1.
+        // "d ""b"" R a "       " ""b"" A a i"      split at "a" (stands for "after")
+        // 5.     2.            5.    2.
+        // "d ""b"" R ""a"" "   " ""b"" A ""a"" i"  join identical
+        //        4.      3.          4.      3.
+        // "d"" b ""R"" a """   """ b ""A"" a ""i"
+
+        Debug.WriteLine($"AddDifferenceMarkers({textRemoved}, {textAdded}, {offsetRemoved}, {offsetAdded})");
+
+        int lengthIdenticalAtStart = 0;
+        int lengthIdenticalAtEnd = 0;
+
+        int endRemoved = textRemoved.Length;
+        int endAdded = textAdded.Length;
+        if (endRemoved == endAdded && textRemoved == textAdded)
+        {
+            lengthIdenticalAtStart = endRemoved;
+            Debug.WriteLine($"AddDifferenceMarkers({textRemoved}, {textAdded}, {offsetRemoved}, {offsetAdded}) -> {lengthIdenticalAtStart}, {lengthIdenticalAtEnd}");
+            return (lengthIdenticalAtStart, lengthIdenticalAtEnd);
+        }
+
+        (string? commonWord, int startIndexIdenticalRemoved, int startIndexIdenticalAdded) = LinesMatcher.FindBestMatch(textRemoved, textAdded);
+        if (commonWord is not null)
+        {
+            int lengthIdentical = commonWord.Length;
+
+            // "LeftPart|CommonWord|RightPart"
+            // "LeftPart|CommonWord|identical|Different|identical"
+            // "LeftPart|CommonWord+identical" ignored  ^^^^^^^^^ -> lengthIdenticalAtEnd (final value)
+            int startIndexRightPartRemoved = startIndexIdenticalRemoved + lengthIdentical;
+            int startIndexRightPartAdded = startIndexIdenticalAdded + lengthIdentical;
+            (int lengthIdenticalAtStartRightPart, lengthIdenticalAtEnd) = AddDifferenceMarkers(markers,
+                textRemoved[startIndexRightPartRemoved..], textAdded[startIndexRightPartAdded..],
+                offsetRemoved + startIndexRightPartRemoved, offsetAdded + startIndexRightPartAdded);
+            lengthIdentical += lengthIdenticalAtStartRightPart;
+
+            ////                                                             "LeftPart|CommonWord+identical"
+            ////                                        "identical|Different|identical|CommonWord+identical"
+            //// lengthIdenticalAtStart (final value) <- ^^^^^^^^^  ignored "identical+CommonWord+identical"
+            (lengthIdenticalAtStart, int lengthIdenticalAtLeftPartEnd) = AddDifferenceMarkers(markers,
+                textRemoved[..startIndexIdenticalRemoved], textAdded[..startIndexIdenticalAdded],
+                offsetRemoved, offsetAdded);
+            lengthIdentical += lengthIdenticalAtLeftPartEnd;
+            startIndexIdenticalRemoved -= lengthIdenticalAtLeftPartEnd;
+            startIndexIdenticalAdded -= lengthIdenticalAtLeftPartEnd;
+
+            markers.Add(CreateDimmedMarker(offsetRemoved + startIndexIdenticalRemoved, lengthIdentical, GetRemovedBackColor()));
+            markers.Add(CreateDimmedMarker(offsetAdded + startIndexIdenticalAdded, lengthIdentical, GetAddedBackColor()));
+        }
+        else
+        {
+            // find end of identical part at start
+            int minEnd = Math.Min(endRemoved, endAdded);
+            while (lengthIdenticalAtStart < minEnd
+                && textRemoved[lengthIdenticalAtStart] == textAdded[lengthIdenticalAtStart])
+            {
+                ++lengthIdenticalAtStart;
+            }
+
+            // find start of identical part at end
+            int startIndexIdenticalAtEndRemoved = endRemoved;
+            int startIndexIdenticalAtEndAdded = endAdded;
+            while (startIndexIdenticalAtEndRemoved > lengthIdenticalAtStart && startIndexIdenticalAtEndAdded > lengthIdenticalAtStart
+                && textRemoved[startIndexIdenticalAtEndRemoved - 1] == textAdded[startIndexIdenticalAtEndAdded - 1])
+            {
+                --startIndexIdenticalAtEndRemoved;
+                --startIndexIdenticalAtEndAdded;
+                ++lengthIdenticalAtEnd;
+            }
+
+            int lengthDifferentRemoved = startIndexIdenticalAtEndRemoved - lengthIdenticalAtStart;
+            int lengthDifferentAdded = startIndexIdenticalAtEndAdded - lengthIdenticalAtStart;
+            if (lengthDifferentRemoved == 0 && lengthDifferentAdded > 0)
+            {
+                markers.Add(CreateAnchorMarker(offsetRemoved + lengthIdenticalAtStart, GetAddedForeColor()));
+            }
+            else if (lengthDifferentRemoved > 0 && lengthDifferentAdded == 0)
+            {
+                markers.Add(CreateAnchorMarker(offsetAdded + lengthIdenticalAtStart, GetRemovedForeColor()));
+            }
+        }
+
+        Debug.WriteLine($"AddDifferenceMarkers({textRemoved}, {textAdded}, {offsetRemoved}, {offsetAdded}) -> {lengthIdenticalAtStart}, {lengthIdenticalAtEnd}");
+        return (lengthIdenticalAtStart, lengthIdenticalAtEnd);
+    }
+
+    private static TextMarker CreateAnchorMarker(int offset, Color color)
+        => new(offset, length: 0, TextMarkerType.InterChar, color);
+
+    private static TextMarker CreateDimmedMarker(int offset, int length, Color color)
+        => CreateTextMarker(offset, length, ColorHelper.DimColor(ColorHelper.DimColor(color)));
+
+    private static TextMarker CreateTextMarker(int offset, int length, Color color)
+        => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
+
+    private static Color GetAddedBackColor() => AppColor.AnsiTerminalGreenBackNormal.GetThemeColor();
+    private static Color GetAddedForeColor() => AppColor.AnsiTerminalGreenForeBold.GetThemeColor();
+    private static Color GetRemovedBackColor() => AppColor.AnsiTerminalRedBackNormal.GetThemeColor();
+    private static Color GetRemovedForeColor() => AppColor.AnsiTerminalRedForeBold.GetThemeColor();
 
     /// <summary>
     ///  Matches related removed and added lines in a consecutive block of a patch document and marks identical parts dimmed.
