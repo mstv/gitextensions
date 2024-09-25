@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using GitCommands;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils;
@@ -277,8 +276,6 @@ public abstract class DiffHighlightService : TextHighlightService
         //        4.      3.          4.      3.
         // "d"" b ""R"" a """   """ b ""A"" a ""i"
 
-        Debug.WriteLine($"AddDifferenceMarkers({textRemoved}, {textAdded}, {offsetRemoved}, {offsetAdded})");
-
         int lengthIdenticalAtStart = 0;
         int lengthIdenticalAtEnd = 0;
 
@@ -287,7 +284,6 @@ public abstract class DiffHighlightService : TextHighlightService
         if (endRemoved == endAdded && textRemoved == textAdded)
         {
             lengthIdenticalAtStart = endRemoved;
-            Debug.WriteLine($"AddDifferenceMarkers({textRemoved}, {textAdded}, {offsetRemoved}, {offsetAdded}) -> {lengthIdenticalAtStart}, {lengthIdenticalAtEnd}");
             return (lengthIdenticalAtStart, lengthIdenticalAtEnd);
         }
 
@@ -352,7 +348,6 @@ public abstract class DiffHighlightService : TextHighlightService
             }
         }
 
-        Debug.WriteLine($"AddDifferenceMarkers({textRemoved}, {textAdded}, {offsetRemoved}, {offsetAdded}) -> {lengthIdenticalAtStart}, {lengthIdenticalAtEnd}");
         return (lengthIdenticalAtStart, lengthIdenticalAtEnd);
     }
 
