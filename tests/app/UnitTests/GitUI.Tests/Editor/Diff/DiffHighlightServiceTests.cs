@@ -53,12 +53,12 @@ public class DiffHighlightServiceTests
         // LineSegment is hard to create. Use TextMarker as implementation type of ISegment for this test.
         const TextMarkerType dontCare = TextMarkerType.SolidBlock;
 
-        const string deletion = "d";
-        const string insertion = "i";
-        const string identicalPartBefore = " b ";
-        const string identicalPartAfter = " a ";
-        const string differentRemoved = "R";
-        const string differentAdded = "A";
+        const string deletion = nameof(deletion);
+        const string insertion = nameof(insertion);
+        const string identicalPartBefore = " identical_part_before ";
+        const string identicalPartAfter = " identical_part_after ";
+        const string differentRemoved = "RemovedX";
+        const string differentAdded = "AddedY";
         const string removedLineText = $"-{deletion}{identicalPartBefore}{differentRemoved}{identicalPartAfter}";
         const string addedLineText = $"+{identicalPartBefore}{differentAdded}{identicalPartAfter}{insertion}";
         const string text = $"{removedLineText}\n{addedLineText}";

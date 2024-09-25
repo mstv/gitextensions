@@ -106,15 +106,15 @@ internal static class LinesMatcher
         }
     }
 
-    internal static (string? CommonWord, int OffsetOfWordRemoved, int OffsetOfWordAdded) FindBestMatch(string textRemoved, string textAdded)
+    internal static (string? CommonWord, int StartIndexRemoved, int StartIndexAdded) FindBestMatch(string textRemoved, string textAdded)
     {
-        (string Word, int Offset)[] wordsRemoved = LinesMatcher.GetWords(textRemoved).ToArray();
-        (string? commonWord, int offsetOfWordAdded) = LinesMatcher.GetWords(textAdded)
+        (string Word, int StartIndex)[] wordsRemoved = LinesMatcher.GetWords(textRemoved).ToArray();
+        (string? commonWord, int startIndexOfCommonWordAdded) = LinesMatcher.GetWords(textAdded)
             .IntersectBy(wordsRemoved.Select(LinesMatcher.SelectWord), LinesMatcher.SelectWord)
             .FirstOrDefault();
         if (commonWord is not null)
         {
-            return (commonWord, wordsRemoved.First(pair => pair.Word == commonWord).Offset, offsetOfWordAdded);
+            return (commonWord, wordsRemoved.First(pair => pair.Word == commonWord).StartIndex, startIndexOfCommonWordAdded);
         }
 
         return (null, 0, 0);
@@ -147,9 +147,9 @@ internal static class LinesMatcher
         }
     }
 
-    internal static IEnumerable<(string Word, int Offset)> GetWords(string text) => GetWords(text, IsWordChar);
+    internal static IEnumerable<(string Word, int StartIndex)> GetWords(string text) => GetWords(text, IsWordChar);
 
-    internal static IEnumerable<(string Word, int Offset)> GetWords(string text, Func<char, bool> isWordChar)
+    internal static IEnumerable<(string Word, int StartIndex)> GetWords(string text, Func<char, bool> isWordChar)
     {
         int length = text.Length;
         int start = 0;
@@ -186,8 +186,8 @@ internal static class LinesMatcher
 
     internal static bool IsWordChar(char c) => TextUtilities.IsLetterDigitOrUnderscore(c);
 
-    internal static string SelectWord((string Word, int Offset) pair) => pair.Word;
-    internal static int SelectOffset((string Word, int Offset) pair) => pair.Offset;
+    internal static string SelectWord((string Word, int StartIndex) pair) => pair.Word;
+    internal static int SelectStartIndex((string Word, int StartIndex) pair) => pair.StartIndex;
 
     [DebuggerDisplay("{Line.Offset}: {Trimmed}")]
     private readonly struct LineData
