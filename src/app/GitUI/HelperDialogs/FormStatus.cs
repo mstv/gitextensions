@@ -36,6 +36,14 @@ namespace GitUI.HelperDialogs
             pnlOutput.Controls.Add(ConsoleOutput);
             ConsoleOutput.Dock = DockStyle.Fill;
 
+            Password.AllowDrop = true;
+            Password.DragDrop += Password_DragDrop;
+            Password.DragEnter += Password_DragEnter;
+            Password.DragOver += Password_DragEnter;
+            Password.GotFocus += Password_GotFocus;
+            Password.LostFocus += Password_LostFocus;
+            ShowPassword.Checked = AppSettings.ShowProcessDialogPasswordInput.Value;
+
             if (_useDialogSettings)
             {
                 KeepDialogOpen.Checked = !AppSettings.CloseProcessDialog;
@@ -116,6 +124,8 @@ namespace GitUI.HelperDialogs
 
             form.ProgressBar.Visible = false;
             form.KeepDialogOpen.Visible = false;
+            form.ShowPassword.Visible = false;
+            form.PasswordPanel.Visible = false;
             form.Abort.Visible = false;
 
             form.StartPosition = FormStartPosition.CenterParent;
@@ -159,6 +169,8 @@ namespace GitUI.HelperDialogs
                 _errorOccurred = !isSuccess;
 
                 AppendMessage("Done");
+                PasswordPanel.Visible = false;
+                ShowPassword.Visible = false;
                 ProgressBar.Visible = false;
                 Ok.Enabled = true;
                 Ok.Focus();
@@ -185,9 +197,11 @@ namespace GitUI.HelperDialogs
             SetIcon(Images.StatusBadgeWaiting);
             ConsoleOutput.Reset();
             OutputLog.Clear();
+            ShowPassword.Visible = true;
+            PasswordPanel.Visible = ShowPassword.Checked;
             ProgressBar.Visible = true;
             Ok.Enabled = false;
-            ActiveControl = null;
+            ActiveControl = Password.Visible ? Password : null;
         }
 
         private void SetIcon(Bitmap image)
@@ -259,6 +273,61 @@ namespace GitUI.HelperDialogs
             if ((!KeepDialogOpen.Checked /* keep off */) && Ok.Enabled /* done */ && (!_errorOccurred /* and successful */))
             {
                 Close();
+            }
+        }
+
+        private void ShowPassword_CheckedChanged(object sender, EventArgs e)
+        {
+            AppSettings.ShowProcessDialogPasswordInput.Value = ShowPassword.Checked;
+            PasswordPanel.Visible = ShowPassword.Checked;
+        }
+
+        private void PasswordSend_Click(object sender, EventArgs e)
+        {
+            if (!Ok.Enabled)
+            {
+                ConsoleOutput.AppendInput(Password.Text + "\n");
+                Password.Text = "";
+            }
+        }
+
+        private void Password_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.Text))
+            {
+                e.Effect = DragDropEffects.Copy;
+                Password.Focus();
+
+                // Workaround for a bug in GetCharIndexFromPosition: It cannot return the position after the last character
+                string original = Password.Text;
+                Password.Text = Password.Text + " ";
+                int pos = Password.GetCharIndexFromPosition(Password.PointToClient(new Point(e.X, e.Y)));
+                Password.Text = original;
+                Password.Select(pos, 0);
+            }
+        }
+
+        private void Password_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.Text))
+            {
+                Password.Paste(e.Data.GetData(DataFormats.Text).ToString());
+            }
+        }
+
+        private void Password_GotFocus(object sender, EventArgs e)
+        {
+            if (!Ok.Enabled)
+            {
+                AcceptButton = PasswordSend;
+            }
+        }
+
+        private void Password_LostFocus(object sender, EventArgs e)
+        {
+            if (AcceptButton == PasswordSend)
+            {
+                AcceptButton = null;
             }
         }
 

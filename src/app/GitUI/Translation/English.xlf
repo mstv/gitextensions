@@ -6359,15 +6359,23 @@ Stash them before if you don't want to lose them.</source>
         <target />
       </trans-unit>
       <trans-unit id="Abort.Text">
-        <source>Abort</source>
+        <source>&amp;Abort</source>
         <target />
       </trans-unit>
       <trans-unit id="KeepDialogOpen.Text">
-        <source>Keep dialog open</source>
+        <source>&amp;Keep dialog open</source>
         <target />
       </trans-unit>
       <trans-unit id="Ok.Text">
         <source>OK</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="PasswordSend.Text">
+        <source>Send input</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="ShowPassword.Text">
+        <source>Show &amp;password input</source>
         <target />
       </trans-unit>
       <trans-unit id="_fingerprintNotRegistredText.Text">
@@ -7435,15 +7443,23 @@ Therefore the Cancel button does NOT revert any changes made.</source>
         <target />
       </trans-unit>
       <trans-unit id="Abort.Text">
-        <source>Abort</source>
+        <source>&amp;Abort</source>
         <target />
       </trans-unit>
       <trans-unit id="KeepDialogOpen.Text">
-        <source>Keep dialog open</source>
+        <source>&amp;Keep dialog open</source>
         <target />
       </trans-unit>
       <trans-unit id="Ok.Text">
         <source>OK</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="PasswordSend.Text">
+        <source>Send input</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="ShowPassword.Text">
+        <source>Show &amp;password input</source>
         <target />
       </trans-unit>
     </body>
