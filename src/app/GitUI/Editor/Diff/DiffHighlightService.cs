@@ -13,6 +13,9 @@ namespace GitUI.Editor.Diff;
 /// </summary>
 public abstract class DiffHighlightService : TextHighlightService
 {
+    private static readonly Color _addedBackColor = AppColor.AnsiTerminalGreenBackNormal.GetThemeColor();
+    private static readonly Color _removedBackColor = AppColor.AnsiTerminalRedBackNormal.GetThemeColor();
+
     protected readonly bool _useGitColoring;
     protected readonly List<TextMarker> _textMarkers = [];
 
@@ -107,7 +110,7 @@ public abstract class DiffHighlightService : TextHighlightService
             // Apply GE word highlighting for Patch display (may apply to Difftastic setting, if not available for a repo)
             if (AppSettings.DiffDisplayAppearance.Value != GitCommands.Settings.DiffDisplayAppearance.GitWordDiff)
             {
-                AddExtraPatchHighlighting(document);
+                MarkInlineDifferences(document);
             }
 
             foreach (TextMarker tm in _textMarkers)
@@ -118,22 +121,15 @@ public abstract class DiffHighlightService : TextHighlightService
             return;
         }
 
-        bool forceAbort = false;
+        MarkInlineDifferences(document);
 
-        AddExtraPatchHighlighting(document);
-
-        for (int line = 0; line < document.TotalNumberOfLines && !forceAbort; line++)
+        for (int line = 0; line < document.TotalNumberOfLines; line++)
         {
             LineSegment lineSegment = document.GetLineSegment(line);
 
             if (lineSegment.TotalLength == 0)
             {
                 continue;
-            }
-
-            if (line == document.TotalNumberOfLines - 1)
-            {
-                forceAbort = true;
             }
 
             line = TryHighlightAddedAndDeletedLines(document, line, lineSegment);
@@ -228,28 +224,38 @@ public abstract class DiffHighlightService : TextHighlightService
         text = sb.ToString();
     }
 
-    private static void MarkDifference(IDocument document, List<ISegment> linesRemoved, List<ISegment> linesAdded, int beginOffset)
+    /// <summary>
+    ///  Matches related removed and added lines in a consecutive block and marks identical parts dimmed.
+    /// </summary>
+    private static void MarkInlineDifferences(IDocument document, IReadOnlyList<ISegment> linesRemoved, IReadOnlyList<ISegment> linesAdded, int beginOffset)
     {
-        int count = Math.Min(linesRemoved.Count, linesAdded.Count);
+        Func<ISegment, string> getText = line => document.GetText(line.Offset + beginOffset, line.Length - beginOffset);
+        document.MarkerStrategy.AddMarkers(GetDifferenceMarkers(document.GetCharAt, getText, linesRemoved, linesAdded, beginOffset));
+    }
 
-        for (int i = 0; i < count; i++)
+    private static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, Func<ISegment, string> getText, IReadOnlyList<ISegment> linesRemoved, IReadOnlyList<ISegment> linesAdded, int beginOffset)
+    {
+        foreach ((ISegment lineRemoved, ISegment lineAdded) in LinesMatcher.FindLinePairs(getText, linesRemoved, linesAdded))
         {
-            MarkDifference(document, linesRemoved[i], linesAdded[i], beginOffset);
+            foreach (TextMarker marker in GetDifferenceMarkers(getCharAt, lineRemoved, lineAdded, beginOffset))
+            {
+                yield return marker;
+            }
         }
     }
 
-    private static void MarkDifference(IDocument document, ISegment lineRemoved,
-        ISegment lineAdded, int beginOffset)
+    internal static IEnumerable<TextMarker> GetDifferenceMarkers(Func<int, char> getCharAt, ISegment lineRemoved, ISegment lineAdded, int lineStartOffset)
     {
         int lineRemovedEndOffset = lineRemoved.Length;
         int lineAddedEndOffset = lineAdded.Length;
         int endOffsetMin = Math.Min(lineRemovedEndOffset, lineAddedEndOffset);
+        int beginOffset = lineStartOffset;
         int reverseOffset = 0;
 
         while (beginOffset < endOffsetMin)
         {
-            char a = document.GetCharAt(lineAdded.Offset + beginOffset);
-            char r = document.GetCharAt(lineRemoved.Offset + beginOffset);
+            char a = getCharAt(lineAdded.Offset + beginOffset);
+            char r = getCharAt(lineRemoved.Offset + beginOffset);
 
             if (a != r)
             {
@@ -271,8 +277,8 @@ public abstract class DiffHighlightService : TextHighlightService
                 break;
             }
 
-            char a = document.GetCharAt(lineAdded.Offset + addedOffset);
-            char r = document.GetCharAt(lineRemoved.Offset + removedOffset);
+            char a = getCharAt(lineAdded.Offset + addedOffset);
+            char r = getCharAt(lineRemoved.Offset + removedOffset);
 
             if (a != r)
             {
@@ -283,63 +289,97 @@ public abstract class DiffHighlightService : TextHighlightService
             lineAddedEndOffset--;
         }
 
-        Color color;
-        MarkerStrategy markerStrategy = document.MarkerStrategy;
-
-        if (lineAdded.Length - beginOffset - reverseOffset > 0)
+        int addedLength = lineAdded.Length - beginOffset - reverseOffset;
+        if (addedLength > 0)
         {
-            color = AppColor.AnsiTerminalGreenBackBold.GetThemeColor();
-            markerStrategy.AddMarker(new TextMarker(lineAdded.Offset + beginOffset,
-                                                    lineAdded.Length - beginOffset - reverseOffset,
-                                                    TextMarkerType.SolidBlock, color,
-                                                    ColorHelper.GetForeColorForBackColor(color)));
+            int beforeLength = beginOffset - lineStartOffset;
+            if (beforeLength > 0)
+            {
+                yield return CreateDimmedMarker(lineAdded.Offset + lineStartOffset, beforeLength, _addedBackColor);
+            }
+
+            int afterBegin = beginOffset + addedLength;
+            int afterLength = lineAdded.Length - afterBegin;
+            if (afterLength > 0)
+            {
+                yield return CreateDimmedMarker(lineAdded.Offset + afterBegin, afterLength, _addedBackColor);
+            }
+        }
+        else
+        {
+            int length = lineAdded.Length - lineStartOffset;
+            if (length > 0)
+            {
+                yield return CreateDimmedMarker(lineAdded.Offset + lineStartOffset, length, _addedBackColor);
+            }
         }
 
-        if (lineRemoved.Length - beginOffset - reverseOffset > 0)
+        int removedLength = lineRemoved.Length - beginOffset - reverseOffset;
+        if (removedLength > 0)
         {
-            color = AppColor.AnsiTerminalRedBackBold.GetThemeColor();
-            markerStrategy.AddMarker(new TextMarker(lineRemoved.Offset + beginOffset,
-                                                    lineRemoved.Length - beginOffset - reverseOffset,
-                                                    TextMarkerType.SolidBlock, color,
-                                                    ColorHelper.GetForeColorForBackColor(color)));
+            int beforeLength = beginOffset - lineStartOffset;
+            if (beforeLength > 0)
+            {
+                yield return CreateDimmedMarker(lineRemoved.Offset + lineStartOffset, beforeLength, _removedBackColor);
+            }
+
+            int afterBegin = beginOffset + removedLength;
+            int afterLength = lineRemoved.Length - afterBegin;
+            if (afterLength > 0)
+            {
+                yield return CreateDimmedMarker(lineRemoved.Offset + afterBegin, afterLength, _removedBackColor);
+            }
+        }
+        else
+        {
+            int length = lineRemoved.Length - lineStartOffset;
+            if (length > 0)
+            {
+                yield return CreateDimmedMarker(lineRemoved.Offset + lineStartOffset, length, _removedBackColor);
+            }
         }
     }
 
-    private void AddExtraPatchHighlighting(IDocument document)
+    /// <summary>
+    ///  Matches related removed and added lines in a consecutive block of a patch document and marks identical parts dimmed.
+    /// </summary>
+    private void MarkInlineDifferences(IDocument document)
     {
         int line = 0;
-
         bool found = false;
-        int diffContentOffset;
-        List<ISegment> linesRemoved = GetRemovedLines(document, ref line, ref found);
-        List<ISegment> linesAdded = GetAddedLines(document, ref line, ref found);
-        if (linesAdded.Count == 1 && linesRemoved.Count == 1)
-        {
-            ISegment lineA = linesRemoved[0];
-            ISegment lineB = linesAdded[0];
-            if (lineA.Length > 4 && lineB.Length > 4 &&
-                document.GetCharAt(lineA.Offset + 4) == 'a' &&
-                document.GetCharAt(lineB.Offset + 4) == 'b')
-            {
-                diffContentOffset = 5;
-            }
-            else
-            {
-                diffContentOffset = 4;
-            }
 
-            MarkDifference(document, linesRemoved, linesAdded, diffContentOffset);
+        // Skip the first pair of removed / added lines, which uses to contain the filenames - but without highlighting
+        _ = GetRemovedLines(document, ref line, ref found);
+        if (found)
+        {
+            _ = GetAddedLines(document, ref line, ref found);
         }
 
-        // overlap when marking
-        diffContentOffset = 1;
+        // Process the next blocks of removed / added lines and mark in-line differences
+        const int diffContentOffset = 1; // in order to skip the prefixes '-' / '+'
         while (line < document.TotalNumberOfLines)
         {
             found = false;
-            linesRemoved = GetRemovedLines(document, ref line, ref found);
-            linesAdded = GetAddedLines(document, ref line, ref found);
 
-            MarkDifference(document, linesRemoved, linesAdded, diffContentOffset);
+            List<ISegment> linesRemoved = GetRemovedLines(document, ref line, ref found);
+            if (!found)
+            {
+                continue;
+            }
+
+            List<ISegment> linesAdded = GetAddedLines(document, ref line, ref found);
+            if (!found)
+            {
+                continue;
+            }
+
+            MarkInlineDifferences(document, linesRemoved, linesAdded, diffContentOffset);
         }
     }
+
+    private static TextMarker CreateDimmedMarker(int offset, int length, Color color)
+        => CreateTextMarker(offset, length, ColorHelper.DimColor(ColorHelper.DimColor(color)));
+
+    private static TextMarker CreateTextMarker(int offset, int length, Color color)
+        => new(offset, length, TextMarkerType.SolidBlock, color, ColorHelper.GetForeColorForBackColor(color));
 }
