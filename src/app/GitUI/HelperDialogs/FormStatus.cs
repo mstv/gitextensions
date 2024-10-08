@@ -1,5 +1,8 @@
+using System.Diagnostics;
 using GitCommands;
 using GitExtensions.Extensibility.Git;
+using GitExtUtils;
+using GitUI.Models;
 using GitUI.Properties;
 using GitUI.UserControls;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -36,6 +39,14 @@ namespace GitUI.HelperDialogs
             pnlOutput.Controls.Add(ConsoleOutput);
             ConsoleOutput.Dock = DockStyle.Fill;
 
+            Password.AllowDrop = true;
+            Password.DragDrop += Password_DragDrop;
+            Password.DragEnter += Password_DragEnter;
+            Password.DragOver += Password_DragEnter;
+            Password.GotFocus += Password_GotFocus;
+            Password.LostFocus += Password_LostFocus;
+            ShowPassword.Checked = AppSettings.ShowProcessDialogPasswordInput.Value;
+
             if (_useDialogSettings)
             {
                 KeepDialogOpen.Checked = !AppSettings.CloseProcessDialog;
@@ -50,6 +61,9 @@ namespace GitUI.HelperDialogs
 
             InitializeComplete();
         }
+
+        public string? ProcessString { get; protected init; }
+        public string? ProcessArguments { get; set; }
 
         /// <summary>
         /// Clean up any resources being used.
@@ -116,12 +130,14 @@ namespace GitUI.HelperDialogs
 
             form.ProgressBar.Visible = false;
             form.KeepDialogOpen.Visible = false;
+            form.ShowPassword.Visible = false;
+            form.PasswordPanel.Visible = false;
             form.Abort.Visible = false;
 
             form.StartPosition = FormStartPosition.CenterParent;
 
             // We know that an operation (whatever it may have been) has failed, so set the error state.
-            form.Done(false);
+            form.Done(isSuccess: false);
 
             form.ShowDialog(owner);
         }
@@ -156,7 +172,21 @@ namespace GitUI.HelperDialogs
         {
             try
             {
+                _errorOccurred = !isSuccess;
+
+                try
+                {
+                    RunProcessInfo runProcessInfo = new(ProcessString, ProcessArguments, GetOutputString(), DateTime.Now);
+                    UICommands.GetRequiredService<IOutputHistoryModel>().RecordHistory(runProcessInfo);
+                }
+                catch (Exception exception)
+                {
+                    Trace.WriteLine(exception);
+                }
+
                 AppendMessage("Done");
+                PasswordPanel.Visible = false;
+                ShowPassword.Visible = false;
                 ProgressBar.Visible = false;
                 Ok.Enabled = true;
                 Ok.Focus();
@@ -167,16 +197,15 @@ namespace GitUI.HelperDialogs
                 Bitmap image = isSuccess ? Images.StatusBadgeSuccess : Images.StatusBadgeError;
                 SetIcon(image);
 
-                _errorOccurred = !isSuccess;
-
                 if (isSuccess && (_useDialogSettings && AppSettings.CloseProcessDialog))
                 {
                     Close();
                 }
             }
-            catch (ConEmu.WinForms.GuiMacroExecutor.GuiMacroException)
+            catch (ConEmu.WinForms.GuiMacroExecutor.GuiMacroException guiMacroException)
             {
                 // Do nothing
+                Trace.WriteLine(guiMacroException);
             }
         }
 
@@ -185,9 +214,11 @@ namespace GitUI.HelperDialogs
             SetIcon(Images.StatusBadgeWaiting);
             ConsoleOutput.Reset();
             OutputLog.Clear();
+            ShowPassword.Visible = true;
+            PasswordPanel.Visible = ShowPassword.Checked;
             ProgressBar.Visible = true;
             Ok.Enabled = false;
-            ActiveControl = null;
+            ActiveControl = Password.Visible ? Password : null;
         }
 
         private void SetIcon(Bitmap image)
@@ -242,7 +273,7 @@ namespace GitUI.HelperDialogs
             {
                 AbortCallback?.Invoke(this);
                 OutputLog.Append(Environment.NewLine + "Aborted");  // TODO: write to display control also, if we pull the function up to this base class
-                Done(false);
+                Done(isSuccess: false);
                 DialogResult = DialogResult.Abort;
             }
             catch
@@ -259,6 +290,61 @@ namespace GitUI.HelperDialogs
             if ((!KeepDialogOpen.Checked /* keep off */) && Ok.Enabled /* done */ && (!_errorOccurred /* and successful */))
             {
                 Close();
+            }
+        }
+
+        private void ShowPassword_CheckedChanged(object sender, EventArgs e)
+        {
+            AppSettings.ShowProcessDialogPasswordInput.Value = ShowPassword.Checked;
+            PasswordPanel.Visible = ShowPassword.Checked;
+        }
+
+        private void PasswordSend_Click(object sender, EventArgs e)
+        {
+            if (!Ok.Enabled)
+            {
+                ConsoleOutput.AppendInput(Password.Text + "\n");
+                Password.Text = "";
+            }
+        }
+
+        private void Password_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.Text))
+            {
+                e.Effect = DragDropEffects.Copy;
+                Password.Focus();
+
+                // Workaround for a bug in GetCharIndexFromPosition: It cannot return the position after the last character
+                string original = Password.Text;
+                Password.Text = Password.Text + " ";
+                int pos = Password.GetCharIndexFromPosition(Password.PointToClient(new Point(e.X, e.Y)));
+                Password.Text = original;
+                Password.Select(pos, 0);
+            }
+        }
+
+        private void Password_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.Text))
+            {
+                Password.Paste(e.Data.GetData(DataFormats.Text).ToString());
+            }
+        }
+
+        private void Password_GotFocus(object sender, EventArgs e)
+        {
+            if (!Ok.Enabled)
+            {
+                AcceptButton = PasswordSend;
+            }
+        }
+
+        private void Password_LostFocus(object sender, EventArgs e)
+        {
+            if (AcceptButton == PasswordSend)
+            {
+                AcceptButton = null;
             }
         }
 
