@@ -22,8 +22,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
         private readonly ShellProvider _shellProvider = new();
         private int _cboTerminalPreviousIndex = -1;
 
-        public FormBrowseRepoSettingsPage(IServiceProvider serviceProvider)
-            : base(serviceProvider)
+        public FormBrowseRepoSettingsPage(IServiceProvider serviceProvider, ISettingsPageHost pageHost)
+            : base(serviceProvider, pageHost)
         {
             InitializeComponent();
             cboTerminal.DisplayMember = "Name";
@@ -32,11 +32,6 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
                 .LoadHotkeys(FormBrowse.HotkeySettingsName)
                 .GetShortcutDisplay(FormBrowse.Command.FocusOutputHistoryAndToggleIfPanel);
             chkShowOutputHistoryAsTab.ToolTipText = string.Format(_outputHistoryTooltip.Text, hotkey);
-        }
-
-        protected override void Init(ISettingsPageHost pageHost)
-        {
-            base.Init(pageHost);
         }
 
         protected override void OnRuntimeLoad()
