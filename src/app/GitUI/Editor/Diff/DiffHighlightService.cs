@@ -176,46 +176,31 @@ public abstract class DiffHighlightService : TextHighlightService
     private void MarkInlineDifferences(IDocument document)
     {
         int index = 0;
-        List<DiffLineInfo> diffLines = [.. _diffLinesInfo.DiffLines.Values.OrderBy(i => i.LineNumInDiff)];
-        bool found = false;
+        DiffLineInfo[] diffLines = [.. _diffLinesInfo.DiffLines.Values.OrderBy(l => l.LineNumInDiff)];
 
         const int diffContentOffset = 1; // in order to skip the prefixes '-' / '+'
         MarkerStrategy markerStrategy = document.MarkerStrategy;
 
         // Process the next blocks of removed / added diffLines and mark in-line differences
-        while (index < diffLines.Count)
+        while (index < diffLines.Length)
         {
-            found = false;
+            bool found = false;
 
             // git-diff presents the removed lines directly followed by the added in a "block"
             IReadOnlyList<ISegment> linesRemoved = GetBlockOfLines(diffLines, DiffLineType.Minus, ref index, ref found);
             IReadOnlyList<ISegment> linesAdded = GetBlockOfLines(diffLines, DiffLineType.Plus, ref index, ref found);
-
-            foreach (TextMarker marker in GetDifferenceMarkers(GetText, linesRemoved, linesAdded, diffContentOffset))
-            {
-                markerStrategy.AddMarker(marker);
-            }
+            markerStrategy.AddMarkers(GetDifferenceMarkers(GetText, linesRemoved, linesAdded, diffContentOffset));
         }
 
         return;
 
         string GetText(ISegment line)
-        {
-            int len = line.Length - diffContentOffset;
-            if (line.Offset + line.Length >= document.TextLength)
-            {
-                // This is likely a test, where last line do not have a newline
-                --len;
-            }
-
-            return document.GetText(line.Offset + diffContentOffset, len);
-        }
+            => document.GetText(line.Offset + diffContentOffset, line.Length - diffContentOffset);
     }
 
-    private List<ISegment> GetAllLines(DiffLineType diffLineType)
-    => _diffLinesInfo?.DiffLines.Where(i => i.Value.LineType == diffLineType && i.Value.LineSegment is not null)
-            .Select(i => i.Value.LineSegment)
-            .ToList()
+    private IEnumerable<ISegment> GetAllLines(DiffLineType diffLineType)
+        => _diffLinesInfo?.DiffLines.Where(i => i.Value.LineType == diffLineType && i.Value.LineSegment is not null)
+            .Select(l => l.Value.LineSegment)
             ?? [];
 
     /// <summary>
@@ -226,18 +211,18 @@ public abstract class DiffHighlightService : TextHighlightService
     /// <param name="index">The index in diffLines to start with.</param>
     /// <param name="found">If a lineInDiff was found. This is also used to get the added diffLines just after the removed.</param>
     /// <returns>The block of segments.</returns>
-    private static List<ISegment> GetBlockOfLines(List<DiffLineInfo> diffLines, DiffLineType diffLineType, ref int index, ref bool found)
+    private static List<ISegment> GetBlockOfLines(DiffLineInfo[] diffLines, DiffLineType diffLineType, ref int index, ref bool found)
     {
         List<ISegment> result = [];
 
-        for (; index < diffLines.Count; ++index)
+        for (; index < diffLines.Length; ++index)
         {
             DiffLineInfo diffLine = diffLines[index];
             if (diffLine.LineType != diffLineType)
             {
                 if (!found)
                 {
-                    // Start of block is not found yet.
+                    // Start of block not found yet
                     continue;
                 }
 
