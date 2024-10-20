@@ -309,6 +309,8 @@ namespace GitUI.CommandsDialogs
                 gpgSignCommitToolStripComboBox.SelectedIndex = 0;
             }
 
+            gpgSignCommitToolStripComboBox.ResizeDropDownWidth(minWidth: 50, maxWidth: 250);
+
             ((ToolStripDropDownMenu)commitTemplatesToolStripMenuItem.DropDown).ShowImageMargin = true;
             ((ToolStripDropDownMenu)commitTemplatesToolStripMenuItem.DropDown).ShowCheckMargin = false;
 
@@ -1406,7 +1408,7 @@ namespace GitUI.CommandsDialogs
                         _commitMessageManager.CommitMessagePath,
                         Module.GetPathForGitExecution,
                         noVerifyToolStripMenuItem.Checked,
-                        gpgSignCommitToolStripComboBox.SelectedIndex > 0,
+                        gpgSignCommitToolStripComboBox.SelectedIndex == 0 ? null : gpgSignCommitToolStripComboBox.SelectedIndex > 1,
                         toolStripGpgKeyTextBox.Text,
                         Staged.IsEmpty,
                         resetAuthor);

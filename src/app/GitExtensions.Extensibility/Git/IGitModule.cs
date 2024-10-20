@@ -435,7 +435,7 @@ public interface IGitModule
 
     bool ExistsMergeCommit(string? startRev, string? endRev);
 
-    string GetFileText(ObjectId id, Encoding encoding);
+    string GetFileText(ObjectId id, Encoding encoding, bool stripAnsiEscapeCodes);
 
     MemoryStream? GetFileStream(string blob);
 
@@ -502,7 +502,6 @@ public interface IGitModule
     /// </returns>
     string GetRemoteBranch(string branch);
 
-    string RenameBranch(string name, string newName);
     IReadOnlyList<GitItemStatus> GetGrepFilesStatus(ObjectId objectId, string grepString, CancellationToken cancellationToken);
     Task<ExecutionResult> GetGrepFileAsync(
         ObjectId objectId,
