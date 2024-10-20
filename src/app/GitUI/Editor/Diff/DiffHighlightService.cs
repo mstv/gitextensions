@@ -186,7 +186,7 @@ public abstract class DiffHighlightService : TextHighlightService
     {
         int index = 0;
         DiffLineInfo[] diffLines = [.. _diffLinesInfo.DiffLines.Values.OrderBy(l => l.LineNumInDiff)];
-        const int diffContentOffset = 1; // in order to skip the prefixes '-' / '+'
+        const int diffContentOffset = 1; // in order to skip the prefixes '-' / '+' (this is only for normal patch format)
 
         // Process the next blocks of removed / added diffLines and mark in-line differences
         while (index < diffLines.Length)
@@ -232,6 +232,7 @@ public abstract class DiffHighlightService : TextHighlightService
     private static List<ISegment> GetBlockOfLines(DiffLineInfo[] diffLines, DiffLineType diffLineType, ref int index, bool found)
     {
         List<ISegment> result = [];
+        int gapLines = 0;
 
         for (; index < diffLines.Length; ++index)
         {
@@ -244,11 +245,20 @@ public abstract class DiffHighlightService : TextHighlightService
                     continue;
                 }
 
+                const int maxGapLines = 5;
+                if (diffLine?.LineType == DiffLineType.Context && gapLines < maxGapLines)
+                {
+                    // A gap context diffLines, the block can be extended
+                    ++gapLines;
+                    continue;
+                }
+
                 // Block ended, no more to add (next start search here)
                 break;
             }
 
             ArgumentNullException.ThrowIfNull(diffLine.LineSegment);
+            gapLines = 0;
             if (diffLine.IsMovedLine)
             {
                 // Ignore this line, seem to be moved
