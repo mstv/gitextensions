@@ -138,15 +138,15 @@ public abstract class DiffHighlightService : TextHighlightService
     /// <param name="text">The text to process.</param>
     internal void SetHighlighting(string text)
     {
-        if (!_useGitColoring)
-        {
-            HighlightAddedAndDeletedLines(_textMarkers);
-        }
-
         // Apply GE word highlighting for Patch display (may apply to Difftastic setting, if not available for a repo)
         if (!_useGitColoring || AppSettings.DiffDisplayAppearance.Value != GitCommands.Settings.DiffDisplayAppearance.GitWordDiff)
         {
-            MarkInlineDifferences(text, _textMarkers);
+            InsertInlineDifferenceMarkers(_textMarkers, text);
+        }
+
+        if (!_useGitColoring)
+        {
+            HighlightAddedAndDeletedLines(_textMarkers);
         }
     }
 
@@ -176,11 +176,15 @@ public abstract class DiffHighlightService : TextHighlightService
     /// <summary>
     ///  Matches related removed and added lines in a consecutive block of a patch document and marks identical parts dimmed.
     /// </summary>
-    private void MarkInlineDifferences(string text, List<TextMarker> textMarkers)
+    private void InsertInlineDifferenceMarkers(List<TextMarker> textMarkers, string text)
     {
         int index = 0;
         DiffLineInfo[] diffLines = [.. _diffLinesInfo.DiffLines.Values.OrderBy(l => l.LineNumInDiff)];
-        int insertLine = 0;
+
+        // The in-line diffs must be inserted before the diff (normally from Git)
+        // to override the markings (the original markers are not changed).
+        // Insert pos is used to insert them in order.
+        int insertPos = 0;
         const int diffContentOffset = 1; // in order to skip the prefixes '-' / '+'
 
         // Process the next blocks of removed / added diffLines and mark in-line differences
@@ -199,9 +203,7 @@ public abstract class DiffHighlightService : TextHighlightService
                 continue;
             }
 
-            IEnumerable<TextMarker> addMarkers = GetDifferenceMarkers(text, linesRemoved, linesAdded, diffContentOffset);
-            textMarkers.InsertRange(insertLine, addMarkers);
-            insertLine += addMarkers.Count();
+            InsertInlineDifferenceMarkers(textMarkers, insertPos, text, linesRemoved, linesAdded, diffContentOffset);
         }
     }
 
@@ -252,21 +254,20 @@ public abstract class DiffHighlightService : TextHighlightService
         return result;
     }
 
-    private static IEnumerable<TextMarker> GetDifferenceMarkers(string text, IReadOnlyList<ISegment> linesRemoved, IReadOnlyList<ISegment> linesAdded, int beginOffset)
+    private static void InsertInlineDifferenceMarkers(List<TextMarker> markers, int insertPos, string text, IReadOnlyList<ISegment> linesRemoved, IReadOnlyList<ISegment> linesAdded, int beginOffset)
     {
-        List<TextMarker> markers = [];
         foreach ((ISegment lineRemoved, ISegment lineAdded) in LinesMatcher.FindLinePairs(GetText, linesRemoved, linesAdded))
         {
-            AddDifferenceMarkers(markers, GetText, lineRemoved, lineAdded, beginOffset);
+            InsertDifferenceMarkers(markers, insertPos, GetText, lineRemoved, lineAdded, beginOffset);
         }
 
-        return markers;
+        return;
 
         string GetText(ISegment line)
             => text.Substring(line.Offset + beginOffset, line.Length - beginOffset);
     }
 
-    internal static void AddDifferenceMarkers(List<TextMarker> markers, Func<ISegment, string> getText, ISegment lineRemoved, ISegment lineAdded, int beginOffset)
+    internal static void InsertDifferenceMarkers(List<TextMarker> markers, int insertPos, Func<ISegment, string> getText, ISegment lineRemoved, ISegment lineAdded, int beginOffset)
     {
         ReadOnlySpan<char> textRemoved = getText(lineRemoved).AsSpan();
         ReadOnlySpan<char> textAdded = getText(lineAdded).AsSpan();
@@ -276,14 +277,14 @@ public abstract class DiffHighlightService : TextHighlightService
 
         if (lengthIdenticalAtStart > 0)
         {
-            markers.Add(CreateDimmedMarker(offsetRemoved, lengthIdenticalAtStart, _removedBackColor));
-            markers.Add(CreateDimmedMarker(offsetAdded, lengthIdenticalAtStart, _addedBackColor));
+            markers.Insert(insertPos, CreateDimmedMarker(offsetRemoved, lengthIdenticalAtStart, _removedBackColor));
+            markers.Insert(insertPos, CreateDimmedMarker(offsetAdded, lengthIdenticalAtStart, _addedBackColor));
         }
 
         if (lengthIdenticalAtEnd > 0)
         {
-            markers.Add(CreateDimmedMarker(offsetRemoved + textRemoved.Length - lengthIdenticalAtEnd, lengthIdenticalAtEnd, _removedBackColor));
-            markers.Add(CreateDimmedMarker(offsetAdded + textAdded.Length - lengthIdenticalAtEnd, lengthIdenticalAtEnd, _addedBackColor));
+            markers.Insert(insertPos, CreateDimmedMarker(offsetRemoved + textRemoved.Length - lengthIdenticalAtEnd, lengthIdenticalAtEnd, _removedBackColor));
+            markers.Insert(insertPos, CreateDimmedMarker(offsetAdded + textAdded.Length - lengthIdenticalAtEnd, lengthIdenticalAtEnd, _addedBackColor));
         }
     }
 
