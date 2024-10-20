@@ -166,6 +166,18 @@ namespace GitUI.HelperDialogs
         private protected void AppendMessage(string text)
         {
             ConsoleOutput.AppendMessageFreeThreaded(text);
+
+            if (!text.EndsWith('\n'))
+            {
+                this.InvokeAndForget(() =>
+                {
+                    if (ShowPassword.CheckState == CheckState.Unchecked)
+                    {
+                        ShowPassword.CheckState = CheckState.Indeterminate;
+                        Password.Focus();
+                    }
+                });
+            }
         }
 
         private protected void Done(bool isSuccess)
@@ -295,8 +307,8 @@ namespace GitUI.HelperDialogs
 
         private void ShowPassword_CheckedChanged(object sender, EventArgs e)
         {
-            AppSettings.ShowProcessDialogPasswordInput.Value = ShowPassword.Checked;
-            PasswordPanel.Visible = ShowPassword.Checked;
+            AppSettings.ShowProcessDialogPasswordInput.Value = ShowPassword.CheckState == CheckState.Checked;
+            PasswordPanel.Visible = ShowPassword.CheckState != CheckState.Unchecked;
         }
 
         private void PasswordSend_Click(object sender, EventArgs e)
