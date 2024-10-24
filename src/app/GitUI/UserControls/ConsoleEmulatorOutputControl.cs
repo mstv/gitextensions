@@ -46,7 +46,7 @@ namespace GitUI.UserControls
         public override void AppendInput(string text)
         {
             Validates.NotNull(_terminal);
-            _terminal.RunningSession?.WriteInputTextAsync(text);
+            this.InvokeAndForget(() => _terminal.RunningSession?.WriteInputTextAsync(text));
         }
 
         public override void KillProcess()
