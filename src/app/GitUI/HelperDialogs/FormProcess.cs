@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using GitCommands;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
@@ -185,6 +186,11 @@ namespace GitUI.HelperDialogs
 
         private void DataReceivedCore(object sender, TextEventArgs e)
         {
+            if (e.Text.AsSpan().TrimEnd().ContainsAny(Delimiters.LineFeedAndCarriageReturn))
+            {
+                Trace.WriteLine($"LF/CR in {e.Text.Replace("\r", @"\r").Replace("\n", @"\n")}§");
+            }
+
             if (e.Text.EndsWith(Delimiters.CarriageReturn))
             {
                 this.InvokeAndForget(() => SetProgressAsync(e.Text.TrimEnd()));
@@ -193,6 +199,10 @@ namespace GitUI.HelperDialogs
             {
                 const string ansiSuffix = "\u001B[K";
                 string line = e.Text.Replace(ansiSuffix, "");
+                if (line != e.Text)
+                {
+                    Trace.WriteLine($"escape sequence in {e.Text.Replace("\r", @"\r").Replace("\n", @"\n")}§");
+                }
 
                 if (ConsoleOutput.IsDisplayingFullProcessOutput)
                 {

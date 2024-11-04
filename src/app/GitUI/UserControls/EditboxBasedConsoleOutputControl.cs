@@ -216,8 +216,8 @@ namespace GitUI.UserControls
                 _process.Start();
                 operation.SetProcessId(_process.Id);
                 _input = _process.StandardInput;
-                outputReader = new AsyncStreamReader(_process.StandardOutput, ForwardOutput);
-                errorReader = new AsyncStreamReader(_process.StandardError, ForwardOutput);
+                outputReader = new AsyncStreamReader(_process.StandardOutput, output => ForwardOutput("o ", output));
+                errorReader = new AsyncStreamReader(_process.StandardError, output => ForwardOutput("- ", output));
             }
             catch (Exception ex)
             {
@@ -229,7 +229,7 @@ namespace GitUI.UserControls
 
             return;
 
-            void ForwardOutput(string output)
+            void ForwardOutput(string prefix, string output)
             {
                 output = output.Replace("\r\n", "\n");
 
@@ -241,7 +241,7 @@ namespace GitUI.UserControls
                         nextLineEnd = output.Length;
                     }
 
-                    FireDataReceived(new TextEventArgs(output[startIndex..nextLineEnd]));
+                    FireDataReceived(new TextEventArgs(prefix + output[startIndex..nextLineEnd]));
                     startIndex = nextLineEnd;
                 }
             }

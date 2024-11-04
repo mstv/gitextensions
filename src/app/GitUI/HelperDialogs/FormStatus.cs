@@ -160,6 +160,11 @@ namespace GitUI.HelperDialogs
         /// </summary>
         private protected void AppendMessage(string text)
         {
+            if (text.Length == 0)
+            {
+                throw new Exception("empty output notified");
+            }
+
             ConsoleOutput.AppendMessageFreeThreaded(text);
 
             if (!text.EndsWith(Delimiters.LineFeed))

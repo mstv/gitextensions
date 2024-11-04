@@ -1,4 +1,5 @@
-﻿using GitExtensions.Extensibility;
+﻿using System.Diagnostics;
+using GitExtensions.Extensibility;
 using GitUI;
 using Microsoft.VisualStudio.Threading;
 
@@ -57,6 +58,7 @@ public sealed class AsyncStreamReader : IDisposable
                             return;
                         }
 
+                        Trace.WriteLine("{nameof(streamReader.ReadAsync)} returned without data");
                         continue;
                     }
 
@@ -79,6 +81,7 @@ public sealed class AsyncStreamReader : IDisposable
                 {
                     if (received.Length > 0)
                     {
+                        Trace.WriteLine($"{nameof(streamReader.ReadAsync)} timed out with {received.Length} chars pending: '{received}'");
                         notify(received);
                         received = "";
                     }

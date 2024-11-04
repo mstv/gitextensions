@@ -81,7 +81,7 @@ internal sealed class OutputHistoryModel : IOutputHistoryProvider, IOutputHistor
             }
 
             List<TextMarker> textMarkers = [];
-            AnsiEscapeUtilities.ParseEscape(runProcess.Output.Trim(), sb, textMarkers, traceErrors: false);
+            AnsiEscapeUtilities.ParseEscape(runProcess.Output.Replace("\r", "\\r").Replace("\n", "\\n\n"), sb, textMarkers, traceErrors: false);
 
             return sb.AppendLine().AppendLine();
         }
