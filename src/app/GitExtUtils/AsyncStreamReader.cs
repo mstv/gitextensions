@@ -81,7 +81,6 @@ public sealed class AsyncStreamReader : IDisposable
                 {
                     if (received.Length > 0)
                     {
-                        Trace.WriteLine($"{nameof(streamReader.ReadAsync)} timed out with {received.Length} chars pending: '{received}'");
                         notify(received);
                         received = "";
                     }
