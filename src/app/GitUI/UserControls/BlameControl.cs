@@ -561,15 +561,7 @@ namespace GitUI.Blame
             }
 
             blameRevisionToolStripMenuItem.Enabled = true;
-            blamePreviousRevisionToolStripMenuItem.Enabled = RevisionHasParent(blameinfo.selectedRevision);
-
-            // Get parent for the actual revision, the selected revision may have rewritten parents.
-            // The menu will be slightly slower in this situation.
-            bool RevisionHasParent(GitRevision? selectedRevision)
-            {
-                GitRevision actualRevision = _revisionGridInfo?.GetActualRevision(selectedRevision);
-                return (actualRevision?.HasParent ?? false) && (_revisionGridInfo?.GetRevision(actualRevision?.FirstParentId) is not null);
-            }
+            blamePreviousRevisionToolStripMenuItem.Enabled = _revisionGridInfo?.GetRevision(blameinfo.selectedRevision.ObjectId)?.HasParent is true;
         }
 
         private GitBlameCommit? GetBlameCommit()
@@ -644,16 +636,12 @@ namespace GitUI.Blame
                 return;
             }
 
-            // Try get actual parent revision, get popup if it does not exist.
-            // (The menu should be disabled if previous is not in grid).
-            GitRevision selectedRevision = _revisionGridInfo!.GetActualRevision(blameInfo.selectedRevision);
-
             // Origin line of commit selected is final line of the previous blame commit
             int finalLineNumberOfPreviousBlame = _lastBlameLine!.OriginLineNumber;
-            int originalLineNumberOfPreviousBlame = _gitBlameParser.GetOriginalLineInPreviousCommit(selectedRevision, blameInfo.filename, finalLineNumberOfPreviousBlame);
+            int originalLineNumberOfPreviousBlame = _gitBlameParser.GetOriginalLineInPreviousCommit(blameInfo.selectedRevision, blameInfo.filename, finalLineNumberOfPreviousBlame);
 
             _clickedBlameLine = new GitBlameLine(_lastBlameLine.Commit, finalLineNumberOfPreviousBlame, originalLineNumberOfPreviousBlame, "Dummy Git blame line used only to store the good 'originLineNumber' value to display and select it");
-            BlameRevision(selectedRevision.FirstParentId, blameInfo.filename);
+            BlameRevision(blameInfo.selectedRevision.FirstParentId, blameInfo.filename);
         }
 
         /// <summary>
