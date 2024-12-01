@@ -12,7 +12,6 @@ namespace GitCommands
     /// </summary>
     public static partial class ExecutableExtensions
     {
-        public const string DubiousOwnershipSecurityConfigString = "config --global --add safe.directory";
         private static readonly Lazy<Encoding> _defaultOutputEncoding = new(() => GitModule.SystemEncoding, false);
 
         [GeneratedRegex(@"\u001B[\u0040-\u005F].*?[\u0040-\u007E]", RegexOptions.ExplicitCapture)]
@@ -332,32 +331,9 @@ namespace GitCommands
 #endif
 
             // Wait for the process to exit (or be cancelled) and for the output
-            int exitCode;
-            try
-            {
-                exitCode = await process.WaitForExitAsync(cancellationToken);
-                await Task.WhenAll(outputTask, errorTask);
-                cancellationToken.ThrowIfCancellationRequested();
-            }
-            catch (ExternalOperationException ex)
-            {
-                string errorTxt = null;
-                try
-                {
-                    errorTxt = outputEncoding.GetString(errorBuffer.GetBuffer(), 0, (int)errorBuffer.Length);
-                }
-                catch (Exception)
-                {
-                    // We want to ensure that this action won't crash
-                }
-
-                if (errorTxt?.Contains(DubiousOwnershipSecurityConfigString) is true)
-                {
-                    throw new ExternalOperationException(ex.Command, ex.Arguments, ex.WorkingDirectory, ex.ExitCode, new Exception(errorTxt));
-                }
-
-                throw;
-            }
+            int exitCode = await process.WaitForExitAsync(cancellationToken);
+            await Task.WhenAll(outputTask, errorTask);
+            cancellationToken.ThrowIfCancellationRequested();
 
             string output = CleanString(stripAnsiEscapeCodes, outputEncoding.GetString(outputBuffer.GetBuffer(), 0, (int)outputBuffer.Length));
             string error = CleanString(stripAnsiEscapeCodes, outputEncoding.GetString(errorBuffer.GetBuffer(), 0, (int)errorBuffer.Length));

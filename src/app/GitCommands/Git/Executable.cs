@@ -72,6 +72,9 @@ namespace GitCommands
 
             private bool _disposed;
             private bool _exitHandlerRemoved;
+            private Encoding? _errorEncoding;
+            private MemoryStream? _errorOutputStream;
+            private StreamReader? _errorOutputReader;
 
             public ProcessWrapper(string fileName,
                                   string prefixArguments,
@@ -91,10 +94,15 @@ namespace GitCommands
                 _throwOnErrorExit = throwOnErrorExit;
                 _cancellationToken = cancellationToken;
 
-                Encoding errorEncoding = outputEncoding;
+                _errorEncoding = outputEncoding;
                 if (throwOnErrorExit)
                 {
-                    errorEncoding ??= Encoding.Default;
+                    _errorEncoding ??= Encoding.Default;
+                }
+
+                if (throwOnErrorExit || redirectOutput)
+                {
+                    _errorOutputStream = new MemoryStream();
                 }
 
                 _process = new Process
@@ -108,9 +116,9 @@ namespace GitCommands
                         CreateNoWindow = !createWindow,
                         RedirectStandardInput = redirectInput,
                         RedirectStandardOutput = redirectOutput,
-                        RedirectStandardError = redirectOutput || throwOnErrorExit,
+                        RedirectStandardError = _errorOutputStream is not null,
                         StandardOutputEncoding = outputEncoding,
-                        StandardErrorEncoding = errorEncoding,
+                        StandardErrorEncoding = _errorEncoding,
                         FileName = fileName,
                         Arguments = $"{prefixArguments}{arguments}",
                         WorkingDirectory = workDir
@@ -124,6 +132,12 @@ namespace GitCommands
                 try
                 {
                     _process.Start();
+
+                    if (_errorOutputStream is not null)
+                    {
+                        _process.StandardError.BaseStream.CopyToAsync(_errorOutputStream, cancellationToken);
+                    }
+
                     try
                     {
                         _logOperation.SetProcessId(_process.Id);
@@ -180,14 +194,14 @@ namespace GitCommands
 
                 string? GetErrorOutput()
                 {
-                    if (!_throwOnErrorExit)
+                    if (_errorOutputStream is null)
                     {
                         return null;
                     }
 
                     try
                     {
-                        return _process.StandardError.ReadToEnd().Trim();
+                        return _errorEncoding.GetString(_errorOutputStream.GetBuffer(), 0, (int)_errorOutputStream.Length).Trim();
                     }
                     catch (Exception ex)
                     {
@@ -244,6 +258,12 @@ namespace GitCommands
                     if (!_redirectOutput)
                     {
                         throw new InvalidOperationException("Process was not created with redirected output.");
+                    }
+
+                    if (_errorOutputStream is not null)
+                    {
+                        _errorOutputReader ??= new StreamReader(_errorOutputStream);
+                        return _errorOutputReader;
                     }
 
                     return _process.StandardError;
@@ -307,6 +327,9 @@ namespace GitCommands
                 _process.Dispose();
 
                 _logOperation.NotifyDisposed();
+
+                _errorOutputStream?.Dispose();
+                _errorOutputReader?.Dispose();
             }
         }
 
