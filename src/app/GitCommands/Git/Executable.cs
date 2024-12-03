@@ -63,6 +63,8 @@ namespace GitCommands
             private readonly TaskCompletionSource<int> _exitTaskCompletionSource = new();
 
             private readonly CancellationToken _cancellationToken;
+            private readonly Encoding? _errorEncoding;
+            private readonly MemoryStream? _errorOutputStream;
             private readonly ProcessOperation _logOperation;
             private readonly Process _process;
             private readonly bool _redirectInput;
@@ -72,9 +74,7 @@ namespace GitCommands
 
             private bool _disposed;
             private bool _exitHandlerRemoved;
-            private Encoding? _errorEncoding;
-            private MemoryStream? _errorOutputStream;
-            private StreamReader? _errorOutputReader;
+            private string? _errorOutput;
 
             public ProcessWrapper(string fileName,
                                   string prefixArguments,
@@ -162,7 +162,7 @@ namespace GitCommands
                 try
                 {
                     int exitCode = _process.ExitCode;
-                    string? errorOutput = GetErrorOutput();
+                    string? errorOutput = ReadErrorOutput();
                     _logOperation.LogProcessEnd(exitCode, errorOutput);
 
                     if (_throwOnErrorExit && exitCode != 0)
@@ -192,7 +192,7 @@ namespace GitCommands
 
                 return;
 
-                string? GetErrorOutput()
+                string? ReadErrorOutput()
                 {
                     if (_errorOutputStream is null)
                     {
@@ -201,7 +201,9 @@ namespace GitCommands
 
                     try
                     {
-                        return _errorEncoding.GetString(_errorOutputStream.GetBuffer(), 0, (int)_errorOutputStream.Length).Trim();
+                        _errorOutput = _errorEncoding.GetString(_errorOutputStream.GetBuffer(), 0, (int)_errorOutputStream.Length);
+
+                        return _errorOutput.Trim();
                     }
                     catch (Exception ex)
                     {
@@ -251,22 +253,16 @@ namespace GitCommands
                 }
             }
 
-            public StreamReader StandardError
+            public string StandardError
             {
                 get
                 {
-                    if (!_redirectOutput)
+                    if (_errorOutput is null)
                     {
                         throw new InvalidOperationException("Process was not created with redirected output.");
                     }
 
-                    if (_errorOutputStream is not null)
-                    {
-                        _errorOutputReader ??= new StreamReader(_errorOutputStream);
-                        return _errorOutputReader;
-                    }
-
-                    return _process.StandardError;
+                    return _errorOutput;
                 }
             }
 
@@ -329,7 +325,6 @@ namespace GitCommands
                 _logOperation.NotifyDisposed();
 
                 _errorOutputStream?.Dispose();
-                _errorOutputReader?.Dispose();
             }
         }
 

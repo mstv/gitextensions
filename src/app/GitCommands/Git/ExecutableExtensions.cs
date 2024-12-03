@@ -305,9 +305,7 @@ namespace GitCommands
 
             using IProcess process = executable.Start(arguments, createWindow: false, redirectInput: writeInput is not null, redirectOutput: true, outputEncoding, throwOnErrorExit: throwOnErrorExit, cancellationToken: cancellationToken);
             using MemoryStream outputBuffer = new();
-            using MemoryStream errorBuffer = new();
             Task outputTask = process.StandardOutput.BaseStream.CopyToAsync(outputBuffer, cancellationToken);
-            Task errorTask = process.StandardError.BaseStream.CopyToAsync(errorBuffer, cancellationToken);
 
             if (writeInput is not null)
             {
@@ -332,11 +330,11 @@ namespace GitCommands
 
             // Wait for the process to exit (or be cancelled) and for the output
             int exitCode = await process.WaitForExitAsync(cancellationToken);
-            await Task.WhenAll(outputTask, errorTask);
+            await outputTask;
             cancellationToken.ThrowIfCancellationRequested();
 
             string output = CleanString(stripAnsiEscapeCodes, outputEncoding.GetString(outputBuffer.GetBuffer(), 0, (int)outputBuffer.Length));
-            string error = CleanString(stripAnsiEscapeCodes, outputEncoding.GetString(errorBuffer.GetBuffer(), 0, (int)errorBuffer.Length));
+            string error = CleanString(stripAnsiEscapeCodes, process.StandardError);
             if (cache is not null && exitCode == 0)
             {
                 cache.Add(cacheKey, output, error);

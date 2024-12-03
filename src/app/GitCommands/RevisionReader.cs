@@ -184,7 +184,8 @@ namespace GitCommands
                 Debug.WriteLine($"git {arguments}");
 #endif
                 using IProcess process = _module.GitCommandRunner.RunDetached(cancellationToken, arguments, redirectOutput: true, outputEncoding: null);
-                string errorOutput = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+                string errorOutput = process.StandardError;
                 if (!string.IsNullOrWhiteSpace(errorOutput) && throwOnError)
                 {
                     throw new ExternalOperationException(AppSettings.GitCommand, arguments.ToString(), innerException: new Exception(errorOutput));
