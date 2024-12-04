@@ -406,7 +406,7 @@ See the changes in the commit form.");
                 string fileName = gitItem.FileName.SubstringAfterLast('/').SubstringAfterLast('\\');
 
                 fileName = (Path.GetTempPath() + fileName).ToNativePath();
-                Module.SaveBlobAs(fileName, gitItem.Guid);
+                ThreadHelper.JoinableTaskFactory.Run(() => Module.SaveBlobAsAsync(fileName, gitItem.Guid));
                 return fileName;
             }
 
