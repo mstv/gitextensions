@@ -19,6 +19,7 @@ using GitUI.Properties;
 using GitUI.Theming;
 using GitUI.UserControls;
 using GitUIPluginInterfaces;
+using ICSharpCode.TextEditor.Util;
 using Microsoft;
 using ResourceManager;
 
@@ -528,7 +529,7 @@ namespace GitUI.Editor
             => ViewPrivateAsync(item, item?.Item?.Name, text, line, openWithDifftool, ViewMode.CombinedDiff, useGitColoring: AppSettings.UseGitColoring.Value);
 
         /// <summary>
-        /// Present the text as a patch in the file viewer, for GitHub.
+        /// Present the text as a patch in the file viewer.
         /// </summary>
         /// <param name="fileName">The fileName to present.</param>
         /// <param name="text">The patch text.</param>
@@ -562,7 +563,7 @@ namespace GitUI.Editor
         }
 
         /// <summary>
-        /// Present the text in the file viewer, for GitHub.
+        /// Present the text in the file viewer.
         /// </summary>
         /// <param name="fileName">The fileName to present.</param>
         /// <param name="text">The patch text.</param>
@@ -583,7 +584,7 @@ namespace GitUI.Editor
                     ResetView(ViewMode.Text, fileName, item: item);
 
                     // Check for binary file. Using gitattributes could be misleading for a changed file,
-                    // but not much other can be done
+                    // but not much else can be done
                     bool isBinary = (checkGitAttributes && FileHelper.IsBinaryFileName(Module, fileName))
                                     || FileHelper.IsBinaryFileAccordingToContent(text);
 
@@ -600,7 +601,9 @@ namespace GitUI.Editor
                     }
                     else
                     {
-                        internalFileViewer.SetText(text, openWithDifftool, _viewMode, useGitColoring: false, contentIdentification: fileName);
+                        // If the file seem to be a diff, color with escape sequences if they exist
+                        bool useGitColoring = _viewMode.IsDiffView() && text.Contains('\u001b');
+                        internalFileViewer.SetText(text, openWithDifftool, _viewMode, useGitColoring, contentIdentification: fileName);
 
                         if (line is not null)
                         {
@@ -693,8 +696,13 @@ namespace GitUI.Editor
 
             string GetFileTextIfBlobExists()
             {
+                // If the file blob seem to be a diff file, get also escape sequences, that possibly are stored in the diff
+                // _viewMode is not set yet, similar check there
+                bool stripAnsiEscapeCodes = string.IsNullOrEmpty(file.Name)
+                    || (!file.Name.EndsWith(".diff", StringComparison.OrdinalIgnoreCase)
+                       && !file.Name.EndsWith(".patch", StringComparison.OrdinalIgnoreCase));
                 FilePreamble = [];
-                return file.TreeGuid is not null ? Module.GetFileText(file.TreeGuid, Encoding) : string.Empty;
+                return file.TreeGuid is not null ? Module.GetFileText(file.TreeGuid, Encoding, stripAnsiEscapeCodes) : string.Empty;
             }
 
             Image? GetImage()
@@ -779,7 +787,7 @@ namespace GitUI.Editor
             string GetFileText()
             {
                 using FileStream stream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using StreamReader reader = new(stream, GitModule.LosslessEncoding);
+                using StreamReader reader = FileReader.OpenStream(stream, GitModule.LosslessEncoding);
 #pragma warning disable VSTHRD103 // Call async methods when in an async method
                 string content = reader.ReadToEnd();
 #pragma warning restore VSTHRD103 // Call async methods when in an async method
@@ -868,7 +876,7 @@ namespace GitUI.Editor
 
             string[] encodings = AppSettings.AvailableEncodings.Values.Select(e => e.EncodingName).ToArray();
             encodingToolStripComboBox.Items.AddRange(encodings);
-            encodingToolStripComboBox.ResizeDropDownWidth(50, 250);
+            encodingToolStripComboBox.ResizeDropDownWidth(minWidth: 50, maxWidth: 250);
         }
 
         // Private methods

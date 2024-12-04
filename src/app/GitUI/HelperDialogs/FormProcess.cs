@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using GitCommands;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
@@ -13,8 +14,6 @@ namespace GitUI.HelperDialogs
     public partial class FormProcess : FormStatus
     {
         public string Remote { get; set; }
-        public string ProcessString { get; }
-        public string ProcessArguments { get; set; }
         public string? ProcessInput { get; }
         public readonly string WorkingDirectory;
         public HandleOnExit? HandleOnExitCallback { get; set; }
@@ -192,14 +191,23 @@ namespace GitUI.HelperDialogs
 
         private void DataReceivedCore(object sender, TextEventArgs e)
         {
-            if (e.Text.Contains("%") || e.Text.Contains("remote: Counting objects"))
+            if (e.Text.AsSpan().TrimEnd().ContainsAny(Delimiters.LineFeedAndCarriageReturn))
             {
-                this.InvokeAndForget(() => SetProgressAsync(e.Text));
+                Trace.WriteLine($"LF/CR in {e.Text.Replace("\r", @"\r").Replace("\n", @"\n")}§");
+            }
+
+            if (e.Text.EndsWith(Delimiters.CarriageReturn))
+            {
+                this.InvokeAndForget(() => SetProgressAsync(e.Text.TrimEnd()));
             }
             else
             {
                 const string ansiSuffix = "\u001B[K";
                 string line = e.Text.Replace(ansiSuffix, "");
+                if (line != e.Text)
+                {
+                    Trace.WriteLine($"escape sequence in {e.Text.Replace("\r", @"\r").Replace("\n", @"\n")}§");
+                }
 
                 if (ConsoleOutput.IsDisplayingFullProcessOutput)
                 {

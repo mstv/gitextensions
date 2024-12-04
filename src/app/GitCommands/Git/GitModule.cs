@@ -1983,17 +1983,6 @@ namespace GitCommands
             return _gitExecutable.GetOutput(args);
         }
 
-        public string RenameBranch(string name, string newName)
-        {
-            GitArgumentBuilder args = new("branch")
-            {
-                "-m",
-                name.QuoteNE(),
-                newName.QuoteNE()
-            };
-            return _gitExecutable.GetOutput(args);
-        }
-
         public string AddRemote(string? name, string? path)
         {
             if (string.IsNullOrEmpty(name))
@@ -2241,6 +2230,7 @@ namespace GitCommands
 
             GitArgumentBuilder args = new("diff", commandConfiguration)
             {
+                "--no-ext-diff",
                 "--find-renames",
                 "--find-copies",
                 { useGitColoring, "--color=always" },
@@ -2437,6 +2427,7 @@ namespace GitCommands
             return _gitExecutable.Execute(
                 new GitArgumentBuilder("diff")
                 {
+                    "--no-ext-diff",
                     "--find-renames",
                     "--find-copies",
                     "--name-status",
@@ -2705,6 +2696,7 @@ namespace GitCommands
         {
             GitArgumentBuilder args = new("diff")
             {
+                "--no-ext-diff",
                 "--find-renames",
                 "--find-copies",
                 "-z",
@@ -3471,17 +3463,19 @@ namespace GitCommands
             }
         }
 
-        public string GetFileText(ObjectId id, Encoding encoding)
+        public string GetFileText(ObjectId id, Encoding encoding, bool stripAnsiEscapeCodes)
         {
             GitArgumentBuilder args = new("cat-file")
             {
                 "blob",
                 id.ToString().QuoteNE()
             };
+
             return _gitExecutable.GetOutput(
                 args,
                 cache: GitCommandCache,
-                outputEncoding: encoding);
+                outputEncoding: encoding,
+                stripAnsiEscapeCodes: stripAnsiEscapeCodes);
         }
 
         public ObjectId? GetFileBlobHash(string fileName, ObjectId objectId)
