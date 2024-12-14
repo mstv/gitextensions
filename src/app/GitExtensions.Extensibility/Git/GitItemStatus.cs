@@ -48,6 +48,9 @@ public sealed class GitItemStatus
     {
         Requires.NotNull(name, nameof(name));
         Name = name;
+
+        int pos = Name.LastIndexOf('/');
+        Path = pos >= 1 ? Name[..pos] : "";
     }
 
     /// <summary>
@@ -62,6 +65,7 @@ public sealed class GitItemStatus
 
     public string Name { get; set; }
     public string? OldName { get; set; }
+    public string Path { get; init; }
     public string? ErrorMessage { get; set; }
     public ObjectId? TreeGuid { get; set; }
     public string? RenameCopyPercentage { get; set; }
