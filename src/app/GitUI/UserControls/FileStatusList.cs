@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using GitCommands;
 using GitCommands.Git;
@@ -11,7 +10,6 @@ using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
-using GitUI.NBugReports;
 using GitUI.Properties;
 using GitUI.UserControls;
 using GitUIPluginInterfaces;
@@ -27,6 +25,7 @@ namespace GitUI
         private static readonly TimeSpan SelectedIndexChangeThrottleDuration = TimeSpan.FromMilliseconds(50);
         private readonly IFullPathResolver _fullPathResolver;
         private readonly FileStatusDiffCalculator _diffCalculator;
+        private readonly FileStatusSorter _sorter = new();
         private readonly SortDiffListContextMenuItem _sortByContextMenu;
         private readonly IReadOnlyList<GitItemStatus> _noItemStatuses;
         private readonly ToolStripItem _NO_TRANSLATE_openSubmoduleMenuItem;
@@ -43,11 +42,10 @@ namespace GitUI
         private IDisposable? _selectedIndexChangeSubscription;
         private IDisposable? _diffListSortSubscription;
         private FormFindInCommitFilesGitGrep _formFindInCommitFilesGitGrep;
+        private bool _showDiffGroups = false;
 
         // Enable menu item to disable AppSettings.ShowDiffForAllParents in some forms
         private bool _enableDisablingShowDiffForAllParents = false;
-
-        private bool _updatingColumnWidth;
 
         [GeneratedRegex(@"(^|\s)-e(\s|\s+['""])", RegexOptions.ExplicitCapture)]
         private static partial Regex GrepStringRegex();
@@ -92,8 +90,8 @@ namespace GitUI
 
             SelectFirstItemOnSetItems = true;
 
-            FileStatusListView.SmallImageList = _imageListData.ImageList;
-            FileStatusListView.LargeImageList = _imageListData.ImageList;
+            FileStatusListView.ImageList = _imageListData.ImageList;
+            FileStatusListView.StateImageList = _imageListData.ImageList;
 
             NoFiles.Text = TranslatedStrings.NoChanges;
             LoadingFiles.Text = TranslatedStrings.LoadingData;
@@ -114,14 +112,14 @@ namespace GitUI
 
             _diffCalculator = new FileStatusDiffCalculator(() => Module);
             _fullPathResolver = new FullPathResolver(() => Module.WorkingDir);
-            _noItemStatuses = new[]
-            {
-                new GitItemStatus(name: $"     - {NoFiles.Text} -")
+            _noItemStatuses =
+            [
+                new GitItemStatus(name: $"- {NoFiles.Text} -")
                 {
                     IsStatusOnly = true,
                     ErrorMessage = string.Empty
                 }
-            };
+            ];
 
             base.Enter += FileStatusList_Enter;
 
@@ -172,6 +170,7 @@ namespace GitUI
 
             (string imageKey, Bitmap icon)[] images =
             [
+                (nameof(Images.FolderClosed), ScaleHeight(Images.FolderClosed)),
                 (nameof(Images.FileStatusUnknown), ScaleHeight(Images.FileStatusUnknown)),
                 (nameof(Images.FileStatusModified), ScaleHeight(Images.FileStatusModified)),
                 (nameof(Images.FileStatusModifiedOnlyA), ScaleHeight(Images.FileStatusModifiedOnlyA)),
@@ -320,7 +319,7 @@ namespace GitUI
         [Browsable(false)]
         public IEnumerable<FileStatusItem> AllItems => FileStatusListView.ItemTags<FileStatusItem>();
 
-        public int AllItemsCount => FileStatusListView.Items.Count;
+        public int AllItemsCount => AllItems.Count();
 
         public override ContextMenuStrip ContextMenuStrip
         {
@@ -454,15 +453,7 @@ namespace GitUI
         [Browsable(false)]
         public int SelectedIndex
         {
-            get
-            {
-                foreach (int i in FileStatusListView.SelectedIndices)
-                {
-                    return i;
-                }
-
-                return -1;
-            }
+            get => FileStatusListView.SelectedNode?.Index ?? -1;
             set => SelectItems(item => item.Index == value);
         }
 
@@ -473,29 +464,33 @@ namespace GitUI
             get => SelectedItem?.Item;
             set
             {
-                ListViewItem itemToBeSelected = GetItemByStatus(value);
-                SelectItems(item => item == itemToBeSelected);
+                TreeNode? itemToBeSelected = GetItemByStatus(value);
+                FileStatusListView.SelectedNode = itemToBeSelected;
                 return;
 
-                ListViewItem? GetItemByStatus(GitItemStatus? status)
+                TreeNode? GetItemByStatus(GitItemStatus? status)
                 {
                     if (status is null)
                     {
                         return null;
                     }
 
-                    ListViewItem? newSelected = null;
-                    foreach (ListViewItem item in FileStatusListView.Items)
+                    TreeNode? newSelected = null;
+                    foreach (TreeNode node in FileStatusListView.Items())
                     {
-                        FileStatusItem gitItemStatus = item.Tag<FileStatusItem>();
+                        if (node.Tag is not FileStatusItem gitItemStatus)
+                        {
+                            continue;
+                        }
+
                         if (gitItemStatus.Item == status)
                         {
-                            return item;
+                            return node;
                         }
 
                         if (status.CompareName(gitItemStatus.Item) == 0 && newSelected is null)
                         {
-                            newSelected = item;
+                            newSelected = node;
                         }
                     }
 
@@ -506,7 +501,7 @@ namespace GitUI
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
-        public IEnumerable<GitItemStatus> SelectedGitItems
+        public IReadOnlyList<GitItemStatus> SelectedGitItems
         {
             set
             {
@@ -516,13 +511,13 @@ namespace GitUI
                     return;
                 }
 
-                SelectItems(item => value.Contains(item.Tag<FileStatusItem>().Item));
+                SelectItems(node => node.Tag is FileStatusItem fileStatusItem && value.Contains(fileStatusItem.Item));
             }
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
-        public FileStatusItem? SelectedItem => FileStatusListView.LastSelectedItem()?.Tag<FileStatusItem>();
+        public FileStatusItem? SelectedItem => FileStatusListView.LastSelectedItem()?.Tag as FileStatusItem;
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
@@ -537,27 +532,18 @@ namespace GitUI
                     return;
                 }
 
-                SelectItems(item => value.Contains(item.Tag<FileStatusItem>()));
+                SelectItems(node => node.Tag is FileStatusItem fileStatusItem && value.Contains(fileStatusItem));
             }
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
         public IEnumerable<FileStatusItem> FirstGroupItems
-        {
-            get
-            {
-                if (FileStatusListView.Groups.Count == 0)
-                {
-                    yield break;
-                }
-
-                foreach (ListViewItem item in FileStatusListView.Groups[0].Items)
-                {
-                    yield return item.Tag<FileStatusItem>();
-                }
-            }
-        }
+            => FileStatusListView.Nodes.Count == 0
+                ? []
+                : _showDiffGroups
+                    ? FileStatusListView.Nodes[0].ItemTags<FileStatusItem>()
+                    : FileStatusListView.ItemTags<FileStatusItem>();
 
         [DefaultValue(true)]
         public bool SelectFirstItemOnSetItems { get; set; }
@@ -570,19 +556,16 @@ namespace GitUI
 
         public void ClearSelected()
         {
-            foreach (ListViewItem item in FileStatusListView.SelectedItems)
-            {
-                item.Selected = false;
-            }
+            FileStatusListView.SelectedNode = null;
         }
 
         public new void Focus()
         {
-            if (FileStatusListView.Items.Count > 0)
+            if (FileStatusListView.Nodes.Count > 0)
             {
                 if (SelectedItem is null)
                 {
-                    SelectedIndex = 0;
+                    SelectFirstVisibleItem();
                 }
 
                 FileStatusListView.Focus();
@@ -613,6 +596,9 @@ namespace GitUI
                 return -1;
             }
 
+#if true // TODO!
+            return -1;
+#else
             ListViewItem currentItem = FileStatusListView.Items[curIdx];
             ListViewGroup currentGroup = currentItem.Group;
 
@@ -794,38 +780,28 @@ namespace GitUI
 
                 return false;
             }
+#endif
         }
 
         public void SelectAll() => SelectItems(_ => true);
 
         public void SelectFirstVisibleItem()
         {
-            if (FileStatusListView.Items.Count == 0)
-            {
-                return;
-            }
+            FileStatusListView.SelectedNode = FileStatusListView.Items()
+                .FirstOrDefault(node => IsLeaf(node) && ((FileStatusItem)node.Tag).Item != _noItemStatuses[0]);
 
-            ListViewGroup group = FileStatusListView.Groups().FirstOrDefault(gr => gr.Items.Count > 0);
-            if (group is not null)
-            {
-                ListViewItem? sortedFirstGroupItem = FileStatusListView.Items().FirstOrDefault(item => item.Group == group);
-                if (sortedFirstGroupItem is not null)
-                {
-                    SelectedIndex = sortedFirstGroupItem.Index;
-                }
-            }
-            else
-            {
-                SelectedIndex = 0;
-            }
+            return;
+
+            static bool IsLeaf(TreeNode node) => node.Nodes.Count == 0;
         }
 
         public void SelectStoredNextIndex(int defaultIndex = -1)
         {
-            _nextIndexToSelect = Math.Min(_nextIndexToSelect, FileStatusListView.Items.Count - 1);
+            // TODO: recursion
+            _nextIndexToSelect = Math.Min(_nextIndexToSelect, FileStatusListView.Nodes.Count - 1);
             if (_nextIndexToSelect < 0 && defaultIndex > -1)
             {
-                _nextIndexToSelect = Math.Min(defaultIndex, FileStatusListView.Items.Count - 1);
+                _nextIndexToSelect = Math.Min(defaultIndex, FileStatusListView.Nodes.Count - 1);
             }
 
             if (_nextIndexToSelect > -1)
@@ -941,12 +917,6 @@ namespace GitUI
             try
             {
                 SelectedIndex = idx;
-
-                ListViewGroup? group = FileStatusListView.SelectedItems.Cast<ListViewItem>().FirstOrDefault()?.Group;
-                if (group?.CollapsedState is ListViewGroupCollapsedState.Collapsed)
-                {
-                    group.CollapsedState = ListViewGroupCollapsedState.Expanded;
-                }
             }
             finally
             {
@@ -957,13 +927,13 @@ namespace GitUI
         public int SetSelectionFilter(string selectionFilter)
         {
             SelectItems(item => string.IsNullOrEmpty(selectionFilter) || Regex.IsMatch(item.Name, selectionFilter, RegexOptions.IgnoreCase));
-            return FileStatusListView.SelectedIndices.Count;
+            return FileStatusListView.SelectedIndices().Count;
         }
 
         public void StoreNextIndexToSelect()
         {
             _nextIndexToSelect = -1;
-            foreach (int idx in FileStatusListView.SelectedIndices)
+            foreach (int idx in FileStatusListView.SelectedIndices())
             {
                 if (idx > _nextIndexToSelect)
                 {
@@ -971,7 +941,7 @@ namespace GitUI
                 }
             }
 
-            _nextIndexToSelect = _nextIndexToSelect - FileStatusListView.SelectedIndices.Count + 1;
+            _nextIndexToSelect = _nextIndexToSelect - FileStatusListView.SelectedIndices().Count + 1;
         }
 
         protected override void DisposeCustomResources()
@@ -1040,34 +1010,28 @@ namespace GitUI
             GitUICommands.LaunchBrowse(workingDir: path, selectedId, firstId);
         }
 
-        private void SelectItems(Func<ListViewItem, bool> predicate)
+        private void SelectItems(Func<TreeNode, bool> predicate)
         {
             try
             {
                 FileStatusListView.BeginUpdate();
 
-                ListViewItem? firstSelectedItem = null;
-                foreach (ListViewItem item in FileStatusListView.Items())
+                TreeNode? firstSelectedItem = null;
+                foreach (TreeNode item in FileStatusListView.Items())
                 {
-                    item.Selected = predicate(item);
-                    if (item.Selected && firstSelectedItem is null)
+                    bool selected = predicate(item);
+                    if (selected && firstSelectedItem is null)
                     {
                         firstSelectedItem = item;
+                        firstSelectedItem.EnsureVisible();
                     }
-                }
-
-                if (firstSelectedItem is not null)
-                {
-                    firstSelectedItem.Focused = true;
-                    firstSelectedItem.Selected = true;
-                    firstSelectedItem.EnsureVisible();
-
-                    ListViewGroup? group = firstSelectedItem?.Group;
-                    if (group?.CollapsedState is ListViewGroupCollapsedState.Collapsed)
+                    else
                     {
-                        group.CollapsedState = ListViewGroupCollapsedState.Expanded;
+                        // TODO: apply multi-selection to item
                     }
                 }
+
+                FileStatusListView.SelectedNode = firstSelectedItem;
             }
             finally
             {
@@ -1123,8 +1087,7 @@ namespace GitUI
             LoadingFiles.BringToFront();
 
             FileStatusListView.BeginUpdate();
-            FileStatusListView.Groups.Clear();
-            FileStatusListView.Items.Clear();
+            FileStatusListView.Nodes.Clear();
             FileStatusListView.EndUpdate();
         }
 
@@ -1146,11 +1109,12 @@ namespace GitUI
             }
 
             HashSet<GitItemStatus>? previouslySelectedItems = null;
+            HashSet<TreeNode> toBeSelectedItems = [];
 
             if (updateCausedByFilter)
             {
-                previouslySelectedItems = FileStatusListView.SelectedItems()
-                    .Select(i => i.Tag<FileStatusItem>().Item)
+                previouslySelectedItems = FileStatusListView.SelectedItemTags<FileStatusItem>()
+                    .Select(i => i.Item)
                     .ToHashSet();
 
                 DataSourceChanged?.Invoke(this, EventArgs.Empty);
@@ -1158,55 +1122,48 @@ namespace GitUI
 
             FileStatusListView.BeginUpdate();
             SetFileStatusListVisibility(filesPresent);
-            FileStatusListView.ShowGroups = GitItemStatusesWithDescription.Count > 1 || GroupByRevision;
-            FileStatusListView.Groups.Clear();
-            FileStatusListView.Items.Clear();
+            _showDiffGroups = GitItemStatusesWithDescription.Count > 1 || (GroupByRevision && !(GitItemStatusesWithDescription.Count == 1 && GitItemStatusesWithDescription[0].Statuses.Count == 0));
+            FileStatusListView.ShowRootLines = false && _showDiffGroups;
+            FileStatusListView.Nodes.Clear();
 
-            List<ListViewItem> list = [];
             foreach (FileStatusWithDescription i in GitItemStatusesWithDescription)
             {
-                string name = i.Statuses.Count == 1 && i.Statuses[0].IsRangeDiff
-                    ? i.Summary
-                    : $"({i.Statuses.Count}) {i.Summary}";
-                ListViewGroup group = new(name)
-                {
-                    // Collapse some groups for diffs with common BASE
-                    // Always expand grep results
-                    CollapsedState = ((i.Statuses.Count <= 7 || GitItemStatusesWithDescription.Count < 3 || i == GitItemStatusesWithDescription[0]) && !hasGrepGroup)
-                        || FileStatusDiffCalculator.IsGrepItemStatuses(i)
-                            ? ListViewGroupCollapsedState.Expanded
-                            : ListViewGroupCollapsedState.Collapsed,
-                    Tag = i.FirstRev
-                };
-                FileStatusListView.Groups.Add(group);
+                int shownCount = 0;
 
-                IReadOnlyList<GitItemStatus> itemStatuses;
-                if (showGroupLabel && i.Statuses.Count == 0)
+                // Collapse some groups for diffs with common BASE
+                // Always expand grep results
+                bool expandDiffGroup = ((i.Statuses.Count <= 7 || GitItemStatusesWithDescription.Count < 3 || i == GitItemStatusesWithDescription[0]) && !hasGrepGroup)
+                    || FileStatusDiffCalculator.IsGrepItemStatuses(i);
+
+                TreeNode diffGroup;
                 {
-                    itemStatuses = _noItemStatuses;
-                    if (group is not null)
+                    IEnumerable<GitItemStatus> itemStatuses;
+                    if (showGroupLabel && i.Statuses.Count == 0)
                     {
-                        group.CollapsedState = ListViewGroupCollapsedState.Collapsed;
+                        itemStatuses = _noItemStatuses;
+                        expandDiffGroup = false;
                     }
-                }
-                else
-                {
-                    itemStatuses = i.Statuses;
+                    else
+                    {
+                        itemStatuses = i.Statuses.Where(IsFilterMatch);
+                    }
+
+                    diffGroup = _sorter.Sort(itemStatuses, CreateNode);
+
+                    string imageKey = FileStatusDiffCalculator.IsGrepItemStatuses(i) ? nameof(Images.ViewFile) : nameof(Images.Diff);
+                    diffGroup.ImageIndex = _imageListData.StateImageIndexMap[imageKey];
+                    diffGroup.SelectedImageIndex = diffGroup.ImageIndex;
                 }
 
-                foreach (GitItemStatus item in itemStatuses)
+                TreeNode CreateNode(GitItemStatus item)
                 {
-                    if (!IsFilterMatch(item))
-                    {
-                        continue;
-                    }
+                    ++shownCount;
 
-                    ListViewItem listItem = new(string.Empty, group);
+                    // Also set .Text in order to provide accessibility information
+                    TreeNode listItem = new(text: item.ToString());
 
-                    if (!item.IsStatusOnly || !string.IsNullOrWhiteSpace(item.ErrorMessage))
-                    {
-                        listItem.ImageIndex = GetItemImageIndex(item);
-                    }
+                    listItem.ImageIndex = GetItemImageIndex(item);
+                    listItem.SelectedImageIndex = listItem.ImageIndex;
 
                     if (item.IsSubmodule
                         && item.GetSubmoduleStatusAsync() is Task<GitSubmoduleStatus> task)
@@ -1222,23 +1179,51 @@ namespace GitUI
                             await this.SwitchToMainThreadAsync();
 
                             listItem.ImageIndex = GetItemImageIndex(capturedItem);
+                            listItem.SelectedImageIndex = listItem.ImageIndex;
                         });
                     }
 
                     if (previouslySelectedItems?.Contains(item) == true)
                     {
-                        listItem.Selected = true;
+                        toBeSelectedItems.Add(listItem);
                     }
 
-                    // Also set .Text in order to provide accessibility information
-                    listItem.Text = item.ToString();
                     listItem.Tag = new FileStatusItem(i.FirstRev, i.SecondRev, item, i.BaseA, i.BaseB);
 
-                    list.Add(listItem);
+                    // TODO: owner draw
+                    listItem.Text = item.OldName is null ? item.Name : $"{item.Name} ({item.OldName})";
+
+                    return listItem;
+                }
+
+                if (_showDiffGroups)
+                {
+                    diffGroup.Tag = i.FirstRev;
+                    diffGroup.Text = GetGroupName(i, shownCount);
+                    FileStatusListView.Nodes.Add(diffGroup);
+                    if (expandDiffGroup)
+                    {
+                        diffGroup.ExpandAll();
+                    }
+                    else
+                    {
+                        diffGroup.Collapse();
+                    }
+                }
+                else
+                {
+                    foreach (TreeNode node in diffGroup.Nodes)
+                    {
+                        FileStatusListView.Nodes.Add(node);
+                        node.ExpandAll();
+                    }
                 }
             }
 
-            FileStatusListView.Items.AddRange(list.ToArray());
+            if (toBeSelectedItems.Count > 0)
+            {
+                SelectItems(node => toBeSelectedItems.Contains(node));
+            }
 
             if (updateCausedByFilter == false)
             {
@@ -1251,23 +1236,36 @@ namespace GitUI
             }
 
             FileStatusListView.EndUpdate();
-            UpdateColumnWidth();
             return;
 
             void EnsureSelectedIndexChangeSubscription()
             {
+                EventHandler? selectHandler = null;
                 _selectedIndexChangeSubscription ??= Observable.FromEventPattern(
-                        h => FileStatusListView.SelectedIndexChanged += h,
-                        h => FileStatusListView.SelectedIndexChanged -= h)
+                        h =>
+                        {
+                            selectHandler = h;
+                            FileStatusListView.AfterSelect += AfterSelectHandler;
+                        },
+                        h => FileStatusListView.AfterSelect -= AfterSelectHandler)
                     .Where(x => _enableSelectedIndexChangeEvent)
                     .Throttle(SelectedIndexChangeThrottleDuration, MainThreadScheduler.Instance)
                     .ObserveOn(MainThreadScheduler.Instance)
                     .Subscribe(_ => FileStatusListView_SelectedIndexChanged());
+
+                return;
+
+                void AfterSelectHandler(object? sender, TreeViewEventArgs e)
+                {
+                    selectHandler?.Invoke(sender, e);
+                }
             }
 
-            static int GetItemImageIndex(GitItemStatus gitItemStatus)
+            int GetItemImageIndex(GitItemStatus gitItemStatus)
             {
-                string imageKey = GetItemImageKey(gitItemStatus);
+                string imageKey = gitItemStatus.IsStatusOnly || !string.IsNullOrWhiteSpace(gitItemStatus.ErrorMessage)
+                    ? gitItemStatus == _noItemStatuses[0] ? nameof(Images.FileStatusCopiedSame) : nameof(Images.FileStatusUnknown)
+                    : GetItemImageKey(gitItemStatus);
                 return _imageListData.StateImageIndexMap.TryGetValue(imageKey, out int value)
                     ? value
                     : _imageListData.StateImageIndexMap[nameof(Images.FileStatusUnknown)];
@@ -1384,50 +1382,26 @@ namespace GitUI
                 // Illegal flag combinations or no flags set?
                 return nameof(Images.FileStatusUnknown);
             }
-        }
 
-        private void UpdateColumnWidth()
-        {
-            // prevent infinite recursions such as
-            // ClientSizeChanged -> UpdateColumnWidth -> ScrollBar visibility changed -> ClientSizeChanged
-            if (!_updatingColumnWidth)
+            static string GetGroupName(FileStatusWithDescription i, int shownCount)
             {
-                _updatingColumnWidth = true;
-                columnHeader.Width = GetWidth();
-                _updatingColumnWidth = false;
-            }
-
-            int GetWidth()
-            {
-                PathFormatter pathFormatter = new(FileStatusListView.CreateGraphics(), FileStatusListView.Font);
-                int controlWidth = FileStatusListView.ClientSize.Width;
-
-                int contentWidth = 0;
-                try
+                bool hasRangeDiff = i.Statuses.Count > 0 && i.Statuses[^1].IsRangeDiff;
+                if (hasRangeDiff && i.Statuses.Count == 1)
                 {
-                    contentWidth = FileStatusListView.Items()
-                        .Where(item => item.BoundsOrEmpty().IntersectsWith(FileStatusListView.ClientRectangle))
-                        .Select(item =>
-                        {
-                            (_, _, _, _, int textStart, int textWidth, _) = FormatListViewItem(item, pathFormatter, FileStatusListView.ClientSize.Width);
-                            return textStart + textWidth;
-                        })
-                        .DefaultIfEmpty(controlWidth)
-                        .Max();
-                }
-                catch (ExternalException exception)
-                {
-                    // See https://github.com/gitextensions/gitextensions/issues/9166#issuecomment-849567022
-                    // A rather obscure bug report, which may be causing random app crashes
-                    BugReportInvoker.LogError(exception);
+                    return i.Summary;
                 }
 
-                return Math.Max(contentWidth, controlWidth);
+                // Show shown and total number of files only if different; avoid showing "1/0" for "- No changes -"
+                string shownDisplay = shownCount >= i.Statuses.Count ? "" : $"{shownCount}/";
+                string rangeDiffDisplay = hasRangeDiff ? ",r" : "";
+                int count = i.Statuses.Count - (hasRangeDiff ? 1 : 0);
+                return $"({shownDisplay}{count}{rangeDiffDisplay}) {i.Summary}";
             }
         }
 
         public void SelectPreviousVisibleItem()
         {
+#if false // TODO
             if (FileStatusListView.Items.Count <= 1)
             {
                 return;
@@ -1465,10 +1439,12 @@ namespace GitUI
                     }
                 }
             }
+#endif
         }
 
         public void SelectNextVisibleItem()
         {
+#if false // TODO
             if (FileStatusListView.Items.Count <= 1)
             {
                 return;
@@ -1504,14 +1480,10 @@ namespace GitUI
                     }
                 }
             }
+#endif
         }
 
         // Event handlers
-
-        private void FileStatusListView_ClientSizeChanged(object sender, EventArgs e)
-        {
-            UpdateColumnWidth();
-        }
 
         private void FileStatusListView_ContextMenu_Opening(object sender, CancelEventArgs e)
         {
@@ -1722,15 +1694,6 @@ namespace GitUI
             }
         }
 
-        private void FileStatusListView_GroupMouseDown(object sender, ListViewGroupMouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                // prevent selecting all sub-items when left-clicking group
-                e.Handled = true;
-            }
-        }
-
         private void FileStatusListView_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyData)
@@ -1755,11 +1718,11 @@ namespace GitUI
             // SELECT
             if (e.Button == MouseButtons.Right)
             {
-                ListViewHitTestInfo hover = FileStatusListView.HitTest(e.Location);
+                TreeViewHitTestInfo hover = FileStatusListView.HitTest(e.Location);
 
-                if (hover.Item is not null && !hover.Item.Selected)
+                if (hover.Node is not null && !hover.Node.IsSelected)
                 {
-                    SelectedIndex = hover.Item.Index;
+                    FileStatusListView.SelectedNode = hover.Node;
                 }
             }
 
@@ -1830,6 +1793,7 @@ namespace GitUI
                 }
             }
 
+#if false // TODO
             // TOOLTIP
             if (listView is not null)
             {
@@ -1878,21 +1842,12 @@ namespace GitUI
                     }
                 }
             }
+#endif
         }
 
         private void FileStatusListView_SelectedIndexChanged()
         {
             SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void FileStatusListView_Scroll(object sender, ScrollEventArgs e)
-        {
-            if (e.Type == ScrollEventType.ThumbTrack)
-            {
-                return;
-            }
-
-            UpdateColumnWidth();
         }
 
         private void FileStatusList_Enter(object sender, EventArgs e)
@@ -1925,7 +1880,7 @@ namespace GitUI
             // Feed back the current list of files
             UpdateFileStatusListView(GitItemStatusesWithDescription, updateCausedByFilter: true);
             FilterChanged?.Invoke(this, EventArgs.Empty);
-            return FileStatusListView.Items.Count;
+            return AllItemsCount;
         }
 
         private bool IsFilterMatch(GitItemStatus item)
@@ -2152,20 +2107,26 @@ namespace GitUI
 
         private void SortByFilePath()
         {
+#if false // TODO
             FileStatusListView.ListViewItemSorter = new GitStatusListSorter(new GitItemStatusNameComparer());
             FileStatusListView.Sort();
+#endif
         }
 
         private void SortByFileExtension()
         {
+#if false // TODO
             FileStatusListView.ListViewItemSorter = new GitStatusListSorter(new GitItemStatusFileExtensionComparer());
             FileStatusListView.Sort();
+#endif
         }
 
         private void SortByFileStatus()
         {
+#if false // TODO
             FileStatusListView.ListViewItemSorter = new ImageIndexListSorter();
             FileStatusListView.Sort();
+#endif
         }
 
         private void StoreFilter(string value)
@@ -2292,7 +2253,7 @@ namespace GitUI
             internal Color ActiveInputColor => _fileStatusList._activeInputColor;
             internal Color InvalidInputColor => _fileStatusList._invalidInputColor;
             internal Label DeleteFilterButton => _fileStatusList.DeleteFilterButton;
-            internal ListView FileStatusListView => _fileStatusList.FileStatusListView;
+            internal ListView FileStatusListView => new(); // TODO _fileStatusList.FileStatusListView;
             internal ComboBox FilterComboBox => _fileStatusList._NO_TRANSLATE_FilterComboBox;
             internal Regex? Filter => _fileStatusList._filter;
             internal bool FilterWatermarkLabelVisible => _fileStatusList.FilterWatermarkLabel.Visible;

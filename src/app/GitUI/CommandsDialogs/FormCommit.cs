@@ -1611,7 +1611,7 @@ namespace GitUI.CommandsDialogs
             }
             else if (Staged.IsFilterActive)
             {
-                Staged.SelectedGitItems = Staged.AllItems.Items();
+                Staged.SelectedGitItems = Staged.AllItems.Items().ToArray();
                 Unstage(canUseUnstageAll: false);
                 Staged.SetFilter(string.Empty);
             }
