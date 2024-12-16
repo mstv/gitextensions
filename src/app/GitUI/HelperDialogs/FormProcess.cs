@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using GitCommands;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
@@ -59,11 +60,16 @@ namespace GitUI.HelperDialogs
         // so that result is other than OK or Cancel.
 
         public static bool ShowDialog(IWin32Window? owner, IGitUICommands commands, ArgumentString arguments, string workingDirectory, string? input, bool useDialogSettings, string? process = null)
+            => ShowDialog(owner, commands, arguments, workingDirectory, input, useDialogSettings, out string _, process);
+
+        public static bool ShowDialog(IWin32Window? owner, IGitUICommands commands, ArgumentString arguments, string workingDirectory, string? input, bool useDialogSettings, out string output, string? process = null)
         {
             DebugHelpers.Assert(owner is not null, "Progress window must be owned by another window! This is a bug, please correct and send a pull request with a fix.");
 
             using FormProcess formProcess = new(commands, arguments, workingDirectory, input, useDialogSettings, process);
             formProcess.ShowDialog(owner);
+            output = formProcess.GetOutputString();
+
             return !formProcess.ErrorOccurred();
         }
 
@@ -185,14 +191,23 @@ namespace GitUI.HelperDialogs
 
         private void DataReceivedCore(object sender, TextEventArgs e)
         {
-            if (e.Text.Contains("%") || e.Text.Contains("remote: Counting objects"))
+            if (e.Text.AsSpan().TrimEnd().ContainsAny(Delimiters.LineFeedAndCarriageReturn))
             {
-                this.InvokeAndForget(() => SetProgressAsync(e.Text));
+                Trace.WriteLine($"LF/CR in {e.Text.Replace("\r", @"\r").Replace("\n", @"\n")}§");
+            }
+
+            if (e.Text.EndsWith(Delimiters.CarriageReturn))
+            {
+                this.InvokeAndForget(() => SetProgressAsync(e.Text.TrimEnd()));
             }
             else
             {
                 const string ansiSuffix = "\u001B[K";
                 string line = e.Text.Replace(ansiSuffix, "");
+                if (line != e.Text)
+                {
+                    Trace.WriteLine($"escape sequence in {e.Text.Replace("\r", @"\r").Replace("\n", @"\n")}§");
+                }
 
                 if (ConsoleOutput.IsDisplayingFullProcessOutput)
                 {
