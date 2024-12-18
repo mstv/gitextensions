@@ -1,6 +1,7 @@
 using System.Collections.Frozen;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
@@ -37,6 +38,8 @@ namespace GitUI
 
         private int _nextIndexToSelect = -1;
         private bool _enableSelectedIndexChangeEvent = true;
+        private bool _flatList = false;
+        private Func<GitItemStatus, string>? _groupBy = null;
         private bool _mouseEntered;
         private Rectangle _dragBoxFromMouseDown;
         private IDisposable? _selectedIndexChangeSubscription;
@@ -286,29 +289,23 @@ namespace GitUI
             _diffListSortSubscription?.Dispose();
 
             _diffListSortSubscription = DiffListSortService.Instance.CurrentAndFutureSorting()
-                .Do(sortingMethod =>
+                .Do(sortType =>
                 {
-                    switch (sortingMethod)
+                    _groupBy = sortType switch
                     {
-                        case DiffListSortType.FilePath:
-                            SortByFilePath();
-                            break;
+                        DiffListSortType.FilePath => null,
+                        DiffListSortType.FileExtension => status => Path.GetExtension(status.Name),
+                        DiffListSortType.FileStatus => status => status.DiffStatus.ToString(),
+                        _ => throw new NotSupportedException($"{sortType} is not a supported sorting method.")
+                    };
 
-                        case DiffListSortType.FileExtension:
-                            SortByFileExtension();
-                            break;
+                    _flatList = sortType == DiffListSortType.FileExtension;
 
-                        case DiffListSortType.FileStatus:
-                            SortByFileStatus();
-                            break;
-
-                        default:
-                            throw new NotSupportedException(sortingMethod.ToString() + " is not a supported sorting method.");
-                    }
+                    UpdateFileStatusListView(GitItemStatusesWithDescription, updateCausedByFilter: true);
                 })
-                .Catch<DiffListSortType, NotSupportedException>(e =>
+                .Catch<DiffListSortType, Exception>(ex =>
                 {
-                    // TODO log the error can we display it to the user somehow?
+                    Trace.WriteLine(ex);
                     return Observable.Empty<DiffListSortType>();
                 })
                 .Subscribe();
@@ -2105,30 +2102,6 @@ namespace GitUI
             FindInCommitFilesGitGrep(cboFindInCommitFilesGitGrep.Text, delay: 0);
         }
 
-        private void SortByFilePath()
-        {
-#if false // TODO
-            FileStatusListView.ListViewItemSorter = new GitStatusListSorter(new GitItemStatusNameComparer());
-            FileStatusListView.Sort();
-#endif
-        }
-
-        private void SortByFileExtension()
-        {
-#if false // TODO
-            FileStatusListView.ListViewItemSorter = new GitStatusListSorter(new GitItemStatusFileExtensionComparer());
-            FileStatusListView.Sort();
-#endif
-        }
-
-        private void SortByFileStatus()
-        {
-#if false // TODO
-            FileStatusListView.ListViewItemSorter = new ImageIndexListSorter();
-            FileStatusListView.Sort();
-#endif
-        }
-
         private void StoreFilter(string value)
         {
             SetDeleteFilterButtonVisibility();
@@ -2148,86 +2121,6 @@ namespace GitUI
             {
                 _NO_TRANSLATE_FilterComboBox.BackColor = _invalidInputColor;
                 throw;
-            }
-        }
-
-        private class GitStatusListSorter : Comparer<ListViewItem>
-        {
-            private IComparer<GitItemStatus> StatusComparer { get; }
-
-            public GitStatusListSorter(IComparer<GitItemStatus> gitStatusItemSorter)
-            {
-                StatusComparer = gitStatusItemSorter;
-            }
-
-            // RangeDiff should always be sorted last in the group
-            public static int CompareRangeDiff(ListViewItem x, ListViewItem y)
-            {
-                if (ReferenceEquals(x, y))
-                {
-                    return 0;
-                }
-                else if (x?.Tag is null)
-                {
-                    return -1;
-                }
-                else if (y?.Tag is null)
-                {
-                    return 1;
-                }
-
-                if (((FileStatusItem)x.Tag).Item.IsRangeDiff)
-                {
-                    return 1;
-                }
-                else if (((FileStatusItem)y.Tag).Item.IsRangeDiff)
-                {
-                    return -1;
-                }
-
-                return 0;
-            }
-
-            public override int Compare(ListViewItem x, ListViewItem y)
-            {
-                int statusResult = CompareRangeDiff(x, y);
-                if (statusResult != 0)
-                {
-                    return statusResult;
-                }
-
-                return StatusComparer.Compare(((FileStatusItem)x.Tag).Item, ((FileStatusItem)y.Tag).Item);
-            }
-        }
-
-        private class ImageIndexListSorter : Comparer<ListViewItem>
-        {
-            /// <summary>
-            /// Secondary sort should be by file path.
-            /// </summary>
-            private static readonly GitStatusListSorter ThenBy = new(new GitItemStatusNameComparer());
-
-            public override int Compare(ListViewItem x, ListViewItem y)
-            {
-                int statusResult = GitStatusListSorter.CompareRangeDiff(x, y);
-                if (statusResult != 0)
-                {
-                    return statusResult;
-                }
-
-                // All indexes, does not have "overlay", check explicitly
-                // Sort in reverse alphabetic order with Unequal first
-                statusResult = -((FileStatusItem)x.Tag).Item.DiffStatus.CompareTo(((FileStatusItem)y.Tag).Item.DiffStatus);
-                if (statusResult == 0)
-                {
-                    statusResult = x.ImageIndex.CompareTo(y.ImageIndex);
-                    if (statusResult == 0)
-                    {
-                        return ThenBy.Compare(x, y);
-                    }
-                }
-
-                return statusResult;
             }
         }
 
