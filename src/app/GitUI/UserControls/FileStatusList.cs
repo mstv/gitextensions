@@ -452,9 +452,13 @@ namespace GitUI
         [DefaultValue(true)]
         public bool IsEmpty => GitItemStatuses is null || !GitItemStatuses.Any();
 
+        [Browsable(false)]
+        [DefaultValue(true)]
+        public bool HasSelection => SelectedIndex != -1;
+
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
-        public int SelectedIndex
+        private int SelectedIndex
         {
             get
             {
@@ -606,20 +610,20 @@ namespace GitUI
             return (image, prefix, text, suffix, prefixTextStartX, textWidth, textMaxWidth);
         }
 
-        public int GetNextIndex(bool searchBackward, bool loop)
+        public FileStatusItem? SelectNextItem(bool searchBackward, bool loop, bool notify = true)
         {
             int curIdx = SelectedIndex;
 
             if (curIdx < 0)
             {
-                return -1;
+                return null;
             }
 
             ListViewItem currentItem = FileStatusListView.Items[curIdx];
             ListViewGroup? currentGroup = currentItem.Group;
             if (currentGroup is null)
             {
-                return curIdx;
+                return null;
             }
 
             if (searchBackward)
@@ -627,20 +631,24 @@ namespace GitUI
                 ListViewItem? nextItem = FindPrevItemInGroups();
                 if (nextItem is null)
                 {
-                    return loop ? GetLastIndex() : curIdx;
+                    SetSelectedIndex(loop ? GetLastIndex() : curIdx, notify);
+                    return SelectedItem;
                 }
 
-                return nextItem.Index;
+                SetSelectedIndex(nextItem.Index, notify);
+                return SelectedItem;
             }
             else
             {
                 ListViewItem? nextItem = FindNextItemInGroups();
                 if (nextItem is null)
                 {
-                    return loop ? GetFirstIndex() : curIdx;
+                    SetSelectedIndex(loop ? GetFirstIndex() : curIdx, notify);
+                    return SelectedItem;
                 }
 
-                return nextItem.Index;
+                SetSelectedIndex(nextItem.Index, notify);
+                return SelectedItem;
             }
 
             ListViewItem? FindPrevItemInGroups()
@@ -941,7 +949,7 @@ namespace GitUI
             NoFiles.Text = text;
         }
 
-        public void SetSelectedIndex(int idx, bool notify)
+        private void SetSelectedIndex(int idx, bool notify)
         {
             _enableSelectedIndexChangeEvent = notify;
             try
