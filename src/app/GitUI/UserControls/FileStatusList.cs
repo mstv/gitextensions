@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Collections.Frozen;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -42,7 +44,7 @@ namespace GitUI
         private Rectangle _dragBoxFromMouseDown;
         private IDisposable? _selectedIndexChangeSubscription;
         private IDisposable? _diffListSortSubscription;
-        private FormFindInCommitFilesGitGrep _formFindInCommitFilesGitGrep;
+        private FormFindInCommitFilesGitGrep? _formFindInCommitFilesGitGrep;
 
         // Enable menu item to disable AppSettings.ShowDiffForAllParents in some forms
         private bool _enableDisablingShowDiffForAllParents = false;
@@ -247,14 +249,14 @@ namespace GitUI
             OnUICommandsChanged(source, null);
             return;
 
-            void OnUICommandsChanged(object sender, GitUICommandsChangedEventArgs? e)
+            void OnUICommandsChanged(object? sender, GitUICommandsChangedEventArgs? e)
             {
                 if (e?.OldCommands is not null)
                 {
                     e.OldCommands.PostSettings -= UICommands_PostSettings;
                 }
 
-                IGitUICommandsSource commandSource = sender as IGitUICommandsSource;
+                IGitUICommandsSource? commandSource = sender as IGitUICommandsSource;
                 if (commandSource?.UICommands is not null)
                 {
                     commandSource.UICommands.PostSettings += UICommands_PostSettings;
@@ -263,7 +265,7 @@ namespace GitUI
             }
 
             // Show/hide the search box if settings are changed
-            void UICommands_PostSettings(object sender, GitUIPostActionEventArgs? e)
+            void UICommands_PostSettings(object? sender, GitUIPostActionEventArgs? e)
             {
                 if (CanUseFindInCommitFilesGitGrep && Visible)
                 {
@@ -272,7 +274,7 @@ namespace GitUI
             }
         }
 
-        public void Bind(Func<ObjectId, string> describeRevision, Func<GitRevision, GitRevision> getActualRevision)
+        public void Bind(Func<ObjectId?, string> describeRevision, Func<GitRevision, GitRevision> getActualRevision)
         {
             DescribeRevision = describeRevision;
             _diffCalculator.DescribeRevision = describeRevision;
@@ -322,7 +324,7 @@ namespace GitUI
 
         public int AllItemsCount => FileStatusListView.Items.Count;
 
-        public override ContextMenuStrip ContextMenuStrip
+        public override ContextMenuStrip? ContextMenuStrip
         {
             get { return FileStatusListView.ContextMenuStrip; }
             set
@@ -450,9 +452,13 @@ namespace GitUI
         [DefaultValue(true)]
         public bool IsEmpty => GitItemStatuses is null || !GitItemStatuses.Any();
 
+        [Browsable(false)]
+        [DefaultValue(true)]
+        public bool HasSelection => SelectedIndex != -1;
+
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [Browsable(false)]
-        public int SelectedIndex
+        private int SelectedIndex
         {
             get
             {
@@ -473,7 +479,7 @@ namespace GitUI
             get => SelectedItem?.Item;
             set
             {
-                ListViewItem itemToBeSelected = GetItemByStatus(value);
+                ListViewItem? itemToBeSelected = GetItemByStatus(value);
                 SelectItems(item => item == itemToBeSelected);
                 return;
 
@@ -593,48 +599,56 @@ namespace GitUI
             FormatListViewItem(ListViewItem item, PathFormatter formatter, int itemWidth)
         {
             GitItemStatus gitItemStatus = item.Tag<FileStatusItem>().Item;
-            Image image = item.Image();
+            Image? image = item.Image();
             int itemLeft = item.Position.X;
 
             int prefixTextStartX = itemLeft + (image?.Width ?? 0);
             int textMaxWidth = itemWidth - prefixTextStartX;
-            (string prefix, string text, string suffix, int textWidth) = formatter.FormatTextForDrawing(textMaxWidth, gitItemStatus.Name, gitItemStatus.OldName);
+            (string? prefix, string? text, string? suffix, int textWidth) = formatter.FormatTextForDrawing(textMaxWidth, gitItemStatus.Name, gitItemStatus.OldName);
             text = AppendItemSubmoduleStatus(text ?? "", gitItemStatus);
 
             return (image, prefix, text, suffix, prefixTextStartX, textWidth, textMaxWidth);
         }
 
-        public int GetNextIndex(bool searchBackward, bool loop)
+        public FileStatusItem? SelectNextItem(bool searchBackward, bool loop, bool notify = true)
         {
             int curIdx = SelectedIndex;
 
             if (curIdx < 0)
             {
-                return -1;
+                return null;
             }
 
             ListViewItem currentItem = FileStatusListView.Items[curIdx];
-            ListViewGroup currentGroup = currentItem.Group;
+            ListViewGroup? currentGroup = currentItem.Group;
+            if (currentGroup is null)
+            {
+                return null;
+            }
 
             if (searchBackward)
             {
                 ListViewItem? nextItem = FindPrevItemInGroups();
                 if (nextItem is null)
                 {
-                    return loop ? GetLastIndex() : curIdx;
+                    SetSelectedIndex(loop ? GetLastIndex() : curIdx, notify);
+                    return SelectedItem;
                 }
 
-                return nextItem.Index;
+                SetSelectedIndex(nextItem.Index, notify);
+                return SelectedItem;
             }
             else
             {
                 ListViewItem? nextItem = FindNextItemInGroups();
                 if (nextItem is null)
                 {
-                    return loop ? GetFirstIndex() : curIdx;
+                    SetSelectedIndex(loop ? GetFirstIndex() : curIdx, notify);
+                    return SelectedItem;
                 }
 
-                return nextItem.Index;
+                SetSelectedIndex(nextItem.Index, notify);
+                return SelectedItem;
             }
 
             ListViewItem? FindPrevItemInGroups()
@@ -805,7 +819,7 @@ namespace GitUI
                 return;
             }
 
-            ListViewGroup group = FileStatusListView.Groups().FirstOrDefault(gr => gr.Items.Count > 0);
+            ListViewGroup? group = FileStatusListView.Groups().FirstOrDefault(gr => gr.Items.Count > 0);
             if (group is not null)
             {
                 ListViewItem? sortedFirstGroupItem = FileStatusListView.Items().FirstOrDefault(item => item.Group == group);
@@ -935,7 +949,7 @@ namespace GitUI
             NoFiles.Text = text;
         }
 
-        public void SetSelectedIndex(int idx, bool notify)
+        private void SetSelectedIndex(int idx, bool notify)
         {
             _enableSelectedIndexChangeEvent = notify;
             try
@@ -1508,14 +1522,14 @@ namespace GitUI
 
         // Event handlers
 
-        private void FileStatusListView_ClientSizeChanged(object sender, EventArgs e)
+        private void FileStatusListView_ClientSizeChanged(object? sender, EventArgs e)
         {
             UpdateColumnWidth();
         }
 
-        private void FileStatusListView_ContextMenu_Opening(object sender, CancelEventArgs e)
+        private void FileStatusListView_ContextMenu_Opening(object? sender, CancelEventArgs e)
         {
-            if (SelectedItem?.Item.IsStatusOnly ?? false)
+            if (sender is null || (SelectedItem?.Item.IsStatusOnly ?? false))
             {
                 e.Cancel = true;
                 return;
@@ -1528,7 +1542,7 @@ namespace GitUI
             // The actual implementation of the default handling with doubleclick is in each form,
             // separate from this menu item
 
-            if (!cm.Items.Find(_NO_TRANSLATE_openSubmoduleMenuItem.Name, true).Any())
+            if (!cm.Items.Find(_NO_TRANSLATE_openSubmoduleMenuItem.Name!, true).Any())
             {
                 cm.Items.Insert(0, _NO_TRANSLATE_openSubmoduleMenuItem);
             }
@@ -1543,7 +1557,7 @@ namespace GitUI
                     : new Font(_NO_TRANSLATE_openSubmoduleMenuItem.Font, FontStyle.Regular);
             }
 
-            if (!cm.Items.Find(_NO_TRANSLATE_openInVisualStudioMenuItem.Name, true).Any())
+            if (!cm.Items.Find(_NO_TRANSLATE_openInVisualStudioMenuItem.Name!, true).Any())
             {
                 cm.Items.Add(_openInVisualStudioSeparator);
                 cm.Items.Add(_NO_TRANSLATE_openInVisualStudioMenuItem);
@@ -1554,7 +1568,7 @@ namespace GitUI
             _NO_TRANSLATE_openInVisualStudioMenuItem.Visible = canOpenInVisualStudio;
             _openInVisualStudioSeparator.Visible = canOpenInVisualStudio;
 
-            if (!cm.Items.Find(_sortByContextMenu.Name, true).Any())
+            if (!cm.Items.Find(_sortByContextMenu.Name!, true).Any())
             {
                 cm.Items.Add(_sortBySeparator);
                 cm.Items.Add(_sortByContextMenu);
@@ -1596,7 +1610,7 @@ namespace GitUI
             {
                 diffItem[0].Visible = mayBeMultipleRevs;
 
-                ToolStripItem[] sepItem = cm.Items.Find(_showDiffForAllParentsSeparator.Name, true);
+                ToolStripItem[] sepItem = cm.Items.Find(_showDiffForAllParentsSeparator.Name!, true);
                 if (sepItem.Length > 0)
                 {
                     sepItem[0].Visible = mayBeMultipleRevs;
@@ -1616,6 +1630,7 @@ namespace GitUI
                 _formFindInCommitFilesGitGrep = null;
             }
 
+            Validates.NotNull(TopLevelControl);
             _formFindInCommitFilesGitGrep ??= new FormFindInCommitFilesGitGrep(UICommands)
             {
                 FilesGitGrepLocator = (text, delay) =>
@@ -1663,12 +1678,13 @@ namespace GitUI
             }
         }
 
-        private void FileStatusListView_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        private void FileStatusListView_DrawSubItem(object? sender, DrawListViewSubItemEventArgs e)
         {
-            ListViewItem item = e.Item;
+            ListViewItem? item = e.Item;
+            Validates.NotNull(item);
             PathFormatter formatter = new(e.Graphics, FileStatusListView.Font);
 
-            (Image image, string prefix, string text, string suffix, int prefixTextStartX, int _, int textMaxWidth) = FormatListViewItem(item, formatter, item.Bounds.Width);
+            (Image? image, string? prefix, string text, string? suffix, int prefixTextStartX, int _, int textMaxWidth) = FormatListViewItem(item, formatter, item.Bounds.Width);
 
             if (item.Selected)
             {
@@ -1844,7 +1860,7 @@ namespace GitUI
                     hoveredItem = null;
                 }
 
-                FileStatusItem gitItemStatus = hoveredItem?.Tag<FileStatusItem>();
+                FileStatusItem? gitItemStatus = hoveredItem?.Tag<FileStatusItem>();
 
                 if (gitItemStatus is not null)
                 {
@@ -1895,7 +1911,7 @@ namespace GitUI
             UpdateColumnWidth();
         }
 
-        private void FileStatusList_Enter(object sender, EventArgs e)
+        private void FileStatusList_Enter(object? sender, EventArgs e)
         {
             Enter?.Invoke(this, new EnterEventArgs(_mouseEntered));
             _mouseEntered = false;
@@ -1955,9 +1971,11 @@ namespace GitUI
         private void InitialiseFiltering()
         {
             // TODO this code is very similar to code in FormCommit
+            SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
+            Validates.NotNull(synchronizationContext);
             _filterSubject
                 .Throttle(TimeSpan.FromMilliseconds(250))
-                .ObserveOn(SynchronizationContext.Current)
+                .ObserveOn(synchronizationContext)
                 .Subscribe(
                     filterText =>
                     {
@@ -2190,6 +2208,7 @@ namespace GitUI
             }
         }
 
+#nullable disable
         private class GitStatusListSorter : Comparer<ListViewItem>
         {
             private IComparer<GitItemStatus> StatusComparer { get; }
@@ -2269,6 +2288,7 @@ namespace GitUI
                 return statusResult;
             }
         }
+#nullable enable
 
         #endregion
 
