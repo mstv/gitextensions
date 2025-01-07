@@ -54,6 +54,11 @@ public class MultiSelectTreeView : NativeTreeView
 
                 if (value is not null)
                 {
+                    if (value.TreeView is null)
+                    {
+                        this.ExpandTopDownTo(value);
+                    }
+
                     if (!_mouseClickHandled)
                     {
                         value.EnsureVerticallyVisible();
