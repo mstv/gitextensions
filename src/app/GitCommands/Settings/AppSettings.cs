@@ -34,6 +34,7 @@ namespace GitCommands
 
         public static DistributedSettings SettingsContainer { get; private set; }
 
+        private static readonly SettingsPath AdvancedSettingsPath = new AppSettingsPath("Advanced");
         private static readonly SettingsPath AppearanceSettingsPath = new AppSettingsPath("Appearance");
         private static readonly SettingsPath ConfirmationsSettingsPath = new AppSettingsPath("Confirmations");
         private static readonly SettingsPath DetailedSettingsPath = new AppSettingsPath("Detailed");
@@ -1863,11 +1864,7 @@ namespace GitCommands
             set => SetBool("OmitUninterestingDiff", value);
         }
 
-        public static bool UseConsoleEmulatorForCommands
-        {
-            get => GetBool("UseConsoleEmulatorForCommands", true);
-            set => SetBool("UseConsoleEmulatorForCommands", value);
-        }
+        public static ISetting<bool> UseConsoleEmulatorForCommands { get; } = Setting.Create(AdvancedSettingsPath, nameof(UseConsoleEmulatorForCommands), false);
 
         public static GitRefsSortBy RefsSortBy
         {

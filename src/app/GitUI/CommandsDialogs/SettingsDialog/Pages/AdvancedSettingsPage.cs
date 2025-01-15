@@ -31,7 +31,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             chkAlwaysShowAdvOpt.Checked = AppSettings.AlwaysShowAdvOpt;
             chkCheckForUpdates.Checked = AppSettings.CheckForUpdates;
             chkCheckForRCVersions.Checked = AppSettings.CheckForReleaseCandidates;
-            chkConsoleEmulator.Checked = AppSettings.UseConsoleEmulatorForCommands;
+            chkConsoleEmulator.Checked = AppSettings.UseConsoleEmulatorForCommands.Value;
             chkAutoNormaliseBranchName.Checked = AppSettings.AutoNormaliseBranchName;
             cboAutoNormaliseSymbol.Enabled = chkAutoNormaliseBranchName.Checked;
             cboAutoNormaliseSymbol.SelectedValue = AppSettings.AutoNormaliseSymbol;
@@ -48,7 +48,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
             AppSettings.AlwaysShowAdvOpt = chkAlwaysShowAdvOpt.Checked;
             AppSettings.CheckForUpdates = chkCheckForUpdates.Checked;
             AppSettings.CheckForReleaseCandidates = chkCheckForRCVersions.Checked;
-            AppSettings.UseConsoleEmulatorForCommands = chkConsoleEmulator.Checked;
+            AppSettings.UseConsoleEmulatorForCommands.Value = chkConsoleEmulator.Checked;
             AppSettings.AutoNormaliseBranchName = chkAutoNormaliseBranchName.Checked;
             AppSettings.AutoNormaliseSymbol = (string)cboAutoNormaliseSymbol.SelectedValue;
             AppSettings.CommitAndPushForcedWhenAmend = chkCommitAndPushForcedWhenAmend.Checked;
