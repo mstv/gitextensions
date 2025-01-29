@@ -244,7 +244,7 @@ namespace GitUI.CommandsDialogs
         {
             using (WaitCursorScope.Enter())
             {
-                FormProcess.ShowDialog(this, UICommands, arguments: Commands.ContinueRebase(), Module.WorkingDir, input: null, useDialogSettings: true);
+                FormProcess.ShowDialog(this, UICommands, arguments: Commands.ContinueRebase(), Module.WorkingDir, input: null, useDialogSettings: true, out string cmdOutput);
 
                 if (!Module.InTheMiddleOfRebase())
                 {
@@ -253,6 +253,10 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
+                if (Module.CanContinueAction(cmdOutput))
+                {
+                    BeginInvoke(btnContinueRebase.PerformClick);
+                }
             }
         }
 
@@ -373,6 +377,10 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
+                if (Module.CanContinueAction(cmdOutput))
+                {
+                    BeginInvoke(btnContinueRebase.PerformClick);
+                }
             }
         }
 
