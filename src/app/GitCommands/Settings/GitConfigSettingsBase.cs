@@ -57,7 +57,7 @@ public abstract class GitConfigSettingsBase(IExecutable gitExecutable, GitSettin
             int lastSeparator = name.LastIndexOf('.');
             if (lastSeparator < 0 || firstSeparator == lastSeparator)
             {
-                Debug.WriteLine(@$"(No Exception) Setting name should be lowercase: ""{name}"".");
+                Trace.WriteLine(@$"(No Exception) Setting name should be lowercase: ""{name}"".");
                 return name.ToLowerInvariant();
             }
 
@@ -69,7 +69,7 @@ public abstract class GitConfigSettingsBase(IExecutable gitExecutable, GitSettin
                 return name;
             }
 
-            Debug.WriteLine(@$"(No Exception) Setting section and variable name should be lowercase: ""{name}"".");
+            Trace.WriteLine(@$"(No Exception) Setting section and variable name should be lowercase: ""{name}"".");
 
             ReadOnlySpan<char> caseSignificant = name.AsSpan(firstSeparator, length: lastSeparator + 1 - firstSeparator);
             return $"{section.ToString().ToLowerInvariant()}{caseSignificant}{variable.ToString().ToLowerInvariant()}";
