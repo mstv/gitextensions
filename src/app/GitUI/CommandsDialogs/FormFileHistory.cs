@@ -14,7 +14,7 @@ using ResourceManager;
 
 namespace GitUI.CommandsDialogs
 {
-    public sealed partial class FormFileHistory : GitModuleForm
+    public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUpdate
     {
         private const string FormBrowseName = "FormBrowse";
 
@@ -338,7 +338,7 @@ namespace GitUI.CommandsDialogs
 
             if (tabControl1.SelectedTab == BlameTab)
             {
-                _ = Blame.LoadBlameAsync(revision, children, fileName, revisionGridInfo: RevisionGrid, revisionGridUpdate: RevisionGrid, controlToMask: BlameTab, Diff.Encoding, force: force, cancellationTokenSequence: _viewChangesSequence);
+                _ = Blame.LoadBlameAsync(revision, children, fileName, revisionGridInfo: RevisionGrid, revisionGridFileUpdate: this, controlToMask: BlameTab, Diff.Encoding, force: force, cancellationTokenSequence: _viewChangesSequence);
             }
             else if (tabControl1.SelectedTab == ViewTab)
             {
@@ -551,11 +551,11 @@ namespace GitUI.CommandsDialogs
             if (e.Command == "gotocommit")
             {
                 Validates.NotNull(e.Data);
-                if (Module.TryResolvePartialCommitId(e.Data, out ObjectId? objectId))
+                if (Module.TryResolvePartialCommitId(e.Data, out ObjectId? commitId))
                 {
-                    if (!RevisionGrid.SetSelectedRevision(objectId))
+                    if (!RevisionGrid.SetSelectedRevision(commitId))
                     {
-                        MessageBoxes.RevisionFilteredInGrid(this, objectId);
+                        MessageBoxes.RevisionFilteredInGrid(this, commitId);
                     }
                }
             }
@@ -695,6 +695,9 @@ namespace GitUI.CommandsDialogs
         {
             FormGitCommandLog.ShowOrActivate(this);
         }
+
+        bool IRevisionGridFileUpdate.SelectFileInRevision(ObjectId commitId, RelativePath ignoredFilename)
+            => RevisionGrid.SetSelectedRevision(commitId);
 
         internal TestAccessor GetTestAccessor()
             => new(this);

@@ -4,7 +4,6 @@ using GitCommands;
 using GitCommands.Git;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
-using GitUI.CommandDialogs;
 using GitUI.CommandsDialogs.BrowseDialog;
 using GitUI.HelperDialogs;
 using GitUI.ScriptsEngine;
@@ -17,7 +16,7 @@ using ResourceManager;
 
 namespace GitUI.CommandsDialogs
 {
-    public partial class RevisionDiffControl : GitModuleControl
+    public partial class RevisionDiffControl : GitModuleControl, IRevisionGridFileUpdate
     {
         private readonly TranslationString _saveFileFilterCurrentFormat = new("Current format");
         private readonly TranslationString _saveFileFilterAllFiles = new("All files");
@@ -47,9 +46,9 @@ namespace GitUI.CommandsDialogs
         private readonly RememberFileContextMenuController _rememberFileContextMenuController
             = RememberFileContextMenuController.Default;
         private Action? _refreshGitStatus;
-        private FileStatusItem? _selectedBlameItem;
+        private GitItemStatus? _selectedBlameItem;
         private string? _fallbackFollowedFile;
-        private FileStatusItem? _lastExplicitlySelectedItem;
+        private RelativePath? _lastExplicitlySelectedItem;
         private bool _isImplicitListSelection = false;
 
         public RevisionDiffControl()
@@ -105,13 +104,13 @@ namespace GitUI.CommandsDialogs
                 return;
             }
 
-            DiffFiles.StoreNextIndexToSelect();
+            DiffFiles.StoreNextItemToSelect();
             DiffFiles.InvokeAndForget(async () =>
             {
                 await SetDiffsAsync(revisions);
                 if (DiffFiles.SelectedItem is null)
                 {
-                    DiffFiles.SelectStoredNextIndex();
+                    DiffFiles.SelectStoredNextItem();
                 }
             });
         }
@@ -311,7 +310,7 @@ namespace GitUI.CommandsDialogs
 
             // First try the last item explicitly selected
             if (_lastExplicitlySelectedItem is not null
-                && firstGroupItems.FirstOrDefault(i => i.Item.Name.Equals(_lastExplicitlySelectedItem.Item.Name))?.Item is GitItemStatus explicitItem)
+                && firstGroupItems.FirstOrDefault(i => i.Item.Name.Equals(_lastExplicitlySelectedItem.Value))?.Item is GitItemStatus explicitItem)
             {
                 DiffFiles.SelectedGitItem = explicitItem;
                 return;
@@ -586,7 +585,7 @@ namespace GitUI.CommandsDialogs
             GitRevision rev = DiffFiles.SelectedItem.SecondRevision.IsArtificial
                 ? _revisionGridInfo.GetActualRevision(_revisionGridInfo.CurrentCheckout)
                 : DiffFiles.SelectedItem.SecondRevision;
-            await BlameControl.LoadBlameAsync(rev, children: null, DiffFiles.SelectedItem.Item.Name, _revisionGridInfo, _revisionGridUpdate,
+            await BlameControl.LoadBlameAsync(rev, children: null, DiffFiles.SelectedItem.Item.Name, _revisionGridInfo, revisionGridFileUpdate: this,
                 controlToMask: null, DiffText.Encoding, line, cancellationTokenSequence: _viewChangesSequence);
         }
 
@@ -629,17 +628,17 @@ namespace GitUI.CommandsDialogs
         private void DiffFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Switch to diff if the selection changes
-            FileStatusItem? item = DiffFiles.SelectedItem;
-            if (item is not null && blameToolStripMenuItem.Checked && item.Item.Name != _selectedBlameItem?.Item.Name)
+            GitItemStatus? item = DiffFiles.SelectedGitItem;
+            if (item is not null && blameToolStripMenuItem.Checked && item.Name != _selectedBlameItem?.Name)
             {
                 blameToolStripMenuItem.Checked = false;
             }
 
             // If this is not occurring after a revision change (implicit selection)
             // save the selected item so it can be the "preferred" selection
-            if (!_isImplicitListSelection && item is not null && !item.Item.IsRangeDiff)
+            if (!_isImplicitListSelection && item is not null && !item.IsRangeDiff)
             {
-                _lastExplicitlySelectedItem = item;
+                _lastExplicitlySelectedItem = RelativePath.From(item.Name);
                 _selectedBlameItem = null;
             }
 
@@ -786,7 +785,7 @@ namespace GitUI.CommandsDialogs
             {
                 int? line = DiffText.Visible ? DiffText.CurrentFileLine : BlameControl.CurrentFileLine;
                 blameToolStripMenuItem.Checked = !blameToolStripMenuItem.Checked;
-                _selectedBlameItem = blameToolStripMenuItem.Checked ? DiffFiles.SelectedItem : null;
+                _selectedBlameItem = blameToolStripMenuItem.Checked ? DiffFiles.SelectedItem.Item : null;
                 ShowSelectedFile(ensureNoSwitchToFilter: true, line);
                 return;
             }
@@ -1258,7 +1257,7 @@ namespace GitUI.CommandsDialogs
                     return false;
                 }
 
-                DiffFiles.StoreNextIndexToSelect();
+                DiffFiles.StoreNextItemToSelect();
 
                 try
                 {
@@ -1485,6 +1484,12 @@ namespace GitUI.CommandsDialogs
         internal void RegisterGitHostingPluginInBlameControl()
         {
             BlameControl.ConfigureRepositoryHostPlugin(PluginRegistry.TryGetGitHosterForModule(Module));
+        }
+
+        bool IRevisionGridFileUpdate.SelectFileInRevision(ObjectId commitId, RelativePath filename)
+        {
+            _lastExplicitlySelectedItem = filename;
+            return _revisionGridUpdate.SetSelectedRevision(commitId);
         }
 
         internal TestAccessor GetTestAccessor()

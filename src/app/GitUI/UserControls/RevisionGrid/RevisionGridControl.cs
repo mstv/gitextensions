@@ -17,7 +17,6 @@ using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
 using GitUI.Avatars;
 using GitUI.BuildServerIntegration;
-using GitUI.CommandDialogs;
 using GitUI.CommandsDialogs;
 using GitUI.CommandsDialogs.BrowseDialog;
 using GitUI.HelperDialogs;
@@ -159,6 +158,8 @@ namespace GitUI
         /// </summary>
         internal Dictionary<ObjectId, string>? FilePathByObjectId { get; set; } = null;
 
+        internal Action<string>? SelectInLeftPanel { get;  set; } = null;
+
         public RevisionGridControl()
         {
             InitializeComponent();
@@ -203,11 +204,11 @@ namespace GitUI
             _quickSearchProvider = new QuickSearchProvider(_gridView, () => Module.WorkingDir);
 
             // Parent-child navigation can expect that SetSelectedRevision is always successful since it always uses first-parents
-            _parentChildNavigationHistory = new ParentChildNavigationHistory(objectId =>
+            _parentChildNavigationHistory = new ParentChildNavigationHistory(commitId =>
             {
-                if (!SetSelectedRevision(objectId))
+                if (!SetSelectedRevision(commitId))
                 {
-                    MessageBoxes.RevisionFilteredInGrid(this, objectId);
+                    MessageBoxes.RevisionFilteredInGrid(this, commitId);
                 }
             });
             _authorHighlighting = new AuthorRevisionHighlighting();
@@ -459,10 +460,10 @@ namespace GitUI
         {
             if (_navigationHistory.CanNavigateBackward)
             {
-                ObjectId objectId = _navigationHistory.NavigateBackward();
-                if (!SetSelectedRevision(objectId))
+                ObjectId commitId = _navigationHistory.NavigateBackward();
+                if (!SetSelectedRevision(commitId))
                 {
-                    MessageBoxes.RevisionFilteredInGrid(this, objectId);
+                    MessageBoxes.RevisionFilteredInGrid(this, commitId);
                 }
             }
         }
@@ -471,10 +472,10 @@ namespace GitUI
         {
             if (_navigationHistory.CanNavigateForward)
             {
-                ObjectId objectId = _navigationHistory.NavigateForward();
-                if (!SetSelectedRevision(objectId))
+                ObjectId commitId = _navigationHistory.NavigateForward();
+                if (!SetSelectedRevision(commitId))
                 {
-                    MessageBoxes.RevisionFilteredInGrid(this, objectId);
+                    MessageBoxes.RevisionFilteredInGrid(this, commitId);
                 }
             }
         }
@@ -591,25 +592,25 @@ namespace GitUI
         }
 
         /// <summary>
-        /// Selects row containing revision matching <paramref name="objectId"/>.
+        /// Selects row containing revision matching <paramref name="commitId"/>.
         /// Returns whether the required revision was found and selected.
         /// </summary>
-        /// <param name="objectId">Id of the revision to select.</param>
+        /// <param name="commitId">Id of the revision to select.</param>
         /// <param name="toggleSelection">Toggle if the selected state for the revision.</param>
         /// <returns><c>true</c> if the required revision was found and selected, otherwise <c>false</c>.</returns>
-        public bool SetSelectedRevision(ObjectId? objectId, bool toggleSelection = false, bool updateNavigationHistory = true)
+        public bool SetSelectedRevision(ObjectId? commitId, bool toggleSelection = false, bool updateNavigationHistory = true)
         {
             _gridView.ClearToBeSelected();
-            if (_gridView.TryGetRevisionIndex(objectId) is not int index || index < 0 || index >= _gridView.RowCount)
+            if (_gridView.TryGetRevisionIndex(commitId) is not int index || index < 0 || index >= _gridView.RowCount)
             {
                 return false;
             }
 
-            Validates.NotNull(objectId);
+            Validates.NotNull(commitId);
             SetSelectedIndex(_gridView, index, toggleSelection);
             if (updateNavigationHistory)
             {
-                _navigationHistory.Push(objectId);
+                _navigationHistory.Push(commitId);
             }
 
             return true;
@@ -1996,6 +1997,7 @@ namespace GitUI
             ContextMenuStrip checkoutBranchDropDown = new();
             ContextMenuStrip mergeBranchDropDown = new();
             ContextMenuStrip renameDropDown = new();
+            ContextMenuStrip selectInLeftPanelDropDown = new();
 
             GitRevision revision = LatestSelectedRevision;
             GitRefListsForRevision gitRefListsForRevision = new(revision);
@@ -2004,6 +2006,7 @@ namespace GitUI
             foreach (IGitRef head in gitRefListsForRevision.AllTags)
             {
                 AddBranchMenuItem(deleteTagDropDown, head, delegate { UICommands.StartDeleteTagDialog(ParentForm, head.Name); });
+                AddBranchMenuItem(selectInLeftPanelDropDown, head, SelectInLeftPanel_Click);
 
                 string refUnambiguousName = GetRefUnambiguousName(head);
                 ToolStripMenuItem mergeItem = AddBranchMenuItem(mergeBranchDropDown, head,
@@ -2051,6 +2054,8 @@ namespace GitUI
             bool firstRemoteBranchForCheckout = false;
             foreach (IGitRef head in allBranches)
             {
+                AddBranchMenuItem(selectInLeftPanelDropDown, head, SelectInLeftPanel_Click);
+
                 // skip remote branches - they can not be deleted this way
                 if (!head.IsRemote)
                 {
@@ -2149,6 +2154,14 @@ namespace GitUI
             SetEnabled(applyStashToolStripMenuItem, showStash);
             SetEnabled(popStashToolStripMenuItem, showStash);
             SetEnabled(dropStashToolStripMenuItem, showStash);
+
+            int selectInLeftPanelCount = selectInLeftPanelDropDown.Items.Count;
+            SetEnabled(tsmiSelectInLeftPanel, SelectInLeftPanel is not null && selectInLeftPanelCount > 0);
+            tsmiSelectInLeftPanel.DropDown = selectInLeftPanelCount > 1 ? selectInLeftPanelDropDown : null;
+            if (selectInLeftPanelCount > 0)
+            {
+                tsmiSelectInLeftPanel.Tag = selectInLeftPanelDropDown.Items[0].Text;
+            }
 
             SetEnabled(openBuildReportToolStripMenuItem, !string.IsNullOrWhiteSpace(revision.BuildStatus?.Url));
 
@@ -2514,6 +2527,13 @@ namespace GitUI
             }
 
             UICommands.StartAmendCommitDialog(ParentForm, LatestSelectedRevision);
+        }
+
+        private void SelectInLeftPanel_Click(object? sender, EventArgs e)
+        {
+            mainContextMenu.Close();
+            string gitRef = sender != tsmiSelectInLeftPanel && sender is ToolStripMenuItem item ? item.Text : (string)tsmiSelectInLeftPanel.Tag;
+            SelectInLeftPanel(gitRef);
         }
 
         internal void ToggleShowRelativeDate(EventArgs e)
@@ -2888,10 +2908,10 @@ namespace GitUI
                 return;
             }
 
-            ObjectId objectId = ObjectId.Parse(mergeBaseCommitId);
-            if (!SetSelectedRevision(objectId))
+            ObjectId commitId = ObjectId.Parse(mergeBaseCommitId);
+            if (!SetSelectedRevision(commitId))
             {
-                MessageBoxes.RevisionFilteredInGrid(this, objectId);
+                MessageBoxes.RevisionFilteredInGrid(this, commitId);
             }
         }
 
@@ -2925,12 +2945,12 @@ namespace GitUI
                 refName = sha1;
             }
 
-            ObjectId? revisionId = Module.RevParse(refName);
-            if (revisionId is not null)
+            ObjectId? commitId = Module.RevParse(refName);
+            if (commitId is not null)
             {
-                if (!SetSelectedRevision(revisionId, toggleSelection) && showNoRevisionMsg)
+                if (!SetSelectedRevision(commitId, toggleSelection) && showNoRevisionMsg)
                 {
-                    MessageBoxes.RevisionFilteredInGrid(this, revisionId);
+                    MessageBoxes.RevisionFilteredInGrid(this, commitId);
                 }
             }
             else if (showNoRevisionMsg)

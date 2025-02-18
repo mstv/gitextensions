@@ -7,7 +7,6 @@ using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
-using GitUI.CommandDialogs;
 using GitUI.CommandsDialogs;
 using GitUI.Properties;
 using GitUI.UserControls;
@@ -336,6 +335,20 @@ namespace GitUI.LeftPanel
                 // Local or remote branch nodes or tag nodes
                 return Node.GetNodeSafe<BaseBranchLeafNode>(treeNode)?.ObjectId ??
                     Node.GetNodeSafe<TagNode>(treeNode)?.ObjectId;
+            }
+        }
+
+        public void SelectGitRef(string gitRef)
+        {
+            foreach (TreeNode node in treeMain.Items())
+            {
+                if (node.Tag is BaseRevisionNode revisionNode && revisionNode.FullPath == gitRef)
+                {
+                    SelectNode(revisionNode, multiple: false, includingDescendants: false);
+                    node.EnsureVerticallyVisible();
+                    treeMain.SelectedNode = node;
+                    return;
+                }
             }
         }
 

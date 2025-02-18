@@ -1527,6 +1527,18 @@ The primary difftool can still be selected by clicking the main menu entry.</sou
         <source>No changes</source>
         <target />
       </trans-unit>
+      <trans-unit id="_collapse.Text">
+        <source>C&amp;ollapse all</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_expand.Text">
+        <source>E&amp;xpand all</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_selectAll.Text">
+        <source>S&amp;elect all</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_sortByContextMenu.Text">
         <source>&amp;Sort by...</source>
         <target />
@@ -9669,7 +9681,7 @@ See the changes in the commit form.</source>
         <target />
       </trans-unit>
       <trans-unit id="deleteTagToolStripMenuItem.Text">
-        <source>De&amp;lete tag...</source>
+        <source>&amp;Delete tag...</source>
         <target />
       </trans-unit>
       <trans-unit id="dropStashToolStripMenuItem.Text">
@@ -9774,6 +9786,10 @@ See the changes in the commit form.</source>
       </trans-unit>
       <trans-unit id="stopBisectToolStripMenuItem.Text">
         <source>Stop bisect</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="tsmiSelectInLeftPanel.Text">
+        <source>Se&amp;lect in left panel</source>
         <target />
       </trans-unit>
       <trans-unit id="viewToolStripMenuItem.Text">
