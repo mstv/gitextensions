@@ -3,6 +3,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
@@ -1260,7 +1261,7 @@ namespace GitUI
                         h => FileStatusListView.FocusedNodeChanged += h,
                         h => FileStatusListView.FocusedNodeChanged -= h)
                     .Where(x => _enableSelectedIndexChangeEvent)
-                    .Throttle(SelectedIndexChangeThrottleDuration, MainThreadScheduler.Instance)
+                    .Throttle(SelectedIndexChangeThrottleDuration, ThreadPoolScheduler.Instance)
                     .ObserveOn(MainThreadScheduler.Instance)
                     .Subscribe(_ => TaskManager.HandleExceptions(FileStatusListView_SelectedIndexChanged, Application.OnThreadException));
             }
