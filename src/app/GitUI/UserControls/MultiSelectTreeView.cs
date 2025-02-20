@@ -43,8 +43,18 @@ public class MultiSelectTreeView : NativeTreeView
             try
             {
                 _settingFocusedNode = true;
+
+                if (value is not null)
+                {
+                    if (value.TreeView is null)
+                    {
+                        this.ExpandTopDownTo(value);
+                    }
+
+                    value.EnsureVerticallyVisible();
+                }
+
                 base.SelectedNode = value;
-                value?.EnsureVerticallyVisible();
             }
             finally
             {
@@ -155,8 +165,8 @@ public class MultiSelectTreeView : NativeTreeView
     {
         if (e.Button == MouseButtons.Left && HitTest(e.Location).Node is TreeNode node)
         {
-            // Expand / collapse root folder nodes
-            if (!ShowRootLines && ModifierKeys == Keys.None && node.Parent is null && node.Nodes.Count > 0)
+            // Expand / collapse root folder nodes unless there is only one
+            if (!ShowRootLines && Nodes.Count > 1 && ModifierKeys == Keys.None && node.Parent is null && node.Nodes.Count > 0)
             {
                 if (node.IsExpanded)
                 {
