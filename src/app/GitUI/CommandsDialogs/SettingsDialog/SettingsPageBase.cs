@@ -133,30 +133,6 @@ namespace GitUI.CommandsDialogs.SettingsDialog
             _controlBindings.Add(binding);
         }
 
-        protected void AddSettingBinding(ISetting<bool> setting, CheckBox checkBox)
-        {
-            BoolCheckBoxAdapter adapter = new(setting, checkBox);
-            AddControlBinding(adapter.CreateControlBinding());
-        }
-
-        protected void AddSettingBinding(ISetting<bool?> setting, CheckBox checkBox)
-        {
-            BoolCheckBoxAdapter adapter = new(setting, checkBox);
-            AddControlBinding(adapter.CreateControlBinding());
-        }
-
-        protected void AddSettingBinding(ISetting<int> setting, TextBox control)
-        {
-            IntTextBoxAdapter adapter = new(setting, control);
-            AddControlBinding(adapter.CreateControlBinding());
-        }
-
-        protected void AddSettingBinding(ISetting<int?> setting, TextBox control)
-        {
-            IntTextBoxAdapter adapter = new(setting, control);
-            AddControlBinding(adapter.CreateControlBinding());
-        }
-
         protected void AddSettingBinding(ISetting<string> setting, ComboBox comboBox)
         {
             StringComboBoxAdapter adapter = new(setting, comboBox);
@@ -211,42 +187,12 @@ namespace GitUI.CommandsDialogs.SettingsDialog
         }
     }
 
-    public class BoolCheckBoxAdapter : BoolSetting
-    {
-        public BoolCheckBoxAdapter(ISetting<bool> setting, CheckBox checkBox)
-            : base(setting.FullPath, setting.Default)
-        {
-            CustomControl = checkBox;
-        }
-
-        public BoolCheckBoxAdapter(ISetting<bool?> setting, CheckBox checkBox)
-            : base(setting.FullPath, setting.Default ?? false)
-        {
-            CustomControl = checkBox;
-        }
-    }
-
     public class StringComboBoxAdapter : ChoiceSetting
     {
         public StringComboBoxAdapter(ISetting<string> setting, ComboBox comboBox)
             : base(setting.FullPath, comboBox.Items.Cast<string>().ToList(), setting.Default)
         {
             CustomControl = comboBox;
-        }
-    }
-
-    public class IntTextBoxAdapter : NumberSetting<int>
-    {
-        public IntTextBoxAdapter(ISetting<int> setting, TextBox control)
-            : base(setting.FullPath, setting.Default)
-        {
-            CustomControl = control;
-        }
-
-        public IntTextBoxAdapter(ISetting<int?> setting, TextBox control)
-            : base(setting.FullPath, setting.Default ?? 0)
-        {
-            CustomControl = control;
         }
     }
 }

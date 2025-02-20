@@ -318,6 +318,7 @@ public interface IGitModule
     string ApplyPatch(string dirText, ArgumentString arguments);
     bool InTheMiddleOfRebase();
     bool InTheMiddleOfMerge();
+    bool CanContinueAction(string commandOutput);
     IReadOnlyList<GitItemStatus> GetDiffFilesWithSubmodulesStatus(ObjectId? firstId, ObjectId? secondId, ObjectId? parentToSecond, CancellationToken cancellationToken);
     IReadOnlyList<GitItemStatus> GetIndexFilesWithSubmodulesStatus();
     ObjectId? GetFileBlobHash(string fileName, ObjectId objectId);
@@ -502,7 +503,7 @@ public interface IGitModule
     /// </returns>
     string GetRemoteBranch(string branch);
 
-    IReadOnlyList<GitItemStatus> GetGrepFilesStatus(ObjectId objectId, string grepString, CancellationToken cancellationToken);
+    IReadOnlyList<GitItemStatus> GetGrepFilesStatus(ObjectId objectId, string grepString, bool applyAppSettings, CancellationToken cancellationToken);
     Task<ExecutionResult> GetGrepFileAsync(
         ObjectId objectId,
         string fileName,

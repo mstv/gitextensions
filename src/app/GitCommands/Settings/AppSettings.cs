@@ -34,11 +34,13 @@ namespace GitCommands
 
         public static DistributedSettings SettingsContainer { get; private set; }
 
+        private static readonly SettingsPath AdvancedSettingsPath = new AppSettingsPath("Advanced");
         private static readonly SettingsPath AppearanceSettingsPath = new AppSettingsPath("Appearance");
         private static readonly SettingsPath ConfirmationsSettingsPath = new AppSettingsPath("Confirmations");
         private static readonly SettingsPath DetailedSettingsPath = new AppSettingsPath("Detailed");
         private static readonly SettingsPath DialogSettingsPath = new AppSettingsPath("Dialogs");
         private static readonly SettingsPath ExperimentalSettingsPath = new AppSettingsPath(DetailedSettingsPath, "Experimental");
+        private static readonly SettingsPath FileStatusSettingsPath = new AppSettingsPath(AppearanceSettingsPath, "FileStatus");
         private static readonly SettingsPath RevisionGraphSettingsPath = new AppSettingsPath(AppearanceSettingsPath, "RevisionGraph");
         private static readonly SettingsPath RecentRepositories = new AppSettingsPath("RecentRepositories");
         private static readonly SettingsPath RootSettingsPath = new AppSettingsPath(pathName: "");
@@ -299,6 +301,12 @@ namespace GitCommands
             get => ReadStringRegValue("CascadeShellMenuItems", "110111000111111111");
             set => WriteStringRegValue("CascadeShellMenuItems", value);
         }
+
+        public static ISetting<int> FileStatusFindInFilesGitGrepTypeIndex { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusFindInFilesGitGrepTypeIndex), 1);
+
+        public static ISetting<bool> FileStatusMergeSingleItemWithFolder { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusMergeSingleItemWithFolder), false);
+
+        public static ISetting<bool> FileStatusShowGroupNodesInFlatList { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusShowGroupNodesInFlatList), false);
 
         public static string SshPath
         {
@@ -1863,11 +1871,7 @@ namespace GitCommands
             set => SetBool("OmitUninterestingDiff", value);
         }
 
-        public static bool UseConsoleEmulatorForCommands
-        {
-            get => GetBool("UseConsoleEmulatorForCommands", true);
-            set => SetBool("UseConsoleEmulatorForCommands", value);
-        }
+        public static ISetting<bool> UseConsoleEmulatorForCommands { get; } = Setting.Create(AdvancedSettingsPath, nameof(UseConsoleEmulatorForCommands), false);
 
         public static GitRefsSortBy RefsSortBy
         {
