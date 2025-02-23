@@ -255,25 +255,32 @@ public class MultiSelectTreeView : NativeTreeView
 
     protected override void OnMouseUp(MouseEventArgs e)
     {
-        if (_toBeFocusedNode is not null)
+        try
         {
-            this.InvokeAndForget(async () =>
+            if (_toBeFocusedNode is not null)
             {
-                await Task.Delay(millisecondsDelay: 100);
-
-                if (_toBeFocusedNode.TreeView == this)
+                this.InvokeAndForget(async () =>
                 {
-                    FocusedNode = _toBeFocusedNode;
-                }
+                    await Task.Delay(millisecondsDelay: 100);
 
-                _toBeFocusedNode = null;
-            });
-            return;
+                    if (_toBeFocusedNode.TreeView == this)
+                    {
+                        FocusedNode = _toBeFocusedNode;
+                    }
+
+                    _toBeFocusedNode = null;
+                });
+                return;
+            }
+
+            if (!_mouseClickHandled)
+            {
+                base.OnMouseUp(e);
+            }
         }
-
-        if (!_mouseClickHandled)
+        finally
         {
-            base.OnMouseUp(e);
+            _mouseClickHandled = false;
         }
     }
 
