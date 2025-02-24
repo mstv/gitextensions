@@ -16,7 +16,7 @@ public static partial class Commands
     {
         GitArgumentBuilder args = new("config")
             {
-                GitVersion.Current.SupportNewGitConfigSyntax ? "list" : "--list",
+                gitExecutable.SupportNewGitConfigSyntax() ? "list" : "--list",
                 settingLevel switch
                 {
                     GitSettingLevel.Effective => "",
@@ -54,7 +54,7 @@ public static partial class Commands
     public static void SetGitSetting(this IExecutable gitExecutable, GitSettingLevel settingLevel, string setting, string? value)
     {
         bool isSet = !string.IsNullOrEmpty(value);
-        bool newSyntax = GitVersion.Current.SupportNewGitConfigSyntax;
+        bool newSyntax = gitExecutable.SupportNewGitConfigSyntax();
         GitArgumentBuilder args = new("config")
             {
                 { newSyntax, isSet ? "set" : "unset" },
@@ -88,4 +88,6 @@ public static partial class Commands
                 : value;
         }
     }
+
+    private static bool SupportNewGitConfigSyntax(this IExecutable gitExecutable) => GitVersion.CurrentVersion(gitExecutable, gitExecutable.WorkingDir).SupportNewGitConfigSyntax;
 }
