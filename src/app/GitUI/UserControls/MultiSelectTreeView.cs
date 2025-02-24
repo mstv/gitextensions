@@ -19,6 +19,7 @@ public class MultiSelectTreeView : NativeTreeView
 
     public MultiSelectTreeView()
     {
+        BeforeSelect += BeforeSelectHandler;
         AfterSelect += AfterSelectHandler;
     }
 
@@ -26,6 +27,7 @@ public class MultiSelectTreeView : NativeTreeView
     {
         if (disposing)
         {
+            BeforeSelect -= BeforeSelectHandler;
             AfterSelect -= AfterSelectHandler;
         }
 
@@ -41,13 +43,21 @@ public class MultiSelectTreeView : NativeTreeView
         get => base.SelectedNode;
         set
         {
+            if (base.SelectedNode == value)
+            {
+                return;
+            }
+
             try
             {
                 _settingFocusedNode = true;
 
                 if (value is not null)
                 {
-                    value.EnsureVerticallyVisible();
+                    if (!_mouseClickHandled)
+                    {
+                        value.EnsureVerticallyVisible();
+                    }
                 }
 
                 base.SelectedNode = value;
@@ -157,8 +167,15 @@ public class MultiSelectTreeView : NativeTreeView
         Keys modifierKeys = ModifierKeys;
 
         if (e.Button != MouseButtons.Left
+
+            // or other modifier keys than for selection manipulation
             || (modifierKeys | Keys.Control | Keys.Shift) != (Keys.Control | Keys.Shift)
-            || HitTest(e.Location).Node is not TreeNode newFocusedNode)
+
+            // or no node clicked
+            || HitTest(e.Location).Node is not TreeNode newFocusedNode
+
+            // or starting drag operation
+            || (_selectedNodes.Contains(newFocusedNode) && modifierKeys == Keys.None && !ShallHandleRootIconClick()))
         {
             _mouseClickHandled = false;
             base.OnMouseDown(e);
@@ -167,7 +184,7 @@ public class MultiSelectTreeView : NativeTreeView
 
         _mouseClickHandled = true;
 
-        if (!ShowRootLines && IconClicked() && modifierKeys == Keys.None && newFocusedNode.Parent is null && newFocusedNode.Nodes.Count > 0)
+        if (ShallHandleRootIconClick() && newFocusedNode.Nodes.Count > 0)
         {
             // Expand / collapse root folder nodes unless there is only one
             if (newFocusedNode.IsExpanded)
@@ -188,11 +205,11 @@ public class MultiSelectTreeView : NativeTreeView
 
         return;
 
-        bool IconClicked()
+        bool ShallHandleRootIconClick()
         {
             Validates.NotNull(ImageList);
             int spacing = DpiUtil.Scale(8);
-            return e.X <= spacing + ImageList.ImageSize.Width;
+            return modifierKeys == Keys.None && !ShowRootLines && newFocusedNode.Parent is null && e.X <= (spacing + ImageList.ImageSize.Width);
         }
 
         void UpdateSelection(bool replace, bool addRange)
@@ -245,6 +262,7 @@ public class MultiSelectTreeView : NativeTreeView
                 }
 
                 // Keep FocusedNode
+                _toBeFocusedNode = FocusedNode;
                 return;
             }
 
@@ -263,7 +281,7 @@ public class MultiSelectTreeView : NativeTreeView
                 {
                     await Task.Delay(millisecondsDelay: 100);
 
-                    if (_toBeFocusedNode.TreeView == this)
+                    if (_toBeFocusedNode?.TreeView == this)
                     {
                         FocusedNode = _toBeFocusedNode;
                     }
@@ -292,5 +310,13 @@ public class MultiSelectTreeView : NativeTreeView
         }
 
         FocusedNodeChanged?.Invoke(sender, e);
+    }
+
+    private void BeforeSelectHandler(object? sender, TreeViewCancelEventArgs e)
+    {
+        if (_toBeFocusedNode is not null && e.Node != _toBeFocusedNode)
+        {
+            e.Cancel = true;
+        }
     }
 }
