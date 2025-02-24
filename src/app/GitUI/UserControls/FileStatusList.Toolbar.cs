@@ -176,10 +176,13 @@ partial class FileStatusList
         btnByPath.Checked = sortType is DiffListSortType.FilePath or DiffListSortType.FilePathFlat;
         btnByExtension.Checked = sortType is DiffListSortType.FileExtension or DiffListSortType.FileExtensionFlat;
         btnByStatus.Checked = sortType is DiffListSortType.FileStatus or DiffListSortType.FileStatusFlat;
-        btnAsTree.Image = sortType.ToString().EndsWith("Flat") ? _flatListImage : _treeImage;
+        bool flatList = sortType.ToString().EndsWith("Flat");
+        btnAsTree.Image = flatList ? _flatListImage : _treeImage;
 
         tsmiDenseTree.Checked = AppSettings.FileStatusMergeSingleItemWithFolder.Value;
+        tsmiDenseTree.Enabled = !flatList;
         tsmiShowGroupNodesInFlatList.Checked = AppSettings.FileStatusShowGroupNodesInFlatList.Value;
+        tsmiShowGroupNodesInFlatList.Enabled = _groupBy is not null && flatList;
 
         bool filterByDiffStatus = HasDiffABGroups();
         btnUnequalChange.Visible = filterByDiffStatus;
