@@ -67,13 +67,25 @@ public static partial class Commands
                     GitSettingLevel.Effective or _ => throw new ArgumentOutOfRangeException(nameof(settingLevel))
                 },
                 setting,
-                { isSet, value.Quote() }
+                { isSet, QuoteSettingValue(value) }
             };
         ExecutionResult result = gitExecutable.Execute(args, throwOnErrorExit: false);
         const int exitCodeOnUnsetNotExistingSetting = 5;
         if (isSet || result.ExitCode != exitCodeOnUnsetNotExistingSetting)
         {
             result.ThrowIfErrorExit();
+        }
+
+        return;
+
+        string QuoteSettingValue(string value)
+        {
+            value = value.Quote();
+
+            // Quote diff / merge placeholders so that they are not evaluated by the WSL shell already
+            return PathUtil.IsWslPath(gitExecutable.WorkingDir)
+                ? value.Replace("$", @"\\\$")
+                : value;
         }
     }
 }
