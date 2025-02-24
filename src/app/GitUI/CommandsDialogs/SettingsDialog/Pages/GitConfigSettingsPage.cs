@@ -43,7 +43,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
 
         private string? AdaptCommandIfWsl(string? command)
         {
-            if (string.IsNullOrEmpty(command) || PathUtil.IsWslPath(Module?.WorkingDir))
+            if (string.IsNullOrEmpty(command) || !PathUtil.IsWslPath(Module?.WorkingDir))
             {
                 return command;
             }
