@@ -197,8 +197,6 @@ namespace GitCommands
         /// <inherit/>
         public IExecutable GitExecutable => _gitExecutable;
 
-        public IExecutable GitNativeExecutable => _gitWindowsExecutable;
-
         /// <inherit/>
         public IGitCommandRunner GitCommandRunner => _gitCommandRunner;
 
