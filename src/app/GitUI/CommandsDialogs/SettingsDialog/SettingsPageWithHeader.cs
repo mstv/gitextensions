@@ -23,7 +23,26 @@ namespace GitUI.CommandsDialogs.SettingsDialog
 
         public override Control GuiControl => _header.Value;
 
-        public override bool ReadOnly => _header.Value.ReadOnly;
+        public override bool ReadOnly
+        {
+            get
+            {
+                // Lazy might be being initialized yet, the EffectiveSettings are current, then return true
+                return TryGetHeader()?.ReadOnly ?? true;
+
+                SettingsPageHeader? TryGetHeader()
+                {
+                    try
+                    {
+                        return _header.Value;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        return null;
+                    }
+                }
+            }
+        }
 
         public virtual void SetGlobalSettings()
         {
