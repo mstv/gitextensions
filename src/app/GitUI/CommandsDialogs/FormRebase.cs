@@ -4,6 +4,7 @@ using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils.GitUI.Theming;
 using GitUI.HelperDialogs;
+using GitUI.Theming;
 using ResourceManager;
 
 namespace GitUI.CommandsDialogs
@@ -195,7 +196,7 @@ namespace GitUI.CommandsDialogs
                 AcceptButton = btnSolveConflicts;
                 btnSolveConflicts.Focus();
                 btnSolveConflicts.Text = _solveConflictsText2.Text;
-                MergeToolPanel.BackColor = Color.Yellow.AdaptBackColor();
+                MergeToolPanel.BackColor = ThemeModule.IsDarkTheme ? Color.FromArgb(136, 136, 0) : Color.Yellow.AdaptBackColor();
             }
             else if (Module.InTheMiddleOfRebase())
             {
@@ -244,7 +245,7 @@ namespace GitUI.CommandsDialogs
         {
             using (WaitCursorScope.Enter())
             {
-                FormProcess.ShowDialog(this, UICommands, arguments: Commands.ContinueRebase(), Module.WorkingDir, input: null, useDialogSettings: true);
+                FormProcess.ShowDialog(this, UICommands, arguments: Commands.ContinueRebase(), Module.WorkingDir, input: null, useDialogSettings: true, out string cmdOutput);
 
                 if (!Module.InTheMiddleOfRebase())
                 {
@@ -253,6 +254,10 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
+                if (Module.CanContinueAction(cmdOutput))
+                {
+                    BeginInvoke(btnContinueRebase.PerformClick);
+                }
             }
         }
 
@@ -373,6 +378,10 @@ namespace GitUI.CommandsDialogs
 
                 EnableButtons();
                 PatchGrid.Initialize();
+                if (Module.CanContinueAction(cmdOutput))
+                {
+                    BeginInvoke(btnContinueRebase.PerformClick);
+                }
             }
         }
 
