@@ -336,7 +336,11 @@ namespace GitCommands
             }
             set
             {
-                GitVersion.ResetVersion();
+                if (GitCommandValue == value)
+                {
+                    return;
+                }
+
                 if (IsPortable())
                 {
                     SetString("gitcommand", value);
@@ -345,6 +349,8 @@ namespace GitCommands
                 {
                     WriteStringRegValue("gitcommand", value);
                 }
+
+                GitVersion.ResetVersion();
             }
         }
 
@@ -1305,7 +1311,7 @@ namespace GitCommands
             set => SetBool("closeprocessdialog", value);
         }
 
-        public static ISetting<bool> ShowProcessDialogPasswordInput => Setting.Create(DetailedSettingsPath, nameof(ShowProcessDialogPasswordInput), true);
+        public static ISetting<bool> ShowProcessDialogPasswordInput => Setting.Create(DetailedSettingsPath, nameof(ShowProcessDialogPasswordInput), false);
 
         public static BoolRuntimeSetting ShowCurrentBranchOnly { get; } = new(RootSettingsPath, nameof(ShowCurrentBranchOnly), false);
 
