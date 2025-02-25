@@ -119,7 +119,7 @@ namespace GitUI.CommitInfo
                         h => richTextBox.ContentsResized -= h)
                     .Throttle(TimeSpan.FromMilliseconds(100))
                     .ObserveOn(MainThreadScheduler.Instance)
-                    .Subscribe(_ => handler(_.EventArgs));
+                    .Subscribe(eventPattern => TaskManager.HandleExceptions(() => handler(eventPattern.EventArgs), Application.OnThreadException));
 
             commitInfoHeader.SetContextMenuStrip(commitInfoContextMenuStrip);
 
@@ -318,7 +318,7 @@ namespace GitUI.CommitInfo
             _tagInfo = "";
             _gitDescribeInfo = "";
 
-            if (_revision is not null && !_revision.IsArtificial)
+            if (_revision is not null && !_revision.IsArtificial && !_revision.IsAutostash)
             {
                 if (Module.GetEffectiveSettings() is DistributedSettings distributedSettings)
                 {
