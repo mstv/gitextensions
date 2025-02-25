@@ -233,7 +233,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog.Pages
 
             Validates.NotNull(_diffMergeToolConfigurationManager);
             DiffMergeToolConfiguration diffMergeToolConfig = _diffMergeToolConfigurationManager.LoadDiffMergeToolConfig(toolName, txtMergeToolPath.Text);
-            txtMergeToolCommand.Text = AdaptCommandIfWsl(diffMergeToolConfig.FullMergeCommand);
+            txtMergeToolCommand.Text = diffMergeToolConfig.FullMergeCommand;
         }
 
         private void btnMergeToolCommandSuggest_Click(object sender, EventArgs e)
