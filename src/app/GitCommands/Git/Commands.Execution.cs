@@ -84,7 +84,7 @@ public static partial class Commands
 
             // Quote diff / merge placeholders so that they are not evaluated by the WSL shell already
             return PathUtil.IsWslPath(gitExecutable.WorkingDir)
-                ? value.Replace("$", @"\\\$")
+                ? value.Replace("$", @"\$")
                 : value;
         }
     }
