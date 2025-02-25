@@ -28,7 +28,7 @@ partial class FileStatusList
 
                 missingIcon.Value.RelativeImageIndex = icons.Count;
                 icons.Add(loadFileIcon(missingIcon.Value.ExampleFileName) is Icon icon
-                    ? Scale(icon.ToBitmap(), size, offsetY: 0)
+                    ? Scale(icon.ToBitmap(), _imageListData.IconSize, size, offsetY: 0)
                     : _imageListData.DefaultFileImage);
             }
 

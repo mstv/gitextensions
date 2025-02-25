@@ -72,7 +72,7 @@ namespace GitUI
         [DefaultValue(false)]
         public bool DisableSubmoduleMenuItemBold { get; set; }
 
-        private record ImageListData(ImageList ImageList, Dictionary<string, int> StateImageIndexMap, Image DefaultFileImage);
+        private record ImageListData(ImageList ImageList, Dictionary<string, int> StateImageIndexMap, Image DefaultFileImage, int IconSize);
 
         private static readonly ImageListData _imageListData = CreateImageListData();
 
@@ -171,8 +171,11 @@ namespace GitUI
 
         private static ImageListData CreateImageListData()
         {
-            const int rowHeight = 18;
+            const int fixedIconSize = 16;
+            const int rowHeight = fixedIconSize + 2;
             const int imageWidth = rowHeight;
+
+            int iconSize = DpiUtil.Scale(fixedIconSize);
 
             ImageList list = new()
             {
@@ -239,42 +242,29 @@ namespace GitUI
                 stateImageIndexDict.Add(images[i].imageKey, i);
             }
 
-            return new ImageListData(list, stateImageIndexDict, defaultFileImage);
+            return new ImageListData(list, stateImageIndexDict, defaultFileImage, iconSize);
 
             Bitmap Pad(Bitmap input, int offsetX = 0, int offsetY = 1)
-                => Scale(input, list.ImageSize, offsetX, offsetY);
+                => Scale(input, iconSize, list.ImageSize, offsetX, offsetY);
         }
 
-        private static Bitmap Scale(Bitmap input, Size size, int offsetX = 0, int offsetY = 1)
+        private static Bitmap Scale(Bitmap input, int iconSize, Size paddedSize, int offsetX = 0, int offsetY = 1)
         {
-            int imageWidth = input.Width;
-            int imageHeight = input.Height;
-            int deltaWidth;
-            int deltaHeight;
-            while (true)
-            {
-                deltaWidth = size.Width - imageWidth;
-                deltaHeight = size.Height - imageHeight;
-                if (deltaWidth >= 0 && deltaHeight >= 0)
-                {
-                    break;
-                }
-
-                imageWidth /= 2;
-                imageHeight /= 2;
-            }
-
-            Bitmap scaled = new(size.Width, size.Height, input.PixelFormat);
+            int deltaWidth = paddedSize.Width - iconSize;
+            int deltaHeight = paddedSize.Height - iconSize;
+            DebugHelpers.Assert(deltaWidth >= 0, "Can only increase image width");
+            DebugHelpers.Assert(deltaHeight >= 0, "Can only increase image height");
+            Bitmap scaled = new(paddedSize.Width, paddedSize.Height, input.PixelFormat);
             using Graphics g = Graphics.FromImage(scaled);
             int x = (deltaWidth / 2) + offsetX;
             int y = (deltaHeight / 2) + offsetY;
-            if (imageWidth == input.Width)
+            if (input.Width == iconSize)
             {
                 g.DrawImageUnscaled(input, x, y);
             }
             else
             {
-                g.DrawImage(input, x, y, imageWidth + 1, imageHeight + 1);
+                g.DrawImage(input, x, y, iconSize + 1, iconSize + 1);
             }
 
             return scaled;
