@@ -203,19 +203,20 @@ namespace GitExtensions.UITests.CommandsDialogs
             bool showStashes = AppSettings.ShowStashes;
             bool revisionGraphShowArtificialCommits = AppSettings.RevisionGraphShowArtificialCommits;
 
-            AppSettings.ShowStashes = false;
-            AppSettings.RevisionGraphShowArtificialCommits = false;
-
             RunFormTest(
                 form =>
                 {
                     try
                     {
+                        AppSettings.RevisionGraphShowArtificialCommits.Should().BeFalse();
+
                         // 1. Check with ShowStashes disabled
                         Console.WriteLine("Scenario 1: set 'Show stashes' to false");
                         WaitForRevisionsToBeLoaded(form);
                         // Assert
                         AppSettings.ShowStashes.Should().BeFalse();
+                        Console.WriteLine(referenceRepository.Module.GitExecutable.GetOutput("log --glob=stas[h]"));
+                        form.GetTestAccessor().RevisionGrid.GetTestAccessor().WriteRevisions();
                         form.GetTestAccessor().RevisionGrid.GetTestAccessor().VisibleRevisionCount.Should().Be(4);
 
                         // 2. Change ShowStashes to enabled
@@ -224,6 +225,8 @@ namespace GitExtensions.UITests.CommandsDialogs
                         WaitForRevisionsToBeLoaded(form);
                         // Assert
                         AppSettings.ShowStashes.Should().BeTrue();
+                        Console.WriteLine(referenceRepository.Module.GitExecutable.GetOutput("log --glob=stas[h]"));
+                        form.GetTestAccessor().RevisionGrid.GetTestAccessor().WriteRevisions();
                         form.GetTestAccessor().RevisionGrid.GetTestAccessor().VisibleRevisionCount.Should().Be(7);
                     }
                     finally
@@ -232,7 +235,9 @@ namespace GitExtensions.UITests.CommandsDialogs
                         AppSettings.RevisionGraphShowArtificialCommits = revisionGraphShowArtificialCommits;
                     }
                 },
-                commands);
+                commands,
+                showStashes: false,
+                revisionGraphShowArtificialCommits: false);
         }
 
         [Test]
@@ -250,18 +255,20 @@ namespace GitExtensions.UITests.CommandsDialogs
             bool showStashes = AppSettings.ShowStashes;
             bool revisionGraphShowArtificialCommits = AppSettings.RevisionGraphShowArtificialCommits;
 
-            AppSettings.ShowStashes = true;
-            AppSettings.RevisionGraphShowArtificialCommits = false;
             RunFormTest(
                 form =>
                 {
                     try
                     {
+                        AppSettings.RevisionGraphShowArtificialCommits.Should().BeFalse();
+
                         // 1. Check with ShowStashes enabled
                         Console.WriteLine("Scenario 1: set 'Show stash' to true");
                         WaitForRevisionsToBeLoaded(form);
                         // Assert
                         AppSettings.ShowStashes.Should().BeTrue();
+                        Console.WriteLine(referenceRepository.Module.GitExecutable.GetOutput("log --glob=stas[h]"));
+                        form.GetTestAccessor().RevisionGrid.GetTestAccessor().WriteRevisions();
                         form.GetTestAccessor().RevisionGrid.GetTestAccessor().VisibleRevisionCount.Should().Be(7);
 
                         // 2. Change ShowStashes to disabled
@@ -270,11 +277,11 @@ namespace GitExtensions.UITests.CommandsDialogs
                         WaitForRevisionsToBeLoaded(form);
                         // Assert
                         AppSettings.ShowStashes.Should().BeFalse();
-#if DEBUG
                         // https://github.com/gitextensions/gitextensions/issues/10170
                         // This test occasionaly fails with 3 visible revisions
+                        Console.WriteLine(referenceRepository.Module.GitExecutable.GetOutput("log --glob=stas[h]"));
+                        form.GetTestAccessor().RevisionGrid.GetTestAccessor().WriteRevisions();
                         form.GetTestAccessor().RevisionGrid.GetTestAccessor().VisibleRevisionCount.Should().Be(4);
-#endif
                     }
                     finally
                     {
@@ -282,15 +289,31 @@ namespace GitExtensions.UITests.CommandsDialogs
                         AppSettings.RevisionGraphShowArtificialCommits = revisionGraphShowArtificialCommits;
                     }
                 },
-                commands);
+                commands,
+                showStashes: true,
+                revisionGraphShowArtificialCommits: false);
         }
 
-        private static void RunFormTest(Action<FormBrowse> testDriver, GitUICommands commands)
+        private static void RunFormTest(Action<FormBrowse> testDriver, GitUICommands commands, bool showStashes, bool revisionGraphShowArtificialCommits)
         {
             UITest.RunForm(
-                showForm: () => commands.StartBrowseDialog(owner: null).Should().BeTrue(),
+                showForm: () =>
+                {
+                    AppSettings.ShowStashes = showStashes;
+                    AppSettings.RevisionGraphShowArtificialCommits = revisionGraphShowArtificialCommits;
+
+                    Application.DoEvents();
+
+                    AppSettings.ShowStashes.Should().Be(showStashes);
+                    AppSettings.RevisionGraphShowArtificialCommits.Should().Be(revisionGraphShowArtificialCommits);
+
+                    commands.StartBrowseDialog(owner: null).Should().BeTrue();
+                },
                 (FormBrowse form) =>
                 {
+                    AppSettings.ShowStashes.Should().Be(showStashes);
+                    AppSettings.RevisionGraphShowArtificialCommits.Should().Be(revisionGraphShowArtificialCommits);
+
                     testDriver(form);
                     return Task.CompletedTask;
                 });

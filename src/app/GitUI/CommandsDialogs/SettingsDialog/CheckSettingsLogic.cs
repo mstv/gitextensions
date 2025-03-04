@@ -3,7 +3,6 @@
 using GitCommands;
 using GitCommands.Utils;
 using GitExtensions.Extensibility.Git;
-using GitUI.CommandsDialogs.SettingsDialog.Pages;
 using Microsoft.Win32;
 
 namespace GitUI.CommandsDialogs.SettingsDialog
@@ -30,8 +29,8 @@ namespace GitUI.CommandsDialogs.SettingsDialog
             valid = SolveGitExtensionsDir() && valid;
             valid = SolveEditor(CommonLogic) && valid;
 
-            CommonLogic.ConfigFileSettingsSet.EffectiveSettings.Save();
-            CommonLogic.DistributedSettingsSet.EffectiveSettings.Save();
+            CommonLogic.GitConfigSettingsSet.Save();
+            CommonLogic.DistributedSettingsSet.Save();
 
             return valid;
         }
@@ -42,7 +41,7 @@ namespace GitUI.CommandsDialogs.SettingsDialog
 
             if (string.IsNullOrEmpty(editor))
             {
-                Environment.SetEnvironmentVariable(CommonLogic.AmbientGitEditorEnvVariableName, EditorHelper.FileEditorCommand);
+                Environment.SetEnvironmentVariable(CommonLogic.AmbientGitEditorEnvVariableName, AppSettings.FileEditorCommand);
             }
 
             return true;
