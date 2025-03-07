@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using CommonTestUtils;
 using GitUI;
 using GitUIPluginInterfaces;
@@ -10,6 +11,20 @@ namespace GitExtensions.UITests
     {
         // Same delay as RevisionDataGridView.BackgroundThreadUpdatePeriod
         private const int _processDelayMilliseconds = 25;
+
+        private const int _dummyActionMinMilliseconds = 10;
+        private const int _dummyActionMaxMilliseconds = 20;
+
+        public static async Task TraceAction(Func<Task> asyncAction, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerMemberName = "")
+        {
+            string description = $"{Path.GetFileNameWithoutExtension(callerFile)}.{callerMemberName}";
+            Trace.WriteLine($"enter {description}");
+            await asyncAction();
+            Trace.WriteLine($"exit  {description}");
+        }
+
+        public static Task DummyAction([CallerFilePath] string callerFile = "", [CallerMemberName] string callerMemberName = "")
+            => TraceAction(() => Task.Delay(Random.Shared.Next(_dummyActionMinMilliseconds, _dummyActionMaxMilliseconds)), callerFile, callerMemberName);
 
         public static async Task WaitForIdleAsync()
         {

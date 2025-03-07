@@ -27,6 +27,7 @@ namespace CommonTestUtils
 
         public void BeforeTest(ITest test)
         {
+            Trace.WriteLine($"enter {nameof(ConfigureJoinableTaskFactoryAttribute)}.{nameof(BeforeTest)}");
             Assert.IsNull(ThreadHelper.JoinableTaskContext, "Tests with joinable tasks must not be run in parallel!");
 
             IList apartmentState = null;
@@ -103,6 +104,7 @@ namespace CommonTestUtils
             {
                 // Reset _threadException to null, and throw if it was set during the current test.
                 Interlocked.Exchange(ref _threadException, null)?.Throw();
+                Trace.WriteLine($"exit  {nameof(ConfigureJoinableTaskFactoryAttribute)}.{nameof(AfterTest)}");
             }
         }
 

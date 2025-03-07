@@ -15,13 +15,6 @@
 
   <ItemGroup>
     <None Remove="AutoCompleteRegexes.txt" />
-    <EmbeddedResource Include="..\..\..\..\src\app\GitExtensions\AutoCompleteRegexes.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="MEF\MockGenericBuildServerSettingsUserControl.Designer.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
   </ItemGroup>
 
 </Project>

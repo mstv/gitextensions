@@ -1,15 +1,20 @@
-﻿[SetUpFixture]
+﻿using GitExtensions.UITests;
+
+[SetUpFixture]
 public class GlobalSetupOnce
 {
     [OneTimeSetUp]
-    public void RunBeforeAnyTests()
+    public async Task RunBeforeAnyTests()
     {
-        Application.EnableVisualStyles();
-        Application.SetCompatibleTextRenderingDefault(false);
+        await UITest.TraceAction(() =>
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            return Task.CompletedTask;
+        });
     }
 
     [OneTimeTearDown]
-    public void RunAfterAnyTests()
-    {
-    }
+    public Task RunAfterAnyTests()
+        => UITest.TraceAction(() => Task.CompletedTask);
 }
