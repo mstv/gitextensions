@@ -74,6 +74,7 @@ namespace GitCommandsTests.Git
 
         [TestCase("::::::::my-branch")]
         [TestCase("::gone::::::branch-with-no-more-remote")]
+        [TestCase("gone::::refs/remotes/origin/callbacks::::new-branch")]
         [TestCase("::::::::")]
         [TestCase("results!")]
         public void GetData_should_return_empty_if_git_output_has_no_data(string result)
