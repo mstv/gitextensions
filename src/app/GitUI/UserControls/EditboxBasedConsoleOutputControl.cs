@@ -3,6 +3,7 @@ using System.Text;
 using GitCommands;
 using GitCommands.Git.Extensions;
 using GitCommands.Logging;
+using GitCommands.Utils;
 using GitExtensions.Extensibility;
 using GitExtUtils;
 using GitExtUtils.GitUI.Theming;
@@ -141,6 +142,10 @@ namespace GitUI.UserControls
                     Arguments = arguments,
                     WorkingDirectory = workDir
                 };
+
+                const string envVarNameGitTerminalPrompt = "GIT_TERMINAL_PROMPT";
+                envVariables.Add(envVarNameGitTerminalPrompt, "1");
+                envVariables.ForwardEnvironmentVariableToWsl(workDir, envVarNameGitTerminalPrompt);
 
                 foreach ((string name, string value) in envVariables)
                 {
