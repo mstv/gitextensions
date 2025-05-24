@@ -11,17 +11,16 @@ using GitCommands;
 using GitCommands.Git;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
+using GitExtensions.Extensibility.Translations;
 using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
 using GitUI.CommandsDialogs;
-using GitUI.Editor;
 using GitUI.Properties;
 using GitUI.Theming;
 using GitUI.UserControls;
 using GitUIPluginInterfaces;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
-using ResourceManager;
 
 namespace GitUI
 {
@@ -42,8 +41,6 @@ namespace GitUI
         private readonly ToolStripItem _sortBySeparator = new ToolStripSeparator();
         private readonly SolidBrush _inactiveSelectionHighlightBrush = new(AppColor.InactiveSelectionHighlight.GetThemeColor());
         private readonly SolidBrush _backgroundBrush = new(AppColor.PanelBackground.GetThemeColor());
-        private readonly TranslationString _filterComboBoxWatermarkText = new("Filter files using a regular expression...");
-        private readonly TranslationString _cboFindInCommitFilesGitGrepWatermarkText = new("Find in commit files using git-grep regular expression...");
 
         private GitItemStatus? _nextItemToSelect = null;
         private bool _enableSelectedIndexChangeEvent = true;
@@ -55,8 +52,6 @@ namespace GitUI
         private IDisposable? _selectedIndexChangeSubscription;
         private IDisposable? _diffListSortSubscription;
         private FormFindInCommitFilesGitGrep? _formFindInCommitFilesGitGrep;
-        private ComboBoxWatermarkManager? _filterComboBoxWatermark;
-        private ComboBoxWatermarkManager? _cboFindInCommitFilesGitGrepWatermark;
         private bool _showDiffGroups = false;
 
         // Enable menu item to disable AppSettings.ShowDiffForAllParents in some forms
@@ -90,8 +85,6 @@ namespace GitUI
             {
                 _formFindInCommitFilesGitGrep?.Dispose();
                 _customDiffToolsSequence.Dispose();
-                _filterComboBoxWatermark?.Dispose();
-                _cboFindInCommitFilesGitGrepWatermark?.Dispose();
             };
 
             tsmiCopyPaths.Initialize(getUICommands: () => UICommands,
@@ -129,9 +122,6 @@ namespace GitUI
             _NO_TRANSLATE_FilterComboBox.Items.Add("^(?!.*NotThisWord)");
             _NO_TRANSLATE_FilterComboBox.Items.Add(@"^(?!.*\bg?tests?/)");
             cboFindInCommitFilesGitGrep.Font = new Font(cboFindInCommitFilesGitGrep.Font, FontStyle.Bold);
-
-            _filterComboBoxWatermark = new ComboBoxWatermarkManager(_NO_TRANSLATE_FilterComboBox, _filterComboBoxWatermarkText.Text);
-            _cboFindInCommitFilesGitGrepWatermark = new ComboBoxWatermarkManager(cboFindInCommitFilesGitGrep, _cboFindInCommitFilesGitGrepWatermarkText.Text);
 
             _diffCalculator = new FileStatusDiffCalculator(() => Module);
             _fullPathResolver = new FullPathResolver(() => Module.WorkingDir);
@@ -439,7 +429,7 @@ namespace GitUI
         public Func<ObjectId?, string>? DescribeRevision { get; set; }
 
         public bool FilterFilesByNameRegexFocused => _NO_TRANSLATE_FilterComboBox.Focused;
-        public bool FindInCommitFilesGitGrepActive => !string.IsNullOrEmpty(_cboFindInCommitFilesGitGrepWatermark!.ComboBoxText);
+        public bool FindInCommitFilesGitGrepActive => !string.IsNullOrEmpty(cboFindInCommitFilesGitGrep.Text);
         public bool FindInCommitFilesGitGrepFocused => cboFindInCommitFilesGitGrep.Focused;
         public bool FindInCommitFilesGitGrepVisible => cboFindInCommitFilesGitGrep.Visible;
 
@@ -478,7 +468,7 @@ namespace GitUI
                 DeleteSearchButton.Top = findTop;
                 DeleteSearchButton.Height = cboFindInCommitFilesGitGrep.Height;
             }
-            else if (_formFindInCommitFilesGitGrep?.Visible is not true && _cboFindInCommitFilesGitGrepWatermark!.ComboBoxText.Length > 0)
+            else if (_formFindInCommitFilesGitGrep?.Visible is not true && cboFindInCommitFilesGitGrep.Text.Length > 0)
             {
                 cboFindInCommitFilesGitGrep.Text = "";
                 FindInCommitFilesGitGrep(search: "", delay: 0);
@@ -671,7 +661,7 @@ namespace GitUI
 
         public int UnfilteredItemsCount => GitItemStatusesWithDescription?.Sum(tuple => tuple.Statuses.Count) ?? 0;
 
-        public bool IsFilterActive => !string.IsNullOrEmpty(_filterComboBoxWatermark!.ComboBoxText);
+        public bool IsFilterActive => !string.IsNullOrEmpty(_NO_TRANSLATE_FilterComboBox.Text);
 
         // Public methods
 
@@ -1085,7 +1075,7 @@ namespace GitUI
 
         private void SetDeleteFilterButtonVisibility()
         {
-            DeleteFilterButton.Visible = _NO_TRANSLATE_FilterComboBox.Visible && !string.IsNullOrEmpty(_filterComboBoxWatermark!.ComboBoxText);
+            DeleteFilterButton.Visible = _NO_TRANSLATE_FilterComboBox.Visible && !string.IsNullOrEmpty(_NO_TRANSLATE_FilterComboBox.Text);
             if (DeleteFilterButton.Visible)
             {
                 DeleteFilterButton.BringToFront();
@@ -1143,7 +1133,7 @@ namespace GitUI
                     .ToHashSet();
             }
 
-            bool expandIfFewFiles = !_isFileTreeMode || _filter is not null || !string.IsNullOrEmpty(_cboFindInCommitFilesGitGrepWatermark!.ComboBoxText);
+            bool expandIfFewFiles = !_isFileTreeMode || _filter is not null || !string.IsNullOrEmpty(cboFindInCommitFilesGitGrep.Text);
             (List<TreeNodeInfo> nodes, _showDiffGroups, bool filesPresent) = GetNodes(items, previouslySelectedItems, GroupByRevision, IsFilterMatch, _groupBy, _flatList, expandIfFewFiles, gitGrepState, _noItemStatuses, cancellationToken);
 
             GitItemStatusesWithDescription = items;
@@ -1958,7 +1948,7 @@ namespace GitUI
             // show DeleteFilterButton at once
             SetDeleteFilterButtonVisibility();
 
-            string filterText = _filterComboBoxWatermark!.ComboBoxText;
+            string filterText = _NO_TRANSLATE_FilterComboBox.Text;
 
             // workaround for text getting selected if it matches the start of the combobox items
             if (_NO_TRANSLATE_FilterComboBox.SelectionLength == filterText.Length && _NO_TRANSLATE_FilterComboBox.SelectionStart == 0)
@@ -1977,7 +1967,7 @@ namespace GitUI
 
         private void FilterComboBox_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            FilterFiles(_filterComboBoxWatermark!.ComboBoxText);
+            FilterFiles(_NO_TRANSLATE_FilterComboBox.Text);
         }
 
         private void FilterComboBox_SizeChanged(object? sender, EventArgs e)
@@ -1988,7 +1978,7 @@ namespace GitUI
 
         private void cboFindInCommitFilesGitGrep_TextUpdate(object? sender, EventArgs e)
         {
-            FindInCommitFilesGitGrep(_cboFindInCommitFilesGitGrepWatermark!.ComboBoxText);
+            FindInCommitFilesGitGrep(cboFindInCommitFilesGitGrep.Text);
         }
 
         private void FindInCommitFilesGitGrep(string search, int delay = 200)
@@ -2087,7 +2077,7 @@ namespace GitUI
 
         private void cboFindInCommitFilesGitGrep_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            FindInCommitFilesGitGrep(_cboFindInCommitFilesGitGrepWatermark!.ComboBoxText, delay: 0);
+            FindInCommitFilesGitGrep(cboFindInCommitFilesGitGrep.Text, delay: 0);
         }
 
         private void cboFindInCommitFilesGitGrep_SizeChanged(object? sender, EventArgs e)
@@ -2131,6 +2121,20 @@ namespace GitUI
         private readonly Color _invalidInputColor = Color.FromArgb(0xFF, 0xC8, 0xC8).AdaptBackColor();
         #endregion
 
+        public override void AddTranslationItems(ITranslation translation)
+        {
+            base.AddTranslationItems(translation);
+            translation.AddTranslationItem(Name, _NO_TRANSLATE_FilterComboBox.Name, nameof(WatermarkComboBox.Watermark), _NO_TRANSLATE_FilterComboBox.Watermark);
+            translation.AddTranslationItem(Name, cboFindInCommitFilesGitGrep.Name, nameof(WatermarkComboBox.Watermark), cboFindInCommitFilesGitGrep.Watermark);
+        }
+
+        public override void TranslateItems(ITranslation translation)
+        {
+            base.TranslateItems(translation);
+            _NO_TRANSLATE_FilterComboBox.Watermark = translation.TranslateItem(Name, _NO_TRANSLATE_FilterComboBox.Name, nameof(WatermarkComboBox.Watermark), () => _NO_TRANSLATE_FilterComboBox.Watermark) ?? string.Empty;
+            cboFindInCommitFilesGitGrep.Watermark = translation.TranslateItem(Name, cboFindInCommitFilesGitGrep.Name, nameof(WatermarkComboBox.Watermark), () => cboFindInCommitFilesGitGrep.Watermark) ?? string.Empty;
+        }
+
         internal TestAccessor GetTestAccessor() => new(this);
 
         internal readonly struct TestAccessor
@@ -2148,7 +2152,7 @@ namespace GitUI
             internal MultiSelectTreeView FileStatusListView => _fileStatusList.FileStatusListView;
             internal ComboBox FilterComboBox => _fileStatusList._NO_TRANSLATE_FilterComboBox;
             internal Regex? Filter => _fileStatusList._filter;
-            internal bool FilterWatermarkLabelVisible => _fileStatusList._filterComboBoxWatermark!.WatermarkActive;
+            internal bool FilterWatermarkLabelVisible => _fileStatusList._NO_TRANSLATE_FilterComboBox.IsWatermarkVisible;
             internal void StoreFilter(string value) => _fileStatusList.StoreFilter(value);
             internal void SetFileStatusListVisibility(bool showNoFiles) => _fileStatusList.SetFileStatusListVisibility(showNoFiles);
         }
