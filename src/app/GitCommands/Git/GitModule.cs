@@ -289,7 +289,7 @@ namespace GitCommands
                 {
                     lock (_lock)
                     {
-                        field ??= new GitEncodingSettingsGetter(ConfigFileSettings.CreateEffective(module: this));
+                        field ??= new GitEncodingSettingsGetter(new EffectiveGitConfigSettings(GitExecutable));
                     }
                 }
 
@@ -297,12 +297,9 @@ namespace GitCommands
             }
         }
 
-        public IConfigFileSettings EffectiveConfigFile => (IConfigFileSettings)GitEncodingSettingsGetter.SettingsValueGetter;
+        private ISettingsValueGetter EffectiveGitConfigSettings => GitEncodingSettingsGetter.SettingsValueGetter;
 
-        public IConfigFileSettings LocalConfigFile
-            => new ConfigFileSettings(lowerPriority: null, ((ConfigFileSettings)EffectiveConfigFile).SettingsCache, SettingLevel.Local);
-
-        IConfigFileSettings IGitModule.LocalConfigFile => LocalConfigFile;
+        private IGitConfigSettingsGetter LocalGitConfigSettings => field ??= new GitConfigSettings(GitExecutable, GitSettingLevel.Local);
 
         // encoding for files paths
         private static Encoding? _systemEncoding;
@@ -325,6 +322,14 @@ namespace GitCommands
         public Encoding CommitEncoding => GitEncodingSettingsGetter.CommitEncoding ?? _defaultEncoding;
 
         public Encoding LogOutputEncoding => GitEncodingSettingsGetter.LogOutputEncoding ?? CommitEncoding;
+
+        public IEnumerable<(string Setting, string Value)> GetAllLocalSettings() => LocalGitConfigSettings.GetAllValues();
+
+        public void InvalidateGitSettings()
+        {
+            EffectiveGitConfigSettings.Invalidate();
+            LocalGitConfigSettings.Invalidate();
+        }
 
         /// <summary>Indicates whether the <see cref="WorkingDir"/> contains a git repository.</summary>
         public bool IsValidGitWorkingDir()
@@ -1605,8 +1610,8 @@ namespace GitCommands
         {
             return new ArgumentBuilder
             {
-                { string.IsNullOrWhiteSpace(EffectiveConfigFile.GetValue("fetch.parallel")), "-c fetch.parallel=0" },
-                { string.IsNullOrWhiteSpace(EffectiveConfigFile.GetValue("submodule.fetchjobs")), "-c submodule.fetchjobs=0" },
+                { string.IsNullOrWhiteSpace(GetEffectiveSetting("fetch.parallel")), "-c fetch.parallel=0" },
+                { string.IsNullOrWhiteSpace(GetEffectiveSetting("submodule.fetchjobs")), "-c submodule.fetchjobs=0" },
             };
         }
 
@@ -1972,6 +1977,12 @@ namespace GitCommands
                 && !InTheMiddleOfConflictedMerge();
         }
 
+        public void RemoveConfigSection(string section, string? subsection)
+        {
+            GitExecutable.RemoveConfigSection(GitSettingLevel.Local, section, subsection);
+            InvalidateGitSettings();
+        }
+
         public string RemoveRemote(string remoteName)
         {
             GitArgumentBuilder args = new("remote")
@@ -1979,7 +1990,9 @@ namespace GitCommands
                 "rm",
                 remoteName.QuoteNE()
             };
-            return _gitExecutable.GetOutput(args);
+            string output = _gitExecutable.GetOutput(args);
+            InvalidateGitSettings();
+            return output;
         }
 
         public string RenameRemote(string remoteName, string newName)
@@ -1990,7 +2003,9 @@ namespace GitCommands
                 remoteName.QuoteNE(),
                 newName.QuoteNE()
             };
-            return _gitExecutable.GetOutput(args);
+            string output = _gitExecutable.GetOutput(args);
+            InvalidateGitSettings();
+            return output;
         }
 
         public string AddRemote(string? name, string? path)
@@ -2000,13 +2015,15 @@ namespace GitCommands
                 return "Please enter a name.";
             }
 
-            return _gitExecutable.GetOutput(
-                new GitArgumentBuilder("remote")
-                {
-                    "add",
-                    name.Quote(),
-                    GetPathForGitExecution(path).QuoteNE()
-                });
+            GitArgumentBuilder args = new("remote")
+            {
+                "add",
+                name.Quote(),
+                GetPathForGitExecution(path).QuoteNE()
+            };
+            string output = _gitExecutable.GetOutput(args);
+            InvalidateGitSettings();
+            return output;
         }
 
         public IReadOnlyList<string> GetRemoteNames()
@@ -2119,47 +2136,21 @@ namespace GitCommands
             }
         }
 
-        public IEnumerable<string> GetSettings(string setting)
-        {
-            return ((ConfigFileSettings)LocalConfigFile).GetValues(setting);
-        }
+        public IEnumerable<string> GetSettings(string setting) => LocalGitConfigSettings.GetValues(setting);
 
-        public string GetSetting(string setting) => LocalConfigFile.GetValue(setting) ?? "";
-        public T? GetSetting<T>(string setting) where T : struct => LocalConfigFile.GetValue<T>(setting);
+        public string GetSetting(string setting) => GetEffectiveSetting(setting);
 
-        public string GetEffectiveSetting(string setting, string defaultValue = "") => EffectiveConfigFile.GetValue(setting) ?? defaultValue;
-        public T? GetEffectiveSetting<T>(string setting) where T : struct => EffectiveConfigFile.GetValue<T>(setting);
-
-        public string? GetGitSetting(string setting, string scopeArg, bool cache = false)
-        {
-            GitArgumentBuilder args = new("config") { "--includes", scopeArg, "--get", setting };
-            ExecutionResult result = GitExecutable.Execute(args, cache: cache ? GitCommandCache : null, throwOnErrorExit: false);
-
-            // Handle no value set, is error code 1: https://git-scm.com/docs/git-config#_description
-            const int ConfigKeyInvalidOrNotSet = 1;
-            if (result.ExitCode == ConfigKeyInvalidOrNotSet)
-            {
-                return null;
-            }
-
-            result.ThrowIfErrorExit("Error getting config value");
-
-            return result.StandardOutput.Trim();
-        }
-
-        public string? GetEffectiveGitSetting(string setting, bool cache = false)
-        {
-            return GetGitSetting(setting, scopeArg: "", cache);
-        }
+        public string GetEffectiveSetting(string setting, string defaultValue = "") => EffectiveGitConfigSettings.GetValue(setting) ?? defaultValue;
+        public T? GetEffectiveSetting<T>(string setting) where T : struct => EffectiveGitConfigSettings.GetValue<T>(setting);
 
         public void UnsetSetting(string setting)
         {
-            SetSetting(setting, null);
+            SetGitSetting(GitSettingLevel.Local, setting, value: null);
         }
 
-        public void SetSetting(string setting, string? value)
+        public void SetSetting(string setting, string value, bool append = false)
         {
-            ((ConfigFileSettings)LocalConfigFile).SetValue(setting, value);
+            SetGitSetting(GitSettingLevel.Local, setting, value, append);
         }
 
         internal GitArgumentBuilder GetStashesCmd(bool noLocks)
@@ -2285,7 +2276,7 @@ namespace GitCommands
                 cancellationToken: cancellationToken);
             if (!result.ExitedSuccessfully)
             {
-                return (Patch: null, ErrorMessage: $"{result.StandardError}{Environment.NewLine}Git command (exit code: {result.ExitCode}): {args}{Environment.NewLine}");
+                return (Patch: null, ErrorMessage: $"{result.StandardError}{Environment.NewLine}Git command (exit code: {result.ExitCodeDisplay}): {args}{Environment.NewLine}");
             }
 
             string patch = result.StandardOutput;
@@ -3949,14 +3940,16 @@ namespace GitCommands
         public string? GetLocalTrackingBranchName(string remoteName, string branch)
         {
             string branchName = remoteName.Length > 0 ? branch[(remoteName.Length + 1)..] : branch;
-            foreach (IConfigSection section in LocalConfigFile.GetConfigSections())
+            IGitConfigSettingsGetter localGitConfigSettings = LocalGitConfigSettings;
+            foreach ((string setting, string value) in localGitConfigSettings.GetAllValues())
             {
-                if (section.SectionName == "branch" && section.GetValue("remote") == remoteName)
+                (string section, string? subsection, string name) = IGitConfigSettingsGetter.SplitSetting(setting);
+                if (section == "branch" && name == "remote" && value == remoteName)
                 {
-                    string remoteBranch = section.GetValue("merge").Replace("refs/heads/", string.Empty);
+                    string remoteBranch = localGitConfigSettings.GetValue($"{section}.{subsection}.merge").Replace("refs/heads/", string.Empty);
                     if (remoteBranch == branchName)
                     {
-                        return section.SubSection;
+                        return subsection;
                     }
                 }
             }
@@ -4139,6 +4132,17 @@ namespace GitCommands
             }
         }
 
+        private void SetGitSetting(GitSettingLevel settingLevel, string setting, string? value, bool append = false)
+        {
+            Commands.SetGitSetting(GitExecutable, settingLevel, setting, value, append);
+
+            EffectiveGitConfigSettings.Invalidate();
+            if (settingLevel == GitSettingLevel.Local)
+            {
+                LocalGitConfigSettings.Invalidate();
+            }
+        }
+
         internal TestAccessor GetTestAccessor() => new(this);
 
         internal readonly struct TestAccessor
@@ -4149,6 +4153,8 @@ namespace GitCommands
             {
                 _gitModule = gitModule;
             }
+
+            public DistributedSettings? EffectiveSettings => _gitModule._effectiveSettings;
 
             public FrozenDictionary<string, Color>? RemoteColors => _gitModule._remoteColors;
 

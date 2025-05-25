@@ -304,24 +304,25 @@ namespace GitUI.Editor
             {
                 lock (_difftasticCmdCache)
                 {
+                    // GetEffectiveSettings() checks Windows only, this need to be checked for each instance
                     if (_difftasticCmdCache.TryGetValue(Module.WorkingDir, out Lazy<bool> isEnabled))
                     {
                         return isEnabled;
                     }
 
-                    // GetEffectiveSettings() checks Windows only, this need to be checked for each instance
-                    try
+                    isEnabled = _difftasticCmdCache[Module.WorkingDir] = new Lazy<bool>(() =>
                     {
-                        const string difftasticCmd = "difftool.difftastic.cmd";
-                        isEnabled = _difftasticCmdCache[Module.WorkingDir] = new Lazy<bool>(() =>
-                            !string.IsNullOrEmpty(PathUtil.IsWslPath(Module.WorkingDir)
-                                ? Module.GetEffectiveGitSetting(difftasticCmd)
-                                : Module.GetEffectiveSetting(difftasticCmd)));
-                    }
-                    catch (Exception)
-                    {
-                        isEnabled = new Lazy<bool>(() => false);
-                    }
+                        try
+                        {
+                            const string difftasticCmd = "difftool.difftastic.cmd";
+                            return !string.IsNullOrEmpty(Module.GetEffectiveSetting(difftasticCmd));
+                        }
+                        catch (Exception exception)
+                        {
+                            Trace.WriteLine(exception);
+                            return false;
+                        }
+                    });
 
                     return isEnabled;
                 }
@@ -899,18 +900,14 @@ namespace GitUI.Editor
                 () =>
                 {
                     ResetView(viewMode, fileName, item: item, text: text);
-                    internalFileViewer.SetText(text, openWithDifftool, _viewMode, useGitColoring, contentIdentification: fileName);
+                    bool positionSet = internalFileViewer.SetText(text, openWithDifftool, _viewMode, useGitColoring, contentIdentification: fileName);
                     if (line is not null)
                     {
                         GoToLine(line.Value);
                     }
-                    else if (viewMode == ViewMode.Grep && ShowEntireFile)
+                    else if (!positionSet)
                     {
-                        internalFileViewer.GoToNextChange(NumberOfContextLines);
-                    }
-                    else
-                    {
-                        internalFileViewer.GoToNextChange(NumberOfContextLines, keepFirstVisibleLine: true);
+                        internalFileViewer.GoToFirstChange(NumberOfContextLines);
                     }
 
                     TextLoaded?.Invoke(this, null);
