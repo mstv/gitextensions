@@ -151,9 +151,6 @@
       <Component Id="Microsoft.ApplicationInsights.dll" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\Microsoft.ApplicationInsights.dll" />
       </Component>
-      <Component Id="Microsoft.Bcl.AsyncInterfaces.dll" Guid="*">
-        <File Source="$(var.ArtifactsPublishPath)\Microsoft.Bcl.AsyncInterfaces.dll" />
-      </Component>
       <Component Id="Microsoft.Toolkit.HighPerformance.dll" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\Microsoft.Toolkit.HighPerformance.dll" />
       </Component>
@@ -226,6 +223,9 @@
       </Component>
       <Component Id="TestableIO.System.IO.Abstractions.Wrappers.dll" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\TestableIO.System.IO.Abstractions.Wrappers.dll" />
+      </Component>
+      <Component Id="Testably.Abstractions.FileSystem.Interface.dll" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Testably.Abstractions.FileSystem.Interface.dll" />
       </Component>
       <Component Id="System.Reactive.dll" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\System.Reactive.dll" />
@@ -311,11 +311,14 @@
       <Component Id="Themes.invariant.css" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\Themes\invariant.css" />
       </Component>
-      <Component Id="Themes.bright.css" Guid="*">
-        <File Source="$(var.ArtifactsPublishPath)\Themes\bright.css" />
+      <Component Id="Themes.light_plus.css" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Themes\light+.css" />
       </Component>
-      <Component Id="Themes.highcontrast_dark.css" Guid="*">
-        <File Source="$(var.ArtifactsPublishPath)\Themes\highcontrast_dark.css" />
+      <Component Id="Themes.dark.css" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Themes\dark.css" />
+      </Component>
+      <Component Id="Themes.dark_plus.css" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Themes\dark+.css" />
       </Component>
     </DirectoryRef>
     <DirectoryRef Id="PluginsDir">
@@ -606,8 +609,9 @@
     <ComponentGroup Id="Component.Themes">
       <ComponentRef Id="Themes.README.md" />
       <ComponentRef Id="Themes.invariant.css" />
-      <ComponentRef Id="Themes.bright.css" />
-      <ComponentRef Id="Themes.highcontrast_dark.css" />
+      <ComponentRef Id="Themes.light_plus.css" />
+      <ComponentRef Id="Themes.dark.css" />
+      <ComponentRef Id="Themes.dark_plus.css" />
     </ComponentGroup>
     <ComponentGroup Id="Component.Translation">
       <ComponentRef Id="English.gif" />
@@ -662,7 +666,6 @@
       <ComponentRef Id="ICSharpCode.TextEditor.dll" />
       <ComponentRef Id="Microsoft.AI.DependencyCollector.dll" />
       <ComponentRef Id="Microsoft.ApplicationInsights.dll" />
-      <ComponentRef Id="Microsoft.Bcl.AsyncInterfaces.dll" />
       <ComponentRef Id="Microsoft.Toolkit.HighPerformance.dll" />
       <ComponentRef Id="Microsoft.VisualStudio.Composition.dll" />
       <ComponentRef Id="Microsoft.VisualStudio.Composition.NetFxAttributes.dll" />
@@ -687,6 +690,7 @@
       <ComponentRef Id="System.IO.Abstractions.dll" />
       <ComponentRef Id="TestableIO.System.IO.Abstractions.dll" />
       <ComponentRef Id="TestableIO.System.IO.Abstractions.Wrappers.dll" />
+      <ComponentRef Id="Testably.Abstractions.FileSystem.Interface.dll" />
       <ComponentRef Id="System.Reactive.dll" />
       <ComponentRef Id="System.Reactive.Interfaces.dll" />
       <ComponentRef Id="System.Reactive.Linq.dll" />

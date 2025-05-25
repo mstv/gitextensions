@@ -111,11 +111,11 @@ namespace GitCommandsTests.Remote
         [Test]
         public void SaveRemote_should_throw_if_remoteName_is_null_or_empty()
         {
-            ((Action)(() => _remotesManager.SaveRemote(null, null, "b", "c", "d"))).Should().Throw<ArgumentNullException>()
+            ((Action)(() => _remotesManager.SaveRemote(null, null, "b", "c", "d", "e"))).Should().Throw<ArgumentNullException>()
                 .WithMessage("Value cannot be null. (Parameter 'remoteName')");
-            ((Action)(() => _remotesManager.SaveRemote(null, "", "b", "c", "d"))).Should().Throw<ArgumentNullException>()
+            ((Action)(() => _remotesManager.SaveRemote(null, "", "b", "c", "d", "e"))).Should().Throw<ArgumentNullException>()
                 .WithMessage("Value cannot be null. (Parameter 'remoteName')");
-            ((Action)(() => _remotesManager.SaveRemote(null, "  ", "b", "c", "d"))).Should().Throw<ArgumentNullException>()
+            ((Action)(() => _remotesManager.SaveRemote(null, "  ", "b", "c", "d", "e"))).Should().Throw<ArgumentNullException>()
                 .WithMessage("Value cannot be null. (Parameter 'remoteName')");
         }
 
@@ -127,7 +127,7 @@ namespace GitCommandsTests.Remote
             const string output = "";
             _module.AddRemote(Arg.Any<string>(), Arg.Any<string>()).Returns(x => output);
 
-            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(null, remoteName, remoteUrl, null, null);
+            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(null, remoteName, remoteUrl, null, null, null);
 
             result.UserMessage.Should().Be(output);
             result.ShouldUpdateRemote.Should().BeTrue();
@@ -141,16 +141,18 @@ namespace GitCommandsTests.Remote
             const string remoteUrl = "b";
             const string remotePushUrl = "c";
             const string remotePuttySshKey = "";
+            const string remoteColor = "";
             const string output = "";
             _module.AddRemote(Arg.Any<string>(), Arg.Any<string>()).Returns(x => output);
 
-            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(null, remoteName, remoteUrl, remotePushUrl, remotePuttySshKey);
+            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(null, remoteName, remoteUrl, remotePushUrl, remotePuttySshKey, remoteColor);
 
             result.UserMessage.Should().Be(output);
             result.ShouldUpdateRemote.Should().BeTrue();
             _module.Received(1).SetSetting(string.Format(SettingKeyString.RemoteUrl, remoteName), remoteUrl);
             _module.Received(1).SetSetting(string.Format(SettingKeyString.RemotePushUrl, remoteName), remotePushUrl);
             _module.Received(1).UnsetSetting(string.Format(SettingKeyString.RemotePuttySshKey, remoteName));
+            _module.Received(1).UnsetSetting(string.Format(SettingKeyString.RemoteColor, remoteName));
         }
 
         [Test]
@@ -162,7 +164,7 @@ namespace GitCommandsTests.Remote
             ConfigFileRemote gitRemote = new() { Name = "old", Url = remoteUrl };
             _module.RenameRemote(Arg.Any<string>(), Arg.Any<string>()).Returns(x => output);
 
-            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(gitRemote, remoteName, remoteUrl, null, null);
+            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(gitRemote, remoteName, remoteUrl, null, null, null);
 
             result.UserMessage.Should().Be(output);
             result.ShouldUpdateRemote.Should().BeFalse();
@@ -178,22 +180,23 @@ namespace GitCommandsTests.Remote
             ConfigFileRemote gitRemote = new() { Name = "old", Url = "old" };
             _module.RenameRemote(Arg.Any<string>(), Arg.Any<string>()).Returns(x => output);
 
-            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(gitRemote, remoteName, remoteUrl, null, null);
+            ConfigFileRemoteSaveResult result = _remotesManager.SaveRemote(gitRemote, remoteName, remoteUrl, null, null, null);
 
             result.UserMessage.Should().Be(output);
             result.ShouldUpdateRemote.Should().BeTrue();
             _module.Received(1).RenameRemote(gitRemote.Name, remoteName);
         }
 
-        [TestCase(null, null, null)]
-        [TestCase("a", null, null)]
-        [TestCase("a", "b", null)]
-        [TestCase("a", "b", "c")]
-        public void SaveRemote_should_update_settings(string remoteUrl, string remotePushUrl, string remotePuttySshKey)
+        [TestCase(null, null, null, null)]
+        [TestCase("a", null, null, null)]
+        [TestCase("a", "b", null, null)]
+        [TestCase("a", "b", "c", null)]
+        [TestCase("a", "b", "c", "d")]
+        public void SaveRemote_should_update_settings(string? remoteUrl, string? remotePushUrl, string? remotePuttySshKey, string? remoteColor)
         {
             ConfigFileRemote remote = new() { Name = "bla", Url = remoteUrl };
 
-            _remotesManager.SaveRemote(remote, remote.Name, remoteUrl, remotePushUrl, remotePuttySshKey);
+            _remotesManager.SaveRemote(remote, remote.Name, remoteUrl, remotePushUrl, remotePuttySshKey, remoteColor);
 
             void Ensure(string setting, string value)
             {
@@ -262,7 +265,7 @@ namespace GitCommandsTests.Remote
             _remotesManager.ConfigureRemotes("origin");
 
             string mergeWith = "";
-            Assert.AreEqual(mergeWith, refs[0].MergeWith);
+            ClassicAssert.AreEqual(mergeWith, refs[0].MergeWith);
             refs[0].Received(0).MergeWith = mergeWith;
         }
 
@@ -278,7 +281,7 @@ namespace GitCommandsTests.Remote
             _remotesManager.ConfigureRemotes("origin");
 
             string mergeWith = "";
-            Assert.AreEqual(mergeWith, refs[0].MergeWith);
+            ClassicAssert.AreEqual(mergeWith, refs[0].MergeWith);
             refs[0].Received(0).MergeWith = mergeWith;
         }
 
@@ -296,7 +299,7 @@ namespace GitCommandsTests.Remote
 
             string mergeWith = "";
 
-            Assert.AreEqual(mergeWith, refs[0].MergeWith);
+            ClassicAssert.AreEqual(mergeWith, refs[0].MergeWith);
             refs[0].Received(0).MergeWith = mergeWith;
         }
 
@@ -313,7 +316,7 @@ namespace GitCommandsTests.Remote
 
             string mergeWith = "";
 
-            Assert.AreEqual(mergeWith, refs[0].MergeWith);
+            ClassicAssert.AreEqual(mergeWith, refs[0].MergeWith);
             refs[0].Received(0).MergeWith = mergeWith;
         }
 
@@ -329,7 +332,7 @@ namespace GitCommandsTests.Remote
 
             _remotesManager.ConfigureRemotes("origin");
             string mergeWith = "develop";
-            Assert.AreEqual(mergeWith, refs[0].MergeWith);
+            ClassicAssert.AreEqual(mergeWith, refs[0].MergeWith);
             refs[0].Received(1).MergeWith = mergeWith;
         }
 
@@ -361,12 +364,12 @@ namespace GitCommandsTests.Remote
             _configFile.GetConfigSections().Returns(x => sections);
 
             IReadOnlyList<GitExtensions.Extensibility.Git.Remote> disabledRemotes = _remotesManager.GetDisabledRemotes();
-            Assert.AreEqual(1, disabledRemotes.Count);
-            Assert.AreEqual(disabledRemoteName, disabledRemotes[0].Name);
+            ClassicAssert.AreEqual(1, disabledRemotes.Count);
+            ClassicAssert.AreEqual(disabledRemoteName, disabledRemotes[0].Name);
 
             IReadOnlyList<string> disabledRemoteNames = _remotesManager.GetDisabledRemoteNames();
-            Assert.AreEqual(1, disabledRemoteNames.Count);
-            Assert.AreEqual(disabledRemoteName, disabledRemoteNames[0]);
+            ClassicAssert.AreEqual(1, disabledRemoteNames.Count);
+            ClassicAssert.AreEqual(disabledRemoteName, disabledRemoteNames[0]);
         }
 
         [Test]
@@ -381,8 +384,8 @@ namespace GitCommandsTests.Remote
             _configFile.GetConfigSections().Returns(x => sections);
 
             IReadOnlyList<string> enabledRemoteNames = _remotesManager.GetEnabledRemoteNames();
-            Assert.AreEqual(1, enabledRemoteNames.Count);
-            Assert.AreEqual(enabledRemoteName, enabledRemoteNames[0]);
+            ClassicAssert.AreEqual(1, enabledRemoteNames.Count);
+            ClassicAssert.AreEqual(enabledRemoteName, enabledRemoteNames[0]);
         }
 
         [Test]
@@ -396,8 +399,8 @@ namespace GitCommandsTests.Remote
             List<IConfigSection> sections = [new ConfigSection($"{ConfigFileRemoteSettingsManager.DisabledSectionPrefix}{ConfigFileRemoteSettingsManager.SectionRemote}.{disabledRemoteName}", true)];
             _configFile.GetConfigSections().Returns(x => sections);
 
-            Assert.IsTrue(_remotesManager.EnabledRemoteExists(enabledRemoteName));
-            Assert.IsFalse(_remotesManager.EnabledRemoteExists(disabledRemoteName));
+            ClassicAssert.IsTrue(_remotesManager.EnabledRemoteExists(enabledRemoteName));
+            ClassicAssert.IsFalse(_remotesManager.EnabledRemoteExists(disabledRemoteName));
         }
 
         [Test]
@@ -411,8 +414,31 @@ namespace GitCommandsTests.Remote
             List<IConfigSection> sections = [new ConfigSection($"{ConfigFileRemoteSettingsManager.DisabledSectionPrefix}{ConfigFileRemoteSettingsManager.SectionRemote}.{disabledRemoteName}", true)];
             _configFile.GetConfigSections().Returns(x => sections);
 
-            Assert.IsTrue(_remotesManager.DisabledRemoteExists(disabledRemoteName));
-            Assert.IsFalse(_remotesManager.DisabledRemoteExists(enabledRemoteName));
+            ClassicAssert.IsTrue(_remotesManager.DisabledRemoteExists(disabledRemoteName));
+            ClassicAssert.IsFalse(_remotesManager.DisabledRemoteExists(enabledRemoteName));
+        }
+
+        [Test]
+        public void GetDefaultPushRemote_returns_null_for_no_remote_branch()
+        {
+            ConfigFileRemote remote = new() { Push = [] };
+            ClassicAssert.IsNull(_remotesManager.GetDefaultPushRemote(remote, "BranchName"));
+        }
+
+        [TestCase("BranchName", "BranchName")]
+        [TestCase("BranchName", "dev/me/BranchName")]
+        public void GetDefaultPushRemote_returns_value_for_mapped_remote_branch(string branchName, string pushToBranch)
+        {
+            ConfigFileRemote remote = new() { Push = [$"refs/heads/{branchName}:refs/heads/{pushToBranch}"] };
+            ClassicAssert.AreEqual(pushToBranch, _remotesManager.GetDefaultPushRemote(remote, branchName));
+        }
+
+        [TestCase("BranchName", "*")]
+        [TestCase("BranchName", "dev/me/*")]
+        public void GetDefaultPushRemote_returns_value_for_wildcard_mapped_remote_branch(string branchName, string pushToBranch)
+        {
+            ConfigFileRemote remote = new() { Push = [$"refs/heads/*:refs/heads/{pushToBranch}"] };
+            ClassicAssert.AreEqual(pushToBranch.Replace("*", branchName), _remotesManager.GetDefaultPushRemote(remote, branchName));
         }
 
         public class IntegrationTests

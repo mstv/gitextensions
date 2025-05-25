@@ -820,10 +820,7 @@ namespace GitUI
 
         public bool StartCherryPickDialog(IWin32Window? owner, IEnumerable<GitRevision> revisions)
         {
-            if (revisions is null)
-            {
-                throw new ArgumentNullException(nameof(revisions));
-            }
+            ArgumentNullException.ThrowIfNull(revisions);
 
             bool Action()
             {
@@ -1549,9 +1546,9 @@ namespace GitUI
         {
             ConfigFileSettings configFileGlobalSettings = ConfigFileSettings.CreateGlobal(false);
 
-            string coreEditor = configFileGlobalSettings.GetValue("core.editor");
-            string path = AppSettings.GetInstallDir().ToPosixPath();
-            if (path is not null && coreEditor.ToLowerInvariant().Contains(path.ToLowerInvariant()))
+            string? coreEditor = configFileGlobalSettings.GetValue("core.editor");
+            string? path = AppSettings.GetInstallDir().ToPosixPath();
+            if (path is not null && coreEditor?.Contains(path, StringComparison.InvariantCultureIgnoreCase) is true)
             {
                 configFileGlobalSettings.SetValue("core.editor", "");
             }

@@ -9,6 +9,7 @@ using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
 using GitUI.CommandsDialogs;
 using GitUI.Properties;
+using GitUI.Theming;
 using GitUI.UserControls;
 using GitUI.UserControls.RevisionGrid;
 using GitUIPluginInterfaces;
@@ -47,6 +48,8 @@ namespace GitUI.LeftPanel
             InitImageList();
             _txtBranchCriterion = CreateSearchBox();
             branchSearchPanel.Controls.Add(_txtBranchCriterion, 1, 0);
+            treeMain.BackColor = AppColor.PanelBackground.GetThemeColor();
+            leftPanelToolStrip.BackColor = SystemColors.Control;
 
             mnubtnCollapse.AdaptImageLightness();
             tsbCollapseAll.AdaptImageLightness();
@@ -111,9 +114,9 @@ namespace GitUI.LeftPanel
                         { nameof(Images.BranchRemoteMerged), Pad(Images.BranchRemoteMerged) },
                         { nameof(Images.BranchFolder), Pad(Images.BranchFolder) },
                         { nameof(Images.TagHorizontal), Pad(Images.TagHorizontal) },
-                        { nameof(Images.EyeOpened), Pad(Images.EyeOpened) },
-                        { nameof(Images.EyeClosed), Pad(Images.EyeClosed) },
-                        { nameof(Images.RemoteEnableAndFetch), Pad(Images.RemoteEnableAndFetch) },
+                        { nameof(Images.EyeOpened), Pad(Images.EyeOpened.AdaptLightness()) },
+                        { nameof(Images.EyeClosed), Pad(Images.EyeClosed.AdaptLightness()) },
+                        { nameof(Images.RemoteEnableAndFetch), Pad(Images.RemoteEnableAndFetch.AdaptLightness()) },
                         { nameof(Images.FileStatusModified), Pad(Images.FileStatusModified) },
                         { nameof(Images.FolderSubmodule), Pad(Images.FolderSubmodule) },
                         { nameof(Images.Stash), Pad(Images.Stash) },

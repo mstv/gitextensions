@@ -264,8 +264,6 @@ namespace GitUI.CommandsDialogs
             toolsToolStripMenuItem.Initialize(() => UICommands);
             _NO_TRANSLATE_WorkingDir.Initialize(() => UICommands, _repositoryHistoryUIService, fileToolStripMenuItem, closeToolStripMenuItem);
 
-            _repositoryHistoryUIService.GitModuleChanged += SetGitModule;
-
             BackColor = OtherColors.BackgroundColor;
 
             WorkaroundPaddingIncreaseBug();
@@ -324,9 +322,7 @@ namespace GitUI.CommandsDialogs
             toolStripButtonPush.ResetToDefaultState();
             repoObjectsTree.Initialize(_aheadBehindDataProvider, filterRevisionGridBySpaceSeparatedRefs: ToolStripFilters.SetBranchFilter, refsSource: RevisionGrid, revisionGridInfo: RevisionGrid);
             revisionDiff.Bind(revisionGridInfo: RevisionGrid, revisionGridUpdate: RevisionGrid, revisionFileTree: fileTree, () => RevisionGrid.CurrentFilter.PathFilter, RefreshGitStatusMonitor);
-
-            // Show blame by default in file tree if not started from command line
-            fileTree.Bind(revisionGridInfo: RevisionGrid, revisionGridUpdate: RevisionGrid, RefreshGitStatusMonitor, _isFileHistoryMode);
+            fileTree.Bind(revisionGridInfo: RevisionGrid, revisionGridUpdate: RevisionGrid, revisionFileTree: null, () => RevisionGrid.CurrentFilter.PathFilter, RefreshGitStatusMonitor, requestBlame: _isFileHistoryMode);
             RevisionGrid.ResumeRefreshRevisions();
 
             // Application is init, the repo related operations are triggered in OnLoad()
@@ -452,11 +448,6 @@ namespace GitUI.CommandsDialogs
         {
             if (disposing)
             {
-                if (_repositoryHistoryUIService is not null)
-                {
-                    _repositoryHistoryUIService.GitModuleChanged -= SetGitModule;
-                }
-
                 _formBrowseMenus?.Dispose();
                 components?.Dispose();
                 _gitStatusMonitor?.Dispose();
@@ -468,9 +459,16 @@ namespace GitUI.CommandsDialogs
 
         protected override void OnApplicationActivated()
         {
-            if (AppSettings.RefreshArtificialCommitOnApplicationActivated && CommitInfoTabControl.SelectedTab == DiffTabPage)
+            if (AppSettings.RefreshArtificialCommitOnApplicationActivated)
             {
-                revisionDiff.RefreshArtificial();
+                if (CommitInfoTabControl.SelectedTab == DiffTabPage)
+                {
+                    revisionDiff.RefreshArtificial();
+                }
+                else if (CommitInfoTabControl.SelectedTab == TreeTabPage)
+                {
+                    fileTree.RefreshArtificial();
+                }
             }
 
             base.OnApplicationActivated();
@@ -1136,6 +1134,7 @@ namespace GitUI.CommandsDialogs
             pullToolStripMenuItem1.ShortcutKeyDisplayString = GetShortcutKeyDisplayString(Command.PullOrFetch);
             pushToolStripMenuItem.ShortcutKeyDisplayString = GetShortcutKeyDisplayString(Command.Push);
             rebaseToolStripMenuItem.ShortcutKeyDisplayString = GetShortcutKeyDisplayString(Command.Rebase);
+            manageWorktreeToolStripMenuItem.ShortcutKeyDisplayString = GetShortcutKeyDisplayString(Command.ManageWorkTrees);
 
             fileToolStripMenuItem.RefreshShortcutKeys(Hotkeys);
             helpToolStripMenuItem.RefreshShortcutKeys(Hotkeys);
@@ -1203,10 +1202,10 @@ namespace GitUI.CommandsDialogs
             return base.GetScriptOptionsProvider();
         }
 
-        private void FillFileTree(GitRevision revision)
+        private void FillFileTree(GitRevision? revision)
         {
-            // Don't show the "File Tree" tab for artificial commits
-            bool showFileTreeTab = revision?.IsArtificial != true;
+            // "File Tree" tab implemented using git-grep works for artificial commits, too
+            bool showFileTreeTab = true;
 
             if (showFileTreeTab)
             {
@@ -1228,7 +1227,7 @@ namespace GitUI.CommandsDialogs
             }
 
             _selectedRevisionUpdatedTargets |= UpdateTargets.FileTree;
-            fileTree.LoadRevision(revision);
+            fileTree.DisplayDiffTab(revision is null ? [] : [revision]);
         }
 
         private void FillDiff(IReadOnlyList<GitRevision> revisions)
@@ -1695,6 +1694,9 @@ namespace GitUI.CommandsDialogs
 
             repoObjectsTree.ClearTrees();
 
+            // Reset branch colors whenever we open a new repository
+            e.GitModule.ResetRemoteColors();
+
             UICommands = UICommands.WithGitModule(e.GitModule);
             if (Module.IsValidGitWorkingDir())
             {
@@ -1824,9 +1826,8 @@ namespace GitUI.CommandsDialogs
 
                     ToolStripItem toolStripItem = branchSelect.DropDownItems.Add(branch.Name);
                     toolStripItem.ForeColor = isBranchVisible ? branchSelect.ForeColor : Color.Silver.AdaptTextColor();
-                    toolStripItem.Image = isBranchVisible ? Images.Branch : Images.EyeClosed;
+                    toolStripItem.Image = (isBranchVisible ? Images.Branch : Images.EyeClosed).AdaptLightness();
                     toolStripItem.Click += (s, e) => UICommands.StartCheckoutBranch(this, toolStripItem.Text);
-                    toolStripItem.AdaptImageLightness();
                 }
 
                 IEnumerable<IGitRef> GetBranches()
@@ -1925,6 +1926,7 @@ namespace GitUI.CommandsDialogs
 
             // REPOSITORY menu
             CloseRepository = 15,
+            ManageWorkTrees = 49,
 
             // COMMANDS menu
             Commit = 7,
@@ -1971,7 +1973,7 @@ namespace GitUI.CommandsDialogs
             OpenCommitsWithDifftool = 35,
             ToggleBetweenArtificialAndHeadCommits = 36,
             GoToChild = 37,
-            GoToParent = 38
+            GoToParent = 38,
 
             /* deprecated: RotateApplicationIcon = 14, */
         }
@@ -2003,7 +2005,7 @@ namespace GitUI.CommandsDialogs
             AppSettings.ShowSplitViewLayout = true;
             RefreshSplitViewLayout();
 
-            fileTree.InvokeFindFileDialog();
+            fileTree.ExecuteCommand(RevisionDiffControl.Command.FindFile);
         }
 
         private void QuickFetch()
@@ -2090,8 +2092,8 @@ namespace GitUI.CommandsDialogs
                 case Command.OpenSettings: EditSettings.PerformClick(); break;
                 case Command.ToggleLeftPanel: toggleLeftPanel.PerformClick(); break;
                 case Command.EditFile: EditFile(); break;
-                case Command.OpenAsTempFile when fileTree.Visible: fileTree.ExecuteCommand(RevisionFileTreeControl.Command.OpenAsTempFile); break;
-                case Command.OpenAsTempFileWith when fileTree.Visible: fileTree.ExecuteCommand(RevisionFileTreeControl.Command.OpenAsTempFileWith); break;
+                case Command.OpenAsTempFile when fileTree.Visible: fileTree.ExecuteCommand(RevisionDiffControl.Command.OpenAsTempFile); break;
+                case Command.OpenAsTempFileWith when fileTree.Visible: fileTree.ExecuteCommand(RevisionDiffControl.Command.OpenAsTempFileWith); break;
                 case Command.GoToSuperproject: toolStripButtonLevelUp.PerformClick(); break;
                 case Command.GoToSubmodule: toolStripButtonLevelUp.ShowDropDown(); break;
                 case Command.ToggleBetweenArtificialAndHeadCommits: RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.ToggleBetweenArtificialAndHeadCommits); break;
@@ -2103,6 +2105,7 @@ namespace GitUI.CommandsDialogs
                 case Command.MergeBranches: UICommands.StartMergeBranchDialog(this, null); break;
                 case Command.CreateTag: UICommands.StartCreateTagDialog(this, RevisionGrid.LatestSelectedRevision); break;
                 case Command.Rebase: rebaseToolStripMenuItem.PerformClick(); break;
+                case Command.ManageWorkTrees: manageWorktreeToolStripMenuItem.PerformClick(); break;
                 default: return base.ExecuteCommand(cmd);
             }
 
@@ -2169,7 +2172,7 @@ namespace GitUI.CommandsDialogs
                 }
                 else if (fileTree.Visible)
                 {
-                    fileTree.ExecuteCommand(RevisionFileTreeControl.Command.OpenWithDifftool);
+                    fileTree.ExecuteCommand(RevisionDiffControl.Command.OpenWithDifftool);
                 }
             }
 
@@ -2197,7 +2200,7 @@ namespace GitUI.CommandsDialogs
                 }
                 else if (fileTree.Visible)
                 {
-                    fileTree.ExecuteCommand(RevisionFileTreeControl.Command.EditFile);
+                    fileTree.ExecuteCommand(RevisionDiffControl.Command.EditFile);
                 }
             }
 
@@ -2223,15 +2226,27 @@ namespace GitUI.CommandsDialogs
 
         public static void OpenContainingFolder(FileStatusList diffFiles, IGitModule module)
         {
-            if (!diffFiles.SelectedItems.Any())
+            if (module.WorkingDir is not string workindDir)
             {
+                return;
+            }
+
+            if (diffFiles.SelectedFolder is RelativePath relativePath)
+            {
+                OpenInContainingFolder(workindDir, relativePath.Length == 0 ? "" : $"{relativePath.Value}/");
                 return;
             }
 
             foreach (FileStatusItem item in diffFiles.SelectedItems)
             {
-                string filePath = Path.Combine(module.WorkingDir, item.Item.Name.ToNativePath());
+                OpenInContainingFolder(workindDir, item.Item.Name);
+            }
 
+            return;
+
+            static void OpenInContainingFolder(string workingDir, string relativePath)
+            {
+                string filePath = Path.Combine(workingDir, relativePath.ToNativePath());
                 if (!string.IsNullOrWhiteSpace(filePath))
                 {
                     FormBrowseUtil.ShowFileOrParentFolderInFileExplorer(filePath);
@@ -2950,7 +2965,7 @@ namespace GitUI.CommandsDialogs
             public TabPage DiffTabPage => _form.DiffTabPage;
             public RepoObjectsTree RepoObjectsTree => _form.repoObjectsTree;
             public RevisionDiffControl RevisionDiffControl => _form.revisionDiff;
-            public RevisionFileTreeControl RevisionFileTreeControl => _form.fileTree;
+            public RevisionDiffControl RevisionFileTreeControl => _form.fileTree;
             public RevisionGridControl RevisionGrid => _form.RevisionGridControl;
             public SplitContainer RevisionsSplitContainer => _form.RevisionsSplitContainer;
             public SplitContainer RightSplitContainer => _form.RightSplitContainer;
@@ -2971,40 +2986,48 @@ namespace GitUI.CommandsDialogs
                 return;
             }
 
-            string itemPath = (e.Data.GetData(DataFormats.Text) ?? e.Data.GetData(DataFormats.UnicodeText)) as string;
-            if (IsFileExistingInRepo(itemPath))
             {
-                CommitInfoTabControl.SelectedTab = TreeTabPage;
-                fileTree.SelectFileOrFolder(itemPath);
-                return;
-            }
-
-            if (e.Data.GetData(DataFormats.FileDrop) is not string[] paths)
-            {
-                return;
-            }
-
-            foreach (string path in paths)
-            {
-                if (!IsFileExistingInRepo(path))
+                string? itemPath = (e.Data.GetData(DataFormats.Text) ?? e.Data.GetData(DataFormats.UnicodeText)) as string;
+                if (GetRelativePathExistingInRepo(itemPath) is RelativePath relativePath)
                 {
-                    continue;
-                }
-
-                if (CommitInfoTabControl.SelectedTab != TreeTabPage)
-                {
-                    CommitInfoTabControl.SelectedTab = TreeTabPage;
-                }
-
-                if (fileTree.SelectFileOrFolder(path))
-                {
+                    fileTree.SelectFileOrFolder(FocusView, relativePath);
                     return;
                 }
             }
 
-            bool IsPathExists([NotNullWhen(returnValue: true)] string? path) => path is not null && (File.Exists(path) || Directory.Exists(path));
+            if (e.Data.GetData(DataFormats.FileDrop) is not string?[] paths)
+            {
+                return;
+            }
 
-            bool IsFileExistingInRepo([NotNullWhen(returnValue: true)] string? path) => IsPathExists(path) && path.StartsWith(Module.WorkingDir, StringComparison.InvariantCultureIgnoreCase);
+            foreach (string? path in paths)
+            {
+                if (GetRelativePathExistingInRepo(path) is not RelativePath relativePath)
+                {
+                    continue;
+                }
+
+                fileTree.SelectFileOrFolder(FocusView, relativePath);
+                return;
+            }
+
+            return;
+
+            void FocusView() => CommitInfoTabControl.SelectedTab = TreeTabPage;
+
+            RelativePath? GetRelativePathExistingInRepo(string path)
+            {
+                if (path is null
+                    || !(File.Exists(path) || Directory.Exists(path))
+                    || !path.StartsWith(Module.WorkingDir, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return null;
+                }
+
+                string workingDir = Module.WorkingDir;
+                int relativePathStartIndex = workingDir.EndsWith(Path.DirectorySeparatorChar) ? workingDir.Length : workingDir.Length + 1;
+                return RelativePath.From(path[relativePathStartIndex..].ToPosixPath());
+            }
         }
 
         private static void FormBrowse_DragEnter(object sender, DragEventArgs e)

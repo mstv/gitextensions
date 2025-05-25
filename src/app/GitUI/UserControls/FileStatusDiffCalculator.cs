@@ -38,9 +38,10 @@ namespace GitUI
             _fileStatusDiffCalculatorInfo.AllowMultiDiff = allowMultiDiff;
         }
 
-        public void SetGrep(string grepArguments)
+        public void SetGrep(string grepArguments, bool fileTreeMode)
         {
             _fileStatusDiffCalculatorInfo.GrepArguments = grepArguments;
+            _fileStatusDiffCalculatorInfo.FileTreeMode = fileTreeMode;
         }
 
         public IReadOnlyList<FileStatusWithDescription> Calculate(IReadOnlyList<FileStatusWithDescription> prevList, bool refreshDiff, bool refreshGrep, CancellationToken cancellationToken)
@@ -229,9 +230,10 @@ namespace GitUI
             IReadOnlyList<GitItemStatus> allBaseToA = module.GetDiffFilesWithSubmodulesStatus(baseRevId, firstRev.ObjectId, firstRev.FirstParentId, cancellationToken);
 
             GitItemStatusNameEqualityComparer comparer = new();
-            List<GitItemStatus> sameBaseToAandB = allBaseToB.Intersect(allBaseToA, comparer).Except(allAToB, comparer).ToList();
-            List<GitItemStatus> onlyA = allBaseToA.Except(allBaseToB, comparer).ToList();
-            List<GitItemStatus> onlyB = allBaseToB.Except(allBaseToA, comparer).ToList();
+            GitItemStatus[] allAToBExceptExactRenameCopy = [.. allAToB.Where(i => !((i.IsRenamed || i.IsCopied) && i.RenameCopyPercentage == "100"))];
+            GitItemStatus[] sameBaseToAandB = [.. allBaseToB.Intersect(allBaseToA, comparer).Except(allAToBExceptExactRenameCopy, comparer)];
+            GitItemStatus[] onlyA = [.. allBaseToA.Except(allBaseToB, comparer)];
+            GitItemStatus[] onlyB = [.. allBaseToB.Except(allBaseToA, comparer)];
 
             foreach (IReadOnlyList<GitItemStatus> l in new[] { allAToB, allBaseToB, allBaseToA })
             {
@@ -246,9 +248,9 @@ namespace GitUI
                 // Always show where the change is done
                 // This means that if a file is added in A it is shown as removed in the A->B diff,
                 // but marked with A
-                return sameBaseToAandB.Any(i => i.Name == f.Name) ? DiffBranchStatus.SameChange
-                    : onlyA.Any(i => i.Name == f.Name) ? DiffBranchStatus.OnlyAChange
-                    : onlyB.Any(i => i.Name == f.Name) ? DiffBranchStatus.OnlyBChange
+                return sameBaseToAandB.Any(i => comparer.Equals(i, f)) ? DiffBranchStatus.SameChange
+                    : onlyA.Any(i => comparer.Equals(i, f)) ? DiffBranchStatus.OnlyAChange
+                    : onlyB.Any(i => comparer.Equals(i, f)) ? DiffBranchStatus.OnlyBChange
                     : DiffBranchStatus.UnequalChange;
             }
 
@@ -312,7 +314,18 @@ namespace GitUI
                 return null;
             }
 
-            IReadOnlyList<GitItemStatus> statuses = GetModule().GetGrepFilesStatus(selectedRev.ObjectId, _fileStatusDiffCalculatorInfo.GrepArguments, cancellationToken);
+            IGitModule module = GetModule();
+            IReadOnlyList<GitItemStatus> statuses = module.GetGrepFilesStatus(selectedRev.ObjectId, _fileStatusDiffCalculatorInfo.GrepArguments, applyAppSettings: !_fileStatusDiffCalculatorInfo.FileTreeMode, cancellationToken);
+
+            if (_fileStatusDiffCalculatorInfo.FileTreeMode)
+            {
+                List<GitItemStatus> statusesWithSubmodules = new(statuses);
+                statuses = statusesWithSubmodules;
+                foreach (string submodulePath in module.GetSubmodulesLocalPaths(recursive: false))
+                {
+                    statusesWithSubmodules.Add(new GitItemStatus(submodulePath) { IsSubmodule = true });
+                }
+            }
 
             return new FileStatusWithDescription(
                                firstRev: null,

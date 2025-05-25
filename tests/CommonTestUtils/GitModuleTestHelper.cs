@@ -141,7 +141,7 @@ namespace CommonTestUtils
             ConfigFileSettings localConfigFile = (ConfigFileSettings)module.LocalConfigFile;
             localConfigFile.SetString(SettingKeyString.UserName, "author");
             localConfigFile.SetString(SettingKeyString.UserEmail, "author@mail.com");
-            localConfigFile.FilesEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+            new GitEncodingSettingsSetter(localConfigFile).FilesEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
             localConfigFile.SetString(SettingKeyString.AllowFileProtocol, "always"); // git version 2.38.1 and later disabled file protocol by default
             localConfigFile.Save();
         }
@@ -158,7 +158,7 @@ namespace CommonTestUtils
 
             // Ensure config is set to allow file submodules
             string fileEnabled = Module.GetEffectiveSetting(SettingKeyString.AllowFileProtocol)?.Trim('\n');
-            Assert.That(fileEnabled == "always");
+            ClassicAssert.That(fileEnabled == "always");
 
             // Even though above is set, adding a file protocol submodule fails unless -c... is used for protocol.file.allow config.
             IEnumerable<GitConfigItem> cfgs = Commands.GetAllowFileConfig();

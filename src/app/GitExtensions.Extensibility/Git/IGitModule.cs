@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Frozen;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using GitExtensions.Extensibility.Configurations;
 using GitExtensions.Extensibility.Settings;
@@ -17,6 +18,19 @@ public interface IGitModule
     IReadOnlyList<IGitRef> GetRefs(RefsFilter getRef);
     IEnumerable<string> GetSettings(string setting);
     IEnumerable<INamedGitItem> GetTree(ObjectId? commitId, bool full);
+
+    /// <summary>
+    ///  Loads the user-defined colors for the remote branches specific for the current repository.
+    /// </summary>
+    /// <returns>
+    ///  The user-defined colors for the remote branches specific for the current repository.
+    /// </returns>
+    FrozenDictionary<string, Color> GetRemoteColors();
+
+    /// <summary>
+    /// Resets the colors of the remote to their default values.
+    /// </summary>
+    void ResetRemoteColors();
 
     /// <summary>
     /// Removes the registered remote by running <c>git remote rm</c> command.
@@ -172,7 +186,7 @@ public interface IGitModule
     /// </exception>
     T? GetSetting<T>(string setting) where T : struct;
 
-    string GetEffectiveSetting(string setting);
+    string GetEffectiveSetting(string setting, string defaultValue = "");
 
     /// <summary>
     ///  Gets the config setting from git converted in an expected C# value type (bool, int, etc.).
@@ -201,8 +215,6 @@ public interface IGitModule
     /// <param name="cache"><see langword="true"/> if the result shall be cached.</param>
     /// <returns>The value of the setting or <see langword="null"/> if the value is not set.</returns>
     string? GetEffectiveGitSetting(string setting, bool cache = false);
-
-    SettingsSource GetEffectiveSettingsByPath(string path);
 
     /// <summary>
     /// Gets the name of the currently checked out branch.
@@ -503,7 +515,7 @@ public interface IGitModule
     /// </returns>
     string GetRemoteBranch(string branch);
 
-    IReadOnlyList<GitItemStatus> GetGrepFilesStatus(ObjectId objectId, string grepString, CancellationToken cancellationToken);
+    IReadOnlyList<GitItemStatus> GetGrepFilesStatus(ObjectId objectId, string grepString, bool applyAppSettings, CancellationToken cancellationToken);
     Task<ExecutionResult> GetGrepFileAsync(
         ObjectId objectId,
         string fileName,

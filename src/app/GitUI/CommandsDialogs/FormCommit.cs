@@ -205,10 +205,13 @@ namespace GitUI.CommandsDialogs
                 _commitKind = value;
 
                 modifyCommitMessageButton.Visible = _useFormCommitMessage && CommitKind is not (CommitKind.Normal or CommitKind.Amend);
+                modifyCommitMessageButton.ForeColor = Application.IsDarkModeEnabled ? SystemColors.ControlText : SystemColors.HotTrack;
+
                 bool messageCanBeChanged = _useFormCommitMessage && CommitKind is (CommitKind.Normal or CommitKind.Amend);
                 Message.Enabled = messageCanBeChanged;
                 commitMessageToolStripMenuItem.Enabled = messageCanBeChanged;
                 commitTemplatesToolStripMenuItem.Enabled = messageCanBeChanged;
+                Message.EvaluateForecolor();
             }
         }
 
@@ -348,6 +351,10 @@ namespace GitUI.CommandsDialogs
 
             toolStripStatusBranchIcon.AdaptImageLightness();
 
+            // Change the link color
+            commitAuthorStatus.LinkColor = Application.IsDarkModeEnabled ? Color.CornflowerBlue : Color.FromArgb(0, 0, 0xff);
+            remoteNameLabel.LinkColor = Application.IsDarkModeEnabled ? Color.CornflowerBlue : Color.Blue;
+
             splitLeft.Panel1.BackColor = OtherColors.PanelBorderColor;
             splitLeft.Panel2.BackColor = OtherColors.PanelBorderColor;
             splitRight.Panel1.BackColor = OtherColors.PanelBorderColor;
@@ -367,51 +374,52 @@ namespace GitUI.CommandsDialogs
             _selectionFilterSubject
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .ObserveOn(SynchronizationContext.Current)
-                .Subscribe(
-                    filterText =>
-                    {
-                        ThreadHelper.AssertOnUIThread();
-
-                        int matchCount = 0;
-                        try
-                        {
-                            matchCount = Unstaged.SetSelectionFilter(filterText);
-                            selectionFilter.ToolTipText = _selectionFilterToolTip.Text;
-                        }
-                        catch (ArgumentException ae)
-                        {
-                            selectionFilter.ToolTipText = string.Format(_selectionFilterErrorToolTip.Text, ae.Message);
-                        }
-
-                        if (matchCount > 0)
-                        {
-                            AddToSelectionFilter();
-                        }
-
-                        void AddToSelectionFilter()
-                        {
-                            if (selectionFilter.Items.Cast<string>().Any(s => s == filterText))
-                            {
-                                // Item is already in the list
-                                return;
-                            }
-
-                            const int SelectionFilterMaxLength = 10;
-
-                            while (selectionFilter.Items.Count >= SelectionFilterMaxLength)
-                            {
-                                // Remove the last item
-                                selectionFilter.Items.RemoveAt(SelectionFilterMaxLength - 1);
-                            }
-
-                            // Insert the next term at the start of the filter control
-                            selectionFilter.Items.Insert(0, filterText);
-                        }
-                    });
+                .Subscribe(filterText => TaskManager.HandleExceptions(() => Update(filterText), Application.OnThreadException));
 
             UICommands.PostRepositoryChanged += UICommands_PostRepositoryChanged;
 
             return;
+
+            void Update(string filterText)
+            {
+                ThreadHelper.AssertOnUIThread();
+
+                int matchCount = 0;
+                try
+                {
+                    matchCount = Unstaged.SetSelectionFilter(filterText);
+                    selectionFilter.ToolTipText = _selectionFilterToolTip.Text;
+                }
+                catch (ArgumentException ae)
+                {
+                    selectionFilter.ToolTipText = string.Format(_selectionFilterErrorToolTip.Text, ae.Message);
+                }
+
+                if (matchCount > 0)
+                {
+                    AddToSelectionFilter(filterText);
+                }
+            }
+
+            void AddToSelectionFilter(string filterText)
+            {
+                if (selectionFilter.Items.Cast<string>().Any(s => s == filterText))
+                {
+                    // Item is already in the list
+                    return;
+                }
+
+                const int SelectionFilterMaxLength = 10;
+
+                while (selectionFilter.Items.Count >= SelectionFilterMaxLength)
+                {
+                    // Remove the last item
+                    selectionFilter.Items.RemoveAt(SelectionFilterMaxLength - 1);
+                }
+
+                // Insert the next term at the start of the filter control
+                selectionFilter.Items.Insert(0, filterText);
+            }
 
             void ConfigureMessageBox()
             {
@@ -501,7 +509,7 @@ namespace GitUI.CommandsDialogs
 
         protected override void OnLoad(EventArgs e)
         {
-            showUntrackedFilesToolStripMenuItem.Checked = Module.EffectiveConfigFile.GetValue("status.showUntrackedFiles") != "no";
+            showUntrackedFilesToolStripMenuItem.Checked = Module.EffectiveConfigFile.GetValue("status.showuntrackedfiles") != "no";
             MinimizeBox = Owner is null;
             LoadCustomDifftools();
 
