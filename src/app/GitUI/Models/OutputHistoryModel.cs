@@ -52,8 +52,8 @@ internal sealed class OutputHistoryModel : IOutputHistoryProvider, IOutputHistor
 
     public void RecordHistory(in string message)
     {
-        string time = DateTime.Now.ToShortTimeString();
-        Add(new StringBuilder(time, capacity: time.Length + 1 + message.Length).Append(' ').AppendLine(message));
+        string time = DateTime.Now.ToString("HH:mm:ss.fff");
+        Add(new StringBuilder(time, capacity: time.Length + 1 + message.Length).Append(' ').Append(message));
     }
 
     public void RecordHistory(in Exception exception)

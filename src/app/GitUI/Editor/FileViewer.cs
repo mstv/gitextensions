@@ -68,6 +68,8 @@ namespace GitUI.Editor
         [GeneratedRegex(@"warning: .*has type .* expected .*", RegexOptions.ExplicitCapture)]
         private static partial Regex FileModeWarningRegex();
 
+        private static string Truncate(string text, int maxLength = 20) => text.Substring(0, Math.Min(maxLength, text.Length));
+
         public FileViewer()
         {
             TreatAllFilesAsText = false;
@@ -592,6 +594,7 @@ namespace GitUI.Editor
                 text.Length,
                 () =>
                 {
+                    DebugHelpers.Trace($"loading '{fileName}' {text.Length} byte(s) {Truncate(text)}");
                     ResetView(ViewMode.Text, fileName, item: item);
 
                     // Check for binary file. Using gitattributes could be misleading for a changed file,
@@ -622,6 +625,7 @@ namespace GitUI.Editor
                         }
                     }
 
+                    DebugHelpers.Trace($"loaded  '{fileName}' {text.Length} byte(s) {Truncate(text)}");
                     TextLoaded?.Invoke(this, null);
                     return Task.CompletedTask;
                 });
@@ -898,6 +902,7 @@ namespace GitUI.Editor
                 text.Length,
                 () =>
                 {
+                    DebugHelpers.Trace($"loading '{fileName}' {text.Length} byte(s) {Truncate(text)}");
                     ResetView(viewMode, fileName, item: item, text: text);
                     bool positionSet = internalFileViewer.SetText(text, openWithDifftool, _viewMode, useGitColoring, contentIdentification: fileName);
                     if (line is not null)
@@ -909,6 +914,7 @@ namespace GitUI.Editor
                         internalFileViewer.GoToFirstChange(NumberOfContextLines);
                     }
 
+                    DebugHelpers.Trace($"loaded  '{fileName}' {text.Length} byte(s) {Truncate(text)}");
                     TextLoaded?.Invoke(this, null);
                     return Task.CompletedTask;
                 });
