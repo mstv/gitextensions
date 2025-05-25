@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using GitCommands;
 using GitExtensions.Extensibility;
@@ -267,6 +268,7 @@ namespace GitUI.CommandsDialogs
 
             _viewChangesSequence.CancelCurrent();
             await this.SwitchToMainThreadAsync(cancellationToken);
+            DebugHelpers.Trace("clearing");
             await DiffText.ClearAsync();
 
             if (!_updatingDiffs)
@@ -579,6 +581,7 @@ namespace GitUI.CommandsDialogs
         {
             if (DiffFiles.GitItemStatuses is null || !DiffFiles.GitItemStatuses.Any())
             {
+                DebugHelpers.Trace("clearing");
                 DiffText.Clear();
             }
         }
