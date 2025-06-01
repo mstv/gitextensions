@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System.ComponentModel;
+using GitExtensions.Extensibility;
 using GitExtUtils.GitUI;
 using Microsoft;
 
@@ -289,11 +290,26 @@ public class MultiSelectTreeView : NativeTreeView
         }
     }
 
+    private TreeNode? _previousSelectedNode = null;
+
     private void OnSelectionChanged()
     {
         if (SelectedNodes.Count <= 1 && FocusedNode is TreeNode focusedNode)
         {
             _multiselectionStartNode = focusedNode;
+        }
+
+        TreeNode? selectedNode = SelectedNodes.Count != 1 ? null : SelectedNodes.Single();
+        if (_previousSelectedNode != selectedNode)
+        {
+            _previousSelectedNode = selectedNode;
+        }
+        else
+        {
+            if (selectedNode is not null)
+            {
+                DebugHelpers.Trace($"identical single-node-selection event: {selectedNode}");
+            }
         }
 
         SelectedNodesChanged?.Invoke(this, EventArgs.Empty);
