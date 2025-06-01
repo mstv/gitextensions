@@ -1237,7 +1237,19 @@ namespace GitUI
                 _selectedIndexChangeSubscription ??= Observable.FromEventPattern(
                         h => FileStatusListView.SelectedNodesChanged += h,
                         h => FileStatusListView.SelectedNodesChanged -= h)
-                    .Where(x => _enableSelectedIndexChangeEvent)
+                    .Where(x =>
+                    {
+                        if (!_enableSelectedIndexChangeEvent)
+                        {
+                            DebugHelpers.Trace($"{nameof(_enableSelectedIndexChangeEvent)} works");
+                        }
+                        else
+                        {
+                            DebugHelpers.Trace($"{nameof(_selectedIndexChangeSubscription)} lets pass the event");
+                        }
+
+                        return _enableSelectedIndexChangeEvent;
+                    })
                     .Throttle(SelectedIndexChangeThrottleDuration, MainThreadScheduler.Instance)
                     .ObserveOn(MainThreadScheduler.Instance)
                     .Subscribe(_ => TaskManager.HandleExceptions(FileStatusListView_SelectedIndexChanged, Application.OnThreadException));

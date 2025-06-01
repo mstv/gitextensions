@@ -291,6 +291,7 @@ namespace GitUI.CommandsDialogs
                 // First try the last item explicitly selected
                 if (_lastExplicitlySelectedItem is not null && DiffFiles.SelectFileOrFolder(_lastExplicitlySelectedItem, firstGroupOnly: true, notify: true))
                 {
+                    DebugHelpers.Trace($"_toBeSelectedItemLine = _lastExplicitlySelectedItemLine being {_lastExplicitlySelectedItemLine}");
                     _toBeSelectedItemLine = _lastExplicitlySelectedItemLine;
                     _lastExplicitlySelectedItemLine = null;
                     return;
@@ -556,6 +557,7 @@ namespace GitUI.CommandsDialogs
             }
 
             _isImplicitListSelection = false;
+            DebugHelpers.Trace($"ShowSelectedFile {_toBeSelectedItemLine}");
             ShowSelectedFile(line: _toBeSelectedItemLine);
         }
 
