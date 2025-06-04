@@ -92,28 +92,49 @@ namespace GitCommands.Logging
             IsOnMainThread = isOnMainThread;
         }
 
+        public static string WslGitLogName => "~git";
+        public static string NativeGitLogName => "git";
+
         public string ColumnLine
         {
             get
             {
+                string wslCmd = AppSettings.WslCommand;
+                string wslGitCmd = AppSettings.WslGitCommand;
+                string gitCmd = AppSettings.GitCommand;
+
                 string duration = Duration is null
                     ? "running"
                     : $"{((TimeSpan)Duration).TotalMilliseconds:0,0} ms";
 
                 string fileName;
                 string arguments;
-                if (FileName.StartsWith("wsl "))
+                if (FileName.StartsWith(wslCmd) && FileName.EndsWith(wslGitCmd))
                 {
-                    fileName = "wsl";
+                    // WSL git commands from `GitModule`
+                    // Expect the "wsl" command, the wsl arguments and the "git" command in `FileName` and only the git command arguments in `Arguments`.
+                    fileName = WslGitLogName;
                     arguments = GetGitArgumentsWithoutConfiguration(Arguments);
                 }
-                else if (FileName.EndsWith("git.exe"))
+                else if (FileName.Equals(wslCmd) && Arguments.IndexOf($" {wslGitCmd} ") is int gitIndex && gitIndex >= 0)
                 {
-                    fileName = "git";
+                    // WSL git commands from `FormProcess`
+                    // Expect only the "wsl" command in `FileName`. The rest of the command line in `Arguments`.
+                    // When both `GitModule` and `FormProcess` log the same type of information the same way either this if branch or the one above can be removed.
+                    fileName = WslGitLogName;
+                    const int numSpaces = 2;
+                    arguments = GetGitArgumentsWithoutConfiguration(Arguments.Substring(gitIndex + wslGitCmd.Length + numSpaces));
+                }
+                else if (FileName.EndsWith(gitCmd))
+                {
+                    // All native git commands
+                    // Expect only the native "git" command in `FileName` and git arguments in `Arguments`.
+                    fileName = NativeGitLogName;
                     arguments = GetGitArgumentsWithoutConfiguration(Arguments);
                 }
                 else
                 {
+                    // Anything other than git commands
                     fileName = FileName;
                     arguments = Arguments;
                 }

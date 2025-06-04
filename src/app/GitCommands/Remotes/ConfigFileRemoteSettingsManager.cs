@@ -147,7 +147,25 @@ namespace GitCommands.Remotes
                                    .Select(t => new GitRef(module, null, t[1]))
                                    .FirstOrDefault(h => h.IsHead);
 
-            return remoteHead?.Name;
+            if (remoteHead is not null)
+            {
+                return remoteHead.Name;
+            }
+
+            bool IsSettingForAnyBranch(string setting)
+            {
+                GitRef head = new(module, null, setting);
+                return head.IsHead && head.Name == "*";
+            }
+
+            GitRef remoteAnyHead = remote.Push
+                                   .Select(s => s.Split(Delimiters.Colon))
+                                   .Where(t => t.Length == 2)
+                                   .Where(t => IsSettingForAnyBranch(t[0]))
+                                   .Select(t => new GitRef(module, null, t[1].Replace("*", branch)))
+                                   .FirstOrDefault(h => h.IsHead);
+
+            return remoteAnyHead?.Name;
         }
 
         /// <summary>

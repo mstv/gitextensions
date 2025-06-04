@@ -37,13 +37,11 @@ namespace GitUI
             columnHeader = new ColumnHeader();
             NoFiles = new Label();
             LoadingFiles = new Label();
-            _NO_TRANSLATE_FilterComboBox = new ComboBox();
-            FilterWatermarkLabel = new Label();
+            _NO_TRANSLATE_FilterComboBox = new WatermarkComboBox();
             FilterToolTip = new ToolTip(components);
             lblSplitter = new Label();
             DeleteFilterButton = new Label();
-            cboFindInCommitFilesGitGrep = new ComboBox();
-            lblFindInCommitFilesGitGrepWatermark = new Label();
+            cboFindInCommitFilesGitGrep = new WatermarkComboBox();
             DeleteSearchButton = new Label();
             Toolbar = new ToolStripEx();
             btnCollapseGroups = new ToolStripButton();
@@ -121,6 +119,7 @@ namespace GitUI
             tsmiEditWorkingDirectoryFile = new ToolStripMenuItem();
             tsmiOpenInVisualStudio = new ToolStripMenuItem();
             tsmiSaveAs = new ToolStripMenuItem();
+            tsmiMove = new ToolStripMenuItem();
             tsmiDeleteFile = new ToolStripMenuItem();
             sepFile = new ToolStripSeparator();
             tsmiCopyPaths = new GitUI.CommandsDialogs.Menus.CopyPathsToolStripMenuItem();
@@ -203,25 +202,11 @@ namespace GitUI
             _NO_TRANSLATE_FilterComboBox.Name = "_NO_TRANSLATE_FilterComboBox";
             _NO_TRANSLATE_FilterComboBox.Size = new Size(682, 23);
             _NO_TRANSLATE_FilterComboBox.TabIndex = 5;
+            _NO_TRANSLATE_FilterComboBox.Watermark = "Filter files using a regular expression...";
             _NO_TRANSLATE_FilterComboBox.SelectedIndexChanged += FilterComboBox_SelectedIndexChanged;
             _NO_TRANSLATE_FilterComboBox.TextUpdate += FilterComboBox_TextUpdate;
             _NO_TRANSLATE_FilterComboBox.SizeChanged += FilterComboBox_SizeChanged;
-            _NO_TRANSLATE_FilterComboBox.GotFocus += FilterComboBox_GotFocus;
-            _NO_TRANSLATE_FilterComboBox.LostFocus += FilterComboBox_LostFocus;
             _NO_TRANSLATE_FilterComboBox.MouseEnter += FilterComboBox_MouseEnter;
-            // 
-            // FilterWatermarkLabel
-            // 
-            FilterWatermarkLabel.AutoSize = true;
-            FilterWatermarkLabel.BackColor = SystemColors.Window;
-            FilterWatermarkLabel.ForeColor = SystemColors.GrayText;
-            FilterWatermarkLabel.Location = new Point(0, 48);
-            FilterWatermarkLabel.Name = "FilterWatermarkLabel";
-            FilterWatermarkLabel.Padding = new Padding(2, 3, 2, 0);
-            FilterWatermarkLabel.Size = new Size(210, 18);
-            FilterWatermarkLabel.TabIndex = 6;
-            FilterWatermarkLabel.Text = "Filter files using a regular expression...";
-            FilterWatermarkLabel.Click += FilterWatermarkLabel_Click;
             // 
             // FilterToolTip
             // 
@@ -264,24 +249,10 @@ namespace GitUI
             cboFindInCommitFilesGitGrep.Size = new Size(682, 23);
             cboFindInCommitFilesGitGrep.TabIndex = 0;
             cboFindInCommitFilesGitGrep.Tag = "ToolBar_group:Text search";
+            cboFindInCommitFilesGitGrep.Watermark = "Find in commit files using git-grep regular expression...";
             cboFindInCommitFilesGitGrep.SelectedIndexChanged += cboFindInCommitFilesGitGrep_SelectedIndexChanged;
             cboFindInCommitFilesGitGrep.TextUpdate += cboFindInCommitFilesGitGrep_TextUpdate;
             cboFindInCommitFilesGitGrep.SizeChanged += cboFindInCommitFilesGitGrep_SizeChanged;
-            cboFindInCommitFilesGitGrep.GotFocus += cboFindInCommitFilesGitGrep_GotFocus;
-            cboFindInCommitFilesGitGrep.LostFocus += cboFindInCommitFilesGitGrep_LostFocus;
-            // 
-            // lblFindInCommitFilesGitGrepWatermark
-            // 
-            lblFindInCommitFilesGitGrepWatermark.AutoSize = true;
-            lblFindInCommitFilesGitGrepWatermark.BackColor = SystemColors.Window;
-            lblFindInCommitFilesGitGrepWatermark.ForeColor = SystemColors.GrayText;
-            lblFindInCommitFilesGitGrepWatermark.Location = new Point(0, 25);
-            lblFindInCommitFilesGitGrepWatermark.Name = "lblFindInCommitFilesGitGrepWatermark";
-            lblFindInCommitFilesGitGrepWatermark.Padding = new Padding(2, 3, 2, 2);
-            lblFindInCommitFilesGitGrepWatermark.Size = new Size(302, 20);
-            lblFindInCommitFilesGitGrepWatermark.TabIndex = 3;
-            lblFindInCommitFilesGitGrepWatermark.Text = "Find in commit files using git-grep regular expression...";
-            lblFindInCommitFilesGitGrepWatermark.Click += lblFindInCommitFilesGitGrepWatermark_Click;
             // 
             // DeleteSearchButton
             // 
@@ -660,9 +631,9 @@ namespace GitUI
             // 
             // ItemContextMenu
             // 
-            ItemContextMenu.Items.AddRange(new ToolStripItem[] { tsmiUpdateSubmodule, tsmiResetSubmoduleChanges, tsmiStashSubmoduleChanges, tsmiCommitSubmoduleChanges, sepSubmodule, tsmiStageFile, tsmiUnstageFile, tsmiResetFileTo, tsmiResetChunkOfFile, tsmiInteractiveAdd, tsmiCherryPickChanges, sepGit, tsmiOpenWithDifftool, tsmiOpenWorkingDirectoryFile, tsmiOpenWorkingDirectoryFileWith, tsmiOpenRevisionFile, tsmiOpenRevisionFileWith, tsmiEditWorkingDirectoryFile, tsmiOpenInVisualStudio, tsmiSaveAs, tsmiDeleteFile, sepFile, tsmiCopyPaths, tsmiShowInFolder, sepBrowse, tsmiShowInFileTree, tsmiFilterFileInGrid, tsmiFileHistory, tsmiBlame, tsmiFindFile, tsmiOpenFindInCommitFilesGitGrepDialog, tsmiShowFindInCommitFilesGitGrep, sepIgnore, tsmiAddFileToGitIgnore, tsmiAddFileToGitInfoExclude, tsmiSkipWorktree, tsmiAssumeUnchanged, tsmiStopTracking, sepScripts, tsmiRunScript });
+            ItemContextMenu.Items.AddRange(new ToolStripItem[] { tsmiUpdateSubmodule, tsmiResetSubmoduleChanges, tsmiStashSubmoduleChanges, tsmiCommitSubmoduleChanges, sepSubmodule, tsmiStageFile, tsmiUnstageFile, tsmiResetFileTo, tsmiResetChunkOfFile, tsmiInteractiveAdd, tsmiCherryPickChanges, sepGit, tsmiOpenWithDifftool, tsmiOpenWorkingDirectoryFile, tsmiOpenWorkingDirectoryFileWith, tsmiOpenRevisionFile, tsmiOpenRevisionFileWith, tsmiEditWorkingDirectoryFile, tsmiOpenInVisualStudio, tsmiSaveAs, tsmiMove, tsmiDeleteFile, sepFile, tsmiCopyPaths, tsmiShowInFolder, sepBrowse, tsmiShowInFileTree, tsmiFilterFileInGrid, tsmiFileHistory, tsmiBlame, tsmiFindFile, tsmiOpenFindInCommitFilesGitGrepDialog, tsmiShowFindInCommitFilesGitGrep, sepIgnore, tsmiAddFileToGitIgnore, tsmiAddFileToGitInfoExclude, tsmiSkipWorktree, tsmiAssumeUnchanged, tsmiStopTracking, sepScripts, tsmiRunScript });
             ItemContextMenu.Name = "DiffContextMenu";
-            ItemContextMenu.Size = new Size(296, 788);
+            ItemContextMenu.Size = new Size(296, 832);
             ItemContextMenu.Opening += ItemContextMenu_Opening;
             // 
             // tsmiUpdateSubmodule
@@ -903,6 +874,13 @@ namespace GitUI
             tsmiSaveAs.Text = "S&ave selected as...";
             tsmiSaveAs.Click += SaveAs_Click;
             // 
+            // tsmiMove
+            // 
+            tsmiMove.Name = "tsmiMove";
+            tsmiMove.Size = new Size(295, 22);
+            tsmiMove.Text = "Rena&me / move";
+            tsmiMove.Click += Move_Click;
+            // 
             // tsmiDeleteFile
             // 
             tsmiDeleteFile.Image = Properties.Images.DeleteFile;
@@ -1058,9 +1036,7 @@ namespace GitUI
             ContextMenuStrip = ItemContextMenu;
             Controls.Add(LoadingFiles);
             Controls.Add(NoFiles);
-            Controls.Add(lblFindInCommitFilesGitGrepWatermark);
             Controls.Add(DeleteSearchButton);
-            Controls.Add(FilterWatermarkLabel);
             Controls.Add(DeleteFilterButton);
             Controls.Add(cboFindInCommitFilesGitGrep);
             Controls.Add(FileStatusListView);
@@ -1083,13 +1059,11 @@ namespace GitUI
         private Label NoFiles;
         private Label LoadingFiles;
         private ColumnHeader columnHeader;
-        private ComboBox _NO_TRANSLATE_FilterComboBox;
-        private Label FilterWatermarkLabel;
+        private WatermarkComboBox _NO_TRANSLATE_FilterComboBox;
         private ToolTip FilterToolTip;
         private Label lblSplitter;
         private Label DeleteFilterButton;
-        private ComboBox cboFindInCommitFilesGitGrep;
-        private Label lblFindInCommitFilesGitGrepWatermark;
+        private WatermarkComboBox cboFindInCommitFilesGitGrep;
         private Label DeleteSearchButton;
         private ToolStripEx Toolbar;
         private ToolStripButton btnCollapseGroups;
@@ -1165,6 +1139,7 @@ namespace GitUI
         internal ToolStripMenuItem tsmiEditWorkingDirectoryFile;
         private ToolStripMenuItem tsmiOpenInVisualStudio;
         private ToolStripMenuItem tsmiSaveAs;
+        private ToolStripMenuItem tsmiMove;
         private ToolStripMenuItem tsmiDeleteFile;
         private ToolStripSeparator sepFile;
         private CommandsDialogs.Menus.CopyPathsToolStripMenuItem tsmiCopyPaths;

@@ -96,7 +96,7 @@ namespace GitCommands.Git
             foreach (Match match in matches)
             {
                 string branch = match.Groups["branch"].Value;
-                string remoteRef = (match.Groups["remote_p"].Success && !string.IsNullOrEmpty(match.Groups["remote_p"].Value))
+                string remoteRef = (match.Groups["remote_p"].Success && !string.IsNullOrEmpty(match.Groups["remote_p"].Value) && !match.Groups["gone_p"].Success)
                     ? match.Groups["remote_p"].Value
                     : match.Groups["remote_u"].Value;
                 if (string.IsNullOrEmpty(branch) || string.IsNullOrEmpty(remoteRef))

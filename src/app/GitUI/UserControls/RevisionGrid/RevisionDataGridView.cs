@@ -486,7 +486,7 @@ namespace GitUI.UserControls.RevisionGrid
             }
         }
 
-        public void LoadingCompleted()
+        public void LoadingCompleted(CancellationToken cancellationToken)
         {
             if (_loadedToBeSelectedRevisionsCount < ToBeSelectedObjectIds.Count)
             {
@@ -504,6 +504,8 @@ namespace GitUI.UserControls.RevisionGrid
             // Rows have not been selected yet
             this.InvokeAndForget(async () =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 SetRowCountAndSelectRowsIfReady();
 
                 if (_toBeSelectedGraphIndexesCache.Value.Count == 0)
@@ -519,6 +521,8 @@ namespace GitUI.UserControls.RevisionGrid
                 int firstGraphIndex = _toBeSelectedGraphIndexesCache.Value[0];
                 do
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     rowCount = RowCount;
                     if (firstGraphIndex < rowCount)
                     {
@@ -530,7 +534,7 @@ namespace GitUI.UserControls.RevisionGrid
                     EnsureRowVisible(rowCount - 1);
 
                     // Wait for background thread to load grid rows
-                    await Task.Delay(BackgroundThreadUpdatePeriod);
+                    await Task.Delay(BackgroundThreadUpdatePeriod, cancellationToken);
                 }
                 while (_loadedToBeSelectedRevisionsCount > 0);
 
@@ -541,21 +545,25 @@ namespace GitUI.UserControls.RevisionGrid
                 }
 
                 LoadingFinishedWithRevisions();
-            });
+            }, cancellationToken: cancellationToken);
 
             return;
 
             void LoadingFinishedWithRevisions()
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // As fallback, select the first shown real commit or the first row (which exists here)
                 if (SelectedRows.Count == 0)
                 {
                     int index = GetFallbackRowIndexToSelect();
+                    cancellationToken.ThrowIfCancellationRequested();
                     Rows[index].Selected = true;
                     CurrentCell = Rows[index].Cells[1];
                     EnsureRowVisible(index);
                 }
 
+                cancellationToken.ThrowIfCancellationRequested();
                 MarkAsDataLoadingComplete();
             }
 

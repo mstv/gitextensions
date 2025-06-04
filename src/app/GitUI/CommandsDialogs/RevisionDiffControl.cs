@@ -24,6 +24,7 @@ namespace GitUI.CommandsDialogs
         private RelativePath? _fallbackFollowedFile;
         private RelativePath? _lastExplicitlySelectedItem;
         private int? _lastExplicitlySelectedItemLine;
+        private int? _toBeSelectedItemLine;
         private bool _isImplicitListSelection = false;
 
         public RevisionDiffControl()
@@ -72,7 +73,7 @@ namespace GitUI.CommandsDialogs
                 await SetDiffsAsync(revisions);
                 if (!DiffFiles.SelectedItems.Any())
                 {
-                    DiffFiles.SelectStoredNextItem();
+                    DiffFiles.SelectStoredNextItem(orSelectFirst: true);
                 }
             });
         }
@@ -106,6 +107,7 @@ namespace GitUI.CommandsDialogs
             OpenWorkingDirectoryFile = 20,
             OpenInVisualStudio = 21,
             AddFileToGitIgnore = 22,
+            RenameMove = 23,
         }
 
         public bool ExecuteCommand(Command cmd)
@@ -152,6 +154,7 @@ namespace GitUI.CommandsDialogs
                 case Command.OpenWorkingDirectoryFile:
                 case Command.OpenInVisualStudio:
                 case Command.AddFileToGitIgnore:
+                case Command.RenameMove:
                     return DiffFiles.ExecuteCommand((Command)cmd);
 
                 default: return base.ExecuteCommand(cmd);
@@ -271,10 +274,13 @@ namespace GitUI.CommandsDialogs
 
                 await DiffFiles.SetDiffsAsync(revisions, _revisionGridInfo.CurrentCheckout, cancellationToken);
 
+                // Warning: Do not directly *show* a file here by means of "notify: false" and ShowSelectedFile()!
+                // Reason: There is a pending throttled SelectedIndexChanged notification (from clearing the selection in SetDiffsAsync) which will update a second time and can discard the line number.
+
                 // First try the last item explicitly selected
-                if (_lastExplicitlySelectedItem is not null && DiffFiles.SelectFileOrFolder(_lastExplicitlySelectedItem, firstGroupOnly: true, notify: false))
+                if (_lastExplicitlySelectedItem is not null && DiffFiles.SelectFileOrFolder(_lastExplicitlySelectedItem, firstGroupOnly: true, notify: true))
                 {
-                    ShowSelectedFile(line: _lastExplicitlySelectedItemLine);
+                    _toBeSelectedItemLine = _lastExplicitlySelectedItemLine;
                     _lastExplicitlySelectedItemLine = null;
                     return;
                 }
@@ -329,6 +335,7 @@ namespace GitUI.CommandsDialogs
             NestedSplitterManager nested = new(splitterManager, Name);
             nested.AddSplitter(DiffSplitContainer);
             nested.AddSplitter(LeftSplitContainer);
+            BlameControl.InitSplitterManager(nested);
         }
 
         public SplitContainer HorizontalSplitter => DiffSplitContainer;
@@ -454,11 +461,12 @@ namespace GitUI.CommandsDialogs
                 DiffText.Focus();
             }
 
-            await DiffText.ViewChangesAsync(DiffFiles.SelectedItem,
+            FileStatusItem? item = DiffFiles.SelectedItem;
+            await DiffText.ViewChangesAsync(item,
                 line: line,
                 forceFileView: IsFileTreeMode && !DiffFiles.FindInCommitFilesGitGrepActive,
                 openWithDiffTool: IsFileTreeMode ? null : DiffFiles.tsmiDiffFirstToSelected.PerformClick,
-                additionalCommandInfo: (DiffFiles.SelectedItem?.Item?.IsRangeDiff is true) && Module.GitVersion.SupportRangeDiffPath ? _pathFilter() : "",
+                additionalCommandInfo: (item?.Item?.IsRangeDiff is true) && Module.GitVersion.SupportRangeDiffPath ? _pathFilter() : "",
                 cancellationToken: _viewChangesSequence.Next());
         }
 
@@ -526,7 +534,8 @@ namespace GitUI.CommandsDialogs
             }
 
             _isImplicitListSelection = false;
-            ShowSelectedFile();
+            ShowSelectedFile(line: _toBeSelectedItemLine);
+            _toBeSelectedItemLine = null;
         }
 
         private void DiffFiles_DoubleClick(object sender, EventArgs e)
