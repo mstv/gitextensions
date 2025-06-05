@@ -303,6 +303,10 @@ public class MultiSelectTreeView : NativeTreeView
         if (_previousSelectedNode != selectedNode)
         {
             _previousSelectedNode = selectedNode;
+            if (selectedNode is not null)
+            {
+                DebugHelpers.Trace($"single-node-selection event: {selectedNode}");
+            }
         }
         else
         {
