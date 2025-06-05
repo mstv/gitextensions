@@ -92,13 +92,21 @@ namespace GitCommands.Logging
             IsOnMainThread = isOnMainThread;
         }
 
-        public static string WslGitLogName => "~git";
-        public static string NativeGitLogName => "git";
+        // Log display name for the git command when run through WSL.
+        internal const string WslGitLogName = "~git";
+
+        // Log display name for the git command when run natively.
+        internal const string NativeGitLogName = "git";
 
         public string ColumnLine
         {
             get
             {
+                // The git command is handled specially as what we are really interested in is the - non configuration - arguments it was run with.
+                // So when a git command is run the displayed command is stripped from its path and config arguments and regardless of the actual
+                // git executable name the log will display only `NativeGitLogName` alternatively `WslGitLogName` when the git command is run via WSL.
+                // All other commands are displayed as is without any special treatment.
+
                 string wslCmd = AppSettings.WslCommand;
                 string wslGitCmd = AppSettings.WslGitCommand;
                 string gitCmd = AppSettings.GitCommand;
@@ -111,24 +119,26 @@ namespace GitCommands.Logging
                 string arguments;
                 if (FileName.StartsWith(wslCmd) && FileName.EndsWith(wslGitCmd))
                 {
-                    // WSL git commands from `GitModule`
-                    // Expect the "wsl" command, the wsl arguments and the "git" command in `FileName` and only the git command arguments in `Arguments`.
+                    // WSL git commands set in `GitModule`
+                    // E.g. `FileName` = "wsl <wsl args> git", `Arguments` = "<git args>".
                     fileName = WslGitLogName;
                     arguments = GetGitArgumentsWithoutConfiguration(Arguments);
                 }
                 else if (FileName.Equals(wslCmd) && Arguments.IndexOf($" {wslGitCmd} ") is int gitIndex && gitIndex >= 0)
                 {
-                    // WSL git commands from `FormProcess`
-                    // Expect only the "wsl" command in `FileName`. The rest of the command line in `Arguments`.
-                    // When both `GitModule` and `FormProcess` log the same type of information the same way either this if branch or the one above can be removed.
+                    // WSL git commands set in `FormProcess`
+                    // E.g. `FileName` = "wsl". `Arguments` = "<wsl args> git <git args>".
+                    //
+                    // When both `GitModule` and `FormProcess` instantiates `CommandLogEntry` with the same type of information
+                    // in `fileName` and `arguments` this if branch and the one above can be merged.
                     fileName = WslGitLogName;
                     const int numSpaces = 2;
                     arguments = GetGitArgumentsWithoutConfiguration(Arguments.Substring(gitIndex + wslGitCmd.Length + numSpaces));
                 }
                 else if (FileName.EndsWith(gitCmd))
                 {
-                    // All native git commands
-                    // Expect only the native "git" command in `FileName` and git arguments in `Arguments`.
+                    // All natively run git commands
+                    // E.g. `FileName` = "git", `Arguments` = "<git args>".
                     fileName = NativeGitLogName;
                     arguments = GetGitArgumentsWithoutConfiguration(Arguments);
                 }
