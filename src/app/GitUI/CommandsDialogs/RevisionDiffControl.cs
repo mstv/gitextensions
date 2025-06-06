@@ -264,8 +264,10 @@ namespace GitUI.CommandsDialogs
         private async Task SetDiffsAsync(IReadOnlyList<GitRevision> revisions)
         {
             Validates.NotNull(_revisionGridInfo);
+            DebugHelpers.Trace("_setDiffSequence.Next()");
             CancellationToken cancellationToken = _setDiffSequence.Next();
 
+            DebugHelpers.Trace("_viewChangesSequence.CancelCurrent()");
             _viewChangesSequence.CancelCurrent();
             await this.SwitchToMainThreadAsync(cancellationToken);
             DebugHelpers.Trace("clearing");
@@ -473,6 +475,7 @@ namespace GitUI.CommandsDialogs
             }
 
             FileStatusItem? item = DiffFiles.SelectedItem;
+            DebugHelpers.Trace("_viewChangesSequence.Next()");
             await DiffText.ViewChangesAsync(item,
                 line: line,
                 forceFileView: IsFileTreeMode && !DiffFiles.FindInCommitFilesGitGrepActive,
