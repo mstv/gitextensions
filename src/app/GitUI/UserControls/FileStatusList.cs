@@ -823,6 +823,7 @@ namespace GitUI
 
         public void SetDiffs(IReadOnlyList<GitRevision> revisions)
         {
+            DebugHelpers.Trace("_reloadSequence.Next()");
             CancellationToken cancellationToken = _reloadSequence.Next();
             FileStatusListLoading();
             UpdateToolbar(revisions);
@@ -1998,6 +1999,7 @@ namespace GitUI
         {
             SetDeleteSearchButtonVisibility();
 
+            DebugHelpers.Trace("_reloadSequence.Next()");
             CancellationToken cancellationToken = _reloadSequence.Next();
             ThreadHelper.FileAndForget(async () =>
             {
