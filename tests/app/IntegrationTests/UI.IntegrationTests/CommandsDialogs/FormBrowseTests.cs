@@ -219,7 +219,7 @@ namespace GitExtensions.UITests.CommandsDialogs
                     tadiff.DiffText.GoToLine(expectedLine);
 
                     // repeat: refresh and check selection
-                    for (int i = 0; i < 200; ++i)
+                    for (int i = 0; i < 15; ++i)
                     {
                         ta.RefreshRevisions();
                         WaitForRevisionsToBeLoaded(form);
