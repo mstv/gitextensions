@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System.ComponentModel;
+using GitExtensions.Extensibility;
 using GitExtUtils.GitUI;
 using Microsoft;
 
@@ -224,10 +225,12 @@ public class MultiSelectTreeView : NativeTreeView
             {
                 newFocusedNode.Expand();
             }
+
+            _toBeFocusedNode = newFocusedNode;
+            return;
         }
 
         UpdateSelection(newFocusedNode, replace: !modifierKeys.HasFlag(Keys.Control), addRange: modifierKeys.HasFlag(Keys.Shift));
-        _toBeFocusedNode = newFocusedNode;
     }
 
     protected override void OnMouseUp(MouseEventArgs e)
@@ -256,13 +259,18 @@ public class MultiSelectTreeView : NativeTreeView
             }
 
             Keys modifierKeys = ModifierKeys;
-            if (SelectedNodes.Count > 1
-                && e.Button == MouseButtons.Left
+            if (e.Button == MouseButtons.Left
                 && modifierKeys == Keys.None
                 && HitTest(e.Location).Node is TreeNode newFocusedNode
                 && !ShallHandleRootIconClick(e.X, newFocusedNode, modifierKeys))
             {
-                if (FocusedNode != newFocusedNode)
+                // Explicit click on the same single item needs to be notified upstream.
+                // In case of multi-selection, the clicked item becomes the single selection.
+                if (SelectedNodes.Count == 1)
+                {
+                    OnSelectionChanged();
+                }
+                else if (FocusedNode != newFocusedNode)
                 {
                     SelectedNode = newFocusedNode;
                 }
@@ -282,11 +290,30 @@ public class MultiSelectTreeView : NativeTreeView
         }
     }
 
+    private TreeNode? _previousSelectedNode = null;
+
     private void OnSelectionChanged()
     {
         if (SelectedNodes.Count <= 1 && FocusedNode is TreeNode focusedNode)
         {
             _multiselectionStartNode = focusedNode;
+        }
+
+        TreeNode? selectedNode = SelectedNodes.Count != 1 ? null : SelectedNodes.Single();
+        if (_previousSelectedNode != selectedNode)
+        {
+            _previousSelectedNode = selectedNode;
+            if (selectedNode is not null)
+            {
+                DebugHelpers.Trace($"single-node-selection event: {selectedNode}");
+            }
+        }
+        else
+        {
+            if (selectedNode is not null)
+            {
+                DebugHelpers.Trace($"identical single-node-selection event: {selectedNode}");
+            }
         }
 
         SelectedNodesChanged?.Invoke(this, EventArgs.Empty);

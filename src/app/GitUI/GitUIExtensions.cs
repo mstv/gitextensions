@@ -50,6 +50,7 @@ namespace GitUI
                     return;
                 }
 
+                DebugHelpers.Trace("clearing");
                 await fileViewer.ClearAsync();
                 return;
             }

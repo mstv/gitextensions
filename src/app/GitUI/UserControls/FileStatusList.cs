@@ -348,6 +348,7 @@ namespace GitUI
         {
             if (FileStatusListView.Nodes.Count == 0)
             {
+                DebugHelpers.Trace($"{relativePath} not found because no nodes");
                 return false;
             }
 
@@ -361,10 +362,12 @@ namespace GitUI
                 })
                 {
                     SetSelectedItem(node, notify);
+                    DebugHelpers.Trace($"{relativePath} found");
                     return true;
                 }
             }
 
+            DebugHelpers.Trace($"{relativePath} no such node");
             return false;
         }
 
@@ -823,6 +826,7 @@ namespace GitUI
 
         public void SetDiffs(IReadOnlyList<GitRevision> revisions)
         {
+            DebugHelpers.Trace("_reloadSequence.Next()");
             CancellationToken cancellationToken = _reloadSequence.Next();
             FileStatusListLoading();
             UpdateToolbar(revisions);
@@ -1215,7 +1219,19 @@ namespace GitUI
                 _selectedIndexChangeSubscription ??= Observable.FromEventPattern(
                         h => FileStatusListView.SelectedNodesChanged += h,
                         h => FileStatusListView.SelectedNodesChanged -= h)
-                    .Where(x => _enableSelectedIndexChangeEvent)
+                    .Where(x =>
+                    {
+                        if (!_enableSelectedIndexChangeEvent)
+                        {
+                            DebugHelpers.Trace($"{nameof(_enableSelectedIndexChangeEvent)} works");
+                        }
+                        else
+                        {
+                            DebugHelpers.Trace($"{nameof(_selectedIndexChangeSubscription)} lets pass the event");
+                        }
+
+                        return _enableSelectedIndexChangeEvent;
+                    })
                     .Throttle(SelectedIndexChangeThrottleDuration, MainThreadScheduler.Instance)
                     .ObserveOn(MainThreadScheduler.Instance)
                     .Subscribe(_ => TaskManager.HandleExceptions(FileStatusListView_SelectedIndexChanged, Application.OnThreadException));
@@ -1828,6 +1844,7 @@ namespace GitUI
 
         private void FileStatusListView_SelectedIndexChanged()
         {
+            DebugHelpers.Trace($"SelectedItem: {SelectedGitItem?.Name}");
             SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -1986,6 +2003,7 @@ namespace GitUI
         {
             SetDeleteSearchButtonVisibility();
 
+            DebugHelpers.Trace("_reloadSequence.Next()");
             CancellationToken cancellationToken = _reloadSequence.Next();
             ThreadHelper.FileAndForget(async () =>
             {

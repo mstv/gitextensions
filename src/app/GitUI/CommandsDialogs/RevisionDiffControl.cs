@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using GitCommands;
 using GitExtensions.Extensibility;
@@ -24,8 +25,10 @@ namespace GitUI.CommandsDialogs
         private RelativePath? _fallbackFollowedFile;
         private RelativePath? _lastExplicitlySelectedItem;
         private int? _lastExplicitlySelectedItemLine;
+        private RelativePath? _prevDiffItem;
         private int? _toBeSelectedItemLine;
         private bool _isImplicitListSelection = false;
+        private bool _updatingDiffs = false;
 
         public RevisionDiffControl()
         {
@@ -67,7 +70,11 @@ namespace GitUI.CommandsDialogs
                 return;
             }
 
-            DiffFiles.StoreNextItemToSelect();
+            if (!_updatingDiffs)
+            {
+                DiffFiles.StoreNextItemToSelect();
+            }
+
             DiffFiles.InvokeAndForget(async () =>
             {
                 await SetDiffsAsync(revisions);
@@ -221,6 +228,7 @@ namespace GitUI.CommandsDialogs
             }
 
             bool found = DiffFiles.SelectFileOrFolder(relativePath, notify: false);
+            DebugHelpers.Trace($"sets _lastExplicitlySelectedItem = {relativePath}");
             _lastExplicitlySelectedItem = relativePath;
             _lastExplicitlySelectedItemLine = line;
 
@@ -259,20 +267,28 @@ namespace GitUI.CommandsDialogs
         private async Task SetDiffsAsync(IReadOnlyList<GitRevision> revisions)
         {
             Validates.NotNull(_revisionGridInfo);
+            DebugHelpers.Trace("_setDiffSequence.Next()");
             CancellationToken cancellationToken = _setDiffSequence.Next();
 
+            DebugHelpers.Trace("_viewChangesSequence.CancelCurrent()");
             _viewChangesSequence.CancelCurrent();
             await this.SwitchToMainThreadAsync(cancellationToken);
+            DebugHelpers.Trace("clearing");
             await DiffText.ClearAsync();
 
-            RelativePath? prevDiffItem = DiffFiles.SelectedFolder
-                ?? (DiffFiles.SelectedItem is FileStatusItem prevSelectedItem && DiffFiles.FirstGroupItems.Contains(prevSelectedItem) ? RelativePath.From(prevSelectedItem.Item.Name) : null);
+            if (!_updatingDiffs)
+            {
+                _updatingDiffs = true;
+                _prevDiffItem = DiffFiles.SelectedFolder
+                    ?? (DiffFiles.SelectedItem is FileStatusItem prevSelectedItem && DiffFiles.FirstGroupItems.Contains(prevSelectedItem) ? RelativePath.From(prevSelectedItem.Item.Name) : null);
+            }
 
             try
             {
                 _isImplicitListSelection = true;
 
                 await DiffFiles.SetDiffsAsync(revisions, _revisionGridInfo.CurrentCheckout, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // Warning: Do not directly *show* a file here by means of "notify: false" and ShowSelectedFile()!
                 // Reason: There is a pending throttled SelectedIndexChanged notification (from clearing the selection in SetDiffsAsync) which will update a second time and can discard the line number.
@@ -280,6 +296,7 @@ namespace GitUI.CommandsDialogs
                 // First try the last item explicitly selected
                 if (_lastExplicitlySelectedItem is not null && DiffFiles.SelectFileOrFolder(_lastExplicitlySelectedItem, firstGroupOnly: true, notify: true))
                 {
+                    DebugHelpers.Trace($"_toBeSelectedItemLine = _lastExplicitlySelectedItemLine being {_lastExplicitlySelectedItemLine}");
                     _toBeSelectedItemLine = _lastExplicitlySelectedItemLine;
                     _lastExplicitlySelectedItemLine = null;
                     return;
@@ -292,7 +309,7 @@ namespace GitUI.CommandsDialogs
                 }
 
                 // Third try to restore the previous item
-                if (prevDiffItem is not null && DiffFiles.SelectFileOrFolder(prevDiffItem, firstGroupOnly: true, notify: true))
+                if (_prevDiffItem is not null && DiffFiles.SelectFileOrFolder(_prevDiffItem, firstGroupOnly: true, notify: true))
                 {
                     return;
                 }
@@ -301,10 +318,18 @@ namespace GitUI.CommandsDialogs
             {
                 ThreadHelper.FileAndForget(async () =>
                 {
-                    // DiffFiles_SelectedIndexChanged is called asynchronously with throttling. _isImplicitListSelection must not be reset before.
-                    await Task.Delay(FileStatusList.SelectedIndexChangeThrottleDuration + TimeSpan.FromSeconds(1), cancellationToken);
-                    await this.SwitchToMainThreadAsync(cancellationToken);
-                    _isImplicitListSelection = false;
+                    try
+                    {
+                        // DiffFiles_SelectedIndexChanged is called asynchronously with throttling. _isImplicitListSelection must not be reset before.
+                        await Task.Delay(FileStatusList.SelectedIndexChangeThrottleDuration + TimeSpan.FromSeconds(1), cancellationToken);
+                        await this.SwitchToMainThreadAsync(cancellationToken);
+                        DebugHelpers.Trace($"resetting _isImplicitListSelection, was {_isImplicitListSelection}");
+                        _isImplicitListSelection = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelpers.Trace($"_isImplicitListSelection canceled? {ex.Message}");
+                    }
                 });
             }
         }
@@ -462,6 +487,7 @@ namespace GitUI.CommandsDialogs
             }
 
             FileStatusItem? item = DiffFiles.SelectedItem;
+            DebugHelpers.Trace("_viewChangesSequence.Next()");
             await DiffText.ViewChangesAsync(item,
                 line: line,
                 forceFileView: IsFileTreeMode && !DiffFiles.FindInCommitFilesGitGrepActive,
@@ -475,12 +501,16 @@ namespace GitUI.CommandsDialogs
         /// </summary>
         private void ShowSelectedFile(bool ensureNoSwitchToFilter = false, int? line = null)
         {
-            DiffText.InvokeAndForget(() =>
-                DiffFiles.SelectedFolder is RelativePath relativePath
+            DiffText.InvokeAndForget(async () =>
+            {
+                await (DiffFiles.SelectedFolder is RelativePath relativePath
                     ? ShowSelectedFolderAsync(relativePath)
                     : DiffFiles.tsmiBlame.Checked
                         ? ShowSelectedFileBlameAsync(ensureNoSwitchToFilter, line)
                         : ShowSelectedFileDiffAsync(ensureNoSwitchToFilter, line));
+                _toBeSelectedItemLine = null;
+                _updatingDiffs = false;
+            });
         }
 
         private Task ShowSelectedFolderAsync(RelativePath relativePath)
@@ -516,6 +546,14 @@ namespace GitUI.CommandsDialogs
 
         private void DiffFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (DiffFiles.AllItemsCount == 0)
+            {
+                BlameControl.Visible = false;
+                DiffText.Visible = true;
+                DiffText.Clear();
+                return;
+            }
+
             // Switch to diff if the selection changes (but not for file tree mode)
             GitItemStatus? item = DiffFiles.SelectedGitItem;
             if (!IsFileTreeMode && DiffFiles.tsmiBlame.Checked && item is not null && item.Name != _selectedBlameItem?.Name)
@@ -534,8 +572,8 @@ namespace GitUI.CommandsDialogs
             }
 
             _isImplicitListSelection = false;
+            DebugHelpers.Trace($"ShowSelectedFile {_toBeSelectedItemLine}");
             ShowSelectedFile(line: _toBeSelectedItemLine);
-            _toBeSelectedItemLine = null;
         }
 
         private void DiffFiles_DoubleClick(object sender, EventArgs e)
@@ -560,6 +598,7 @@ namespace GitUI.CommandsDialogs
         {
             if (DiffFiles.GitItemStatuses is null || !DiffFiles.GitItemStatuses.Any())
             {
+                DebugHelpers.Trace("clearing");
                 DiffText.Clear();
             }
         }
@@ -654,6 +693,7 @@ namespace GitUI.CommandsDialogs
 
         bool IRevisionGridFileUpdate.SelectFileInRevision(ObjectId commitId, RelativePath filename)
         {
+            DebugHelpers.Trace($"sets _lastExplicitlySelectedItem = {filename}");
             _lastExplicitlySelectedItem = filename;
             _lastExplicitlySelectedItemLine = null;
             return _revisionGridUpdate.SetSelectedRevision(commitId);
@@ -671,6 +711,8 @@ namespace GitUI.CommandsDialogs
                 _control = control;
             }
 
+            public FileStatusList DiffFiles => _control.DiffFiles;
+            public Editor.FileViewer DiffText => _control.DiffText;
             public SplitContainer DiffSplitContainer => _control.DiffSplitContainer;
         }
     }
