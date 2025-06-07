@@ -2,6 +2,7 @@
 using CommonTestUtils;
 using FluentAssertions;
 using GitCommands;
+using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitUI;
 using GitUI.CommandsDialogs;
@@ -219,6 +220,7 @@ namespace GitExtensions.UITests.CommandsDialogs
                     tadiff.DiffText.GoToLine(expectedLine);
 
                     // repeat: refresh and check selection
+                    DebugHelpers.Trace("##### test starts #####");
                     for (int i = 0; i < 200; ++i)
                     {
                         ta.RefreshRevisions();
