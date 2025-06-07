@@ -348,6 +348,7 @@ namespace GitUI
         {
             if (FileStatusListView.Nodes.Count == 0)
             {
+                DebugHelpers.Trace($"{relativePath} not found because no nodes");
                 return false;
             }
 
@@ -361,10 +362,12 @@ namespace GitUI
                 })
                 {
                     SetSelectedItem(node, notify);
+                    DebugHelpers.Trace($"{relativePath} found");
                     return true;
                 }
             }
 
+            DebugHelpers.Trace($"{relativePath} no such node");
             return false;
         }
 
@@ -1863,6 +1866,7 @@ namespace GitUI
 
         private void FileStatusListView_SelectedIndexChanged()
         {
+            DebugHelpers.Trace($"SelectedItem: {SelectedGitItem?.Name}");
             SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
         }
 

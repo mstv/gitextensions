@@ -226,6 +226,7 @@ namespace GitUI.CommandsDialogs
             }
 
             bool found = DiffFiles.SelectFileOrFolder(relativePath, notify: false);
+            DebugHelpers.Trace($"sets _lastExplicitlySelectedItem = {relativePath}");
             _lastExplicitlySelectedItem = relativePath;
             _lastExplicitlySelectedItemLine = line;
 
@@ -315,10 +316,18 @@ namespace GitUI.CommandsDialogs
             {
                 ThreadHelper.FileAndForget(async () =>
                 {
-                    // DiffFiles_SelectedIndexChanged is called asynchronously with throttling. _isImplicitListSelection must not be reset before.
-                    await Task.Delay(FileStatusList.SelectedIndexChangeThrottleDuration + TimeSpan.FromSeconds(1), cancellationToken);
-                    await this.SwitchToMainThreadAsync(cancellationToken);
-                    _isImplicitListSelection = false;
+                    try
+                    {
+                        // DiffFiles_SelectedIndexChanged is called asynchronously with throttling. _isImplicitListSelection must not be reset before.
+                        await Task.Delay(FileStatusList.SelectedIndexChangeThrottleDuration + TimeSpan.FromSeconds(1), cancellationToken);
+                        await this.SwitchToMainThreadAsync(cancellationToken);
+                        DebugHelpers.Trace($"resetting _isImplicitListSelection, was {_isImplicitListSelection}");
+                        _isImplicitListSelection = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugHelpers.Trace($"_isImplicitListSelection canceled? {ex.Message}");
+                    }
                 });
             }
         }
@@ -678,6 +687,7 @@ namespace GitUI.CommandsDialogs
 
         bool IRevisionGridFileUpdate.SelectFileInRevision(ObjectId commitId, RelativePath filename)
         {
+            DebugHelpers.Trace($"sets _lastExplicitlySelectedItem = {filename}");
             _lastExplicitlySelectedItem = filename;
             _lastExplicitlySelectedItemLine = null;
             return _revisionGridUpdate.SetSelectedRevision(commitId);
