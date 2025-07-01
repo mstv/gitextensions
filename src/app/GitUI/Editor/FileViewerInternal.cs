@@ -487,7 +487,8 @@ namespace GitUI.Editor
                     {
                         if (fromTop && IsLineVisible(line))
                         {
-                            // Keep FirstVisibleLine
+                            // Keep FirstVisibleLine, but clamp it
+                            FirstVisibleLine = FirstVisibleLine;
                         }
                         else
                         {
