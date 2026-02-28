@@ -1381,6 +1381,7 @@ public static partial class AppSettings
     }
 
     public static ISetting<bool> ShowFindInCommitFilesGitGrep { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowFindInCommitFilesGitGrep), false);
+    public static ISetting<bool> ShowRevisionGridTooltips { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowRevisionGridTooltips), true);
 
     public static bool ShowAvailableDiffTools
     {

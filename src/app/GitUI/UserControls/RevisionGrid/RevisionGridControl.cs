@@ -205,6 +205,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
         };
 
         _toolTipProvider = new RevisionGridToolTipProvider(_gridView);
+        _toolTipProvider.ShowRevisionGridTooltips = AppSettings.ShowRevisionGridTooltips.Value;
 
         _quickSearchProvider = new QuickSearchProvider(_gridView, () => Module.WorkingDir);
 
