@@ -1,14 +1,18 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using GitCommands.Git.Extensions;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils;
+using GitUI;
 using GitUIPluginInterfaces;
 
 namespace GitCommands;
 
 public interface ICommitDataManager
 {
+    event EventHandler<GitRevision> RevisionDetailsLoaded;
+
     /// <summary>
     /// Converts a <see cref="GitRevision"/> object into a <see cref="CommitData"/>.
     /// </summary>
@@ -29,13 +33,19 @@ public interface ICommitDataManager
     CommitData? GetCommitData(string commitId, bool includeNotes = false);
 
     /// <summary>
-    /// Updates the <see cref="CommitData.Body"/> (commit message) property of <paramref name="commitData"/>.
+    /// Requests background loading of <see cref="GitRevision.Body"/> (commit message) and <see cref="GitRevision.Notes"/> properties of <paramref name="revision"/>.
     /// </summary>
-    void UpdateBody(CommitData commitData, bool appendNotesOnly, out string? error);
+    void RequestDetails(GitRevision revision);
+
+    /// <summary>
+    /// Updates the <see cref="GitRevision.Body"/> (commit message) and <see cref="GitRevision.Notes"/> properties of <paramref name="revision"/>.
+    /// </summary>
+    void UpdateBodyAndNotes(GitRevision revision);
 }
 
 public sealed class CommitDataManager : ICommitDataManager
 {
+    private readonly CancellationTokenSequence _cancellationTokenSequence = new();
     private readonly Func<IGitModule> _getModule;
 
     public CommitDataManager(Func<IGitModule> getModule)
@@ -43,33 +53,55 @@ public sealed class CommitDataManager : ICommitDataManager
         _getModule = getModule;
     }
 
-    /// <inheritdoc />
-    public void UpdateBody(CommitData commitData, bool appendNotesOnly, out string? error)
+    public event EventHandler<GitRevision>? RevisionDetailsLoaded;
+
+    public void RequestDetails(GitRevision revision)
     {
+        CancellationToken cancellationToken = _cancellationTokenSequence.Next();
+        ThreadHelper.FileAndForget(async () =>
+        {
+            await Task.Delay(millisecondsDelay: 100, cancellationToken);
+            if (revision.Notes is null || revision.Body is null)
+            {
+                UpdateBodyAndNotes(revision);
+            }
+        });
+    }
+
+    public void UpdateBodyAndNotes(GitRevision revision)
+    {
+        bool appendNotesOnly = revision.Body is not null;
         const string BodyAndNotesFormat = $"%B{RevisionReader.NotesFormat}";
         const string NotesFormat = "%N";
 
-        if (!TryGetCommitLog(commitData.ObjectId.ToString(), appendNotesOnly ? NotesFormat : BodyAndNotesFormat, out error, out string? data, cache: false))
+        if (!TryGetCommitLog(revision.ObjectId.ToString(), appendNotesOnly ? NotesFormat : BodyAndNotesFormat, out string? error, out string? data, cache: false))
         {
+            Trace.WriteLine($"Exception in {nameof(UpdateBodyAndNotes)}: {error}");
             return;
         }
 
         // Commit message is not re-encoded by Git when format is given
         data = GetModule().ReEncodeCommitMessage(data.Replace('\v', '\n'));
 
-        if (appendNotesOnly)
+        try
         {
-            commitData.Notes = data;
-            return;
-        }
+            if (appendNotesOnly)
+            {
+                revision.Notes = data;
+                return;
+            }
 
-        int splitPos = data.LastIndexOf(RevisionReader.NotesMarkerWithoutTrailingLF);
-        commitData.Body = data[0..splitPos].TrimEnd();
-        splitPos += RevisionReader.NotesMarkerWithoutTrailingLF.Length + /*LF*/ 1;
-        commitData.Notes = splitPos >= data.Length ? "" : data[splitPos..];
+            int splitPos = data.LastIndexOf(RevisionReader.NotesMarkerWithoutTrailingLF);
+            revision.Body = data[0..splitPos].TrimEnd();
+            splitPos += RevisionReader.NotesMarkerWithoutTrailingLF.Length + /*LF*/ 1;
+            revision.Notes = splitPos >= data.Length ? "" : data[splitPos..];
+        }
+        finally
+        {
+            RevisionDetailsLoaded?.Invoke(this, revision);
+        }
     }
 
-    /// <inheritdoc />
     public CommitData? GetCommitData(string commitId, bool includeNotes = false)
     {
         GitRevision? revision = new RevisionReader(GetModule(), allBodies: true).GetRevision(commitId, hasNotes: includeNotes, throwOnError: false, cancellationToken: default);
@@ -78,7 +110,6 @@ public sealed class CommitDataManager : ICommitDataManager
             : null;
     }
 
-    /// <inheritdoc />
     public CommitData CreateFromRevision(GitRevision revision, IReadOnlyList<ObjectId>? children)
     {
         ArgumentNullException.ThrowIfNull(revision);

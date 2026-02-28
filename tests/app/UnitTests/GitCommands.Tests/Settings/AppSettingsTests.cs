@@ -287,6 +287,7 @@ internal sealed class AppSettingsTests
             yield return (properties[nameof(AppSettings.HideMergeCommits)], false, false, false);
             yield return (properties[nameof(AppSettings.ShowTags)], true, false, false);
             yield return (properties[nameof(AppSettings.ShowRevisionGridGraphColumn)], true, false, false);
+            yield return (properties[nameof(AppSettings.ShowRevisionGridTooltips)], true, isNotNullable, isISetting);
             yield return (properties[nameof(AppSettings.ShowAuthorAvatarColumn)], true, false, false);
             yield return (properties[nameof(AppSettings.ShowAuthorNameColumn)], true, false, false);
             yield return (properties[nameof(AppSettings.ShowDateColumn)], true, false, false);
@@ -361,7 +362,7 @@ internal sealed class AppSettingsTests
             yield return (properties[nameof(AppSettings.CheckForUpdates)], true, false, false);
             yield return (properties[nameof(AppSettings.CheckForReleaseCandidates)], false, false, false);
             yield return (properties[nameof(AppSettings.OmitUninterestingDiff)], false, false, false);
-            yield return (properties[nameof(AppSettings.UseConsoleEmulatorForCommands)], true, false, false);
+            yield return (properties[nameof(AppSettings.UseConsoleEmulatorForCommands)], false, isNotNullable, isISetting);
             yield return (properties[nameof(AppSettings.RefsSortBy)], GitRefsSortBy.Default, false, false);
             yield return (properties[nameof(AppSettings.RefsSortOrder)], GitRefsSortOrder.Descending, false, false);
             yield return (properties[nameof(AppSettings.DiffListSorting)], DiffListSortType.FilePath, false, false);

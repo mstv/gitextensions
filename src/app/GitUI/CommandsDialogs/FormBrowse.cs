@@ -250,6 +250,9 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     internal FormBrowse(IGitUICommands commands, BrowseArguments args, SettingsSource settingsSource)
         : base(commands)
     {
+        _commitDataManager = new CommitDataManager(() => Module);
+        _commitDataManager.RevisionDetailsLoaded += (_, _) => RevisionGrid.Invalidate(invalidateChildren: true);
+
         _splitterManager = new(settingsSource);
 
         SystemEvents.SessionEnding += (sender, args) => SaveApplicationSettings();
@@ -308,7 +311,6 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         UICommands.BrowseRepo = this;
 
         _controller = new GpgInfoProvider(new GitGpgController(() => Module));
-        _commitDataManager = new CommitDataManager(() => Module);
 
         _submoduleStatusProvider = commands.GetRequiredService<ISubmoduleStatusProvider>();
         _submoduleStatusProvider.StatusUpdating += SubmoduleStatusProvider_StatusUpdating;
@@ -719,7 +721,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
             return;
         }
 
-        RevisionGrid.PerformRefreshRevisions(getRefs, forceRefresh: true);
+        RevisionGrid.PerformRefreshRevisions(getRefs, forceRefreshRefs: true);
 
         InternalInitialize();
         ToolStripFilters.RefreshRevisionFunction(getRefs);
@@ -1690,7 +1692,6 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
         HideVariableMainMenuItems();
         PluginRegistry.Unregister(UICommands);
-        RevisionGrid.OnRepositoryChanged();
         _gitStatusMonitor.InvalidateGitWorkingDirectoryStatus();
         _submoduleStatusProvider.Init();
 
@@ -1700,43 +1701,50 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         e.GitModule.ResetRemoteColors();
 
         UICommands = UICommands.WithGitModule(e.GitModule);
+        RevisionGrid.OnRepositoryChanged();
         if (Module.IsValidGitWorkingDir())
         {
             RevisionGrid.SuspendRefreshRevisions();
-            string path = Module.WorkingDir;
-            AppSettings.RecentWorkingDir = path;
-
-            HideDashboard();
-
-            if (!string.Equals(originalWorkingDir, Module.WorkingDir, StringComparison.Ordinal))
+            try
             {
-                ChangeTerminalActiveFolder(Module.WorkingDir);
+                string path = Module.WorkingDir;
+                AppSettings.RecentWorkingDir = path;
+
+                HideDashboard();
+
+                if (!string.Equals(originalWorkingDir, Module.WorkingDir, StringComparison.Ordinal))
+                {
+                    ChangeTerminalActiveFolder(Module.WorkingDir);
 
 #if DEBUG
-                // Current encodings
-                Debug.WriteLine($"Encodings for {Module.WorkingDir}");
-                Debug.WriteLine($"Files content encoding: {Module.FilesEncoding.EncodingName}");
-                Debug.WriteLine($"Commit encoding: {Module.CommitEncoding.EncodingName}");
-                if (Module.LogOutputEncoding.CodePage != Module.CommitEncoding.CodePage)
-                {
-                    Debug.WriteLine($"Log output encoding: {Module.LogOutputEncoding.EncodingName}");
-                }
+                    // Current encodings
+                    Debug.WriteLine($"Encodings for {Module.WorkingDir}");
+                    Debug.WriteLine($"Files content encoding: {Module.FilesEncoding.EncodingName}");
+                    Debug.WriteLine($"Commit encoding: {Module.CommitEncoding.EncodingName}");
+                    if (Module.LogOutputEncoding.CodePage != Module.CommitEncoding.CodePage)
+                    {
+                        Debug.WriteLine($"Log output encoding: {Module.LogOutputEncoding.EncodingName}");
+                    }
 #endif
 
-                // Reset the filter when switching repos
+                    // Reset the filter when switching repos
 
-                // If we're applying custom branch or revision filters - reset them
-                RevisionGrid.ResetAllFilters();
-                ToolStripFilters.ClearQuickFilters();
-                revisionDiff.RepositoryChanged();
+                    // If we're applying custom branch or revision filters - reset them
+                    RevisionGrid.ResetAllFilters();
+                    ToolStripFilters.ClearQuickFilters();
+                    revisionDiff.RepositoryChanged();
+                }
+
+                RevisionInfo.SetRevisionWithChildren(revision: null, children: []);
             }
+            finally
+            {
+                RevisionGrid.ResumeRefreshRevisions();
 
-            RevisionInfo.SetRevisionWithChildren(revision: null, children: []);
-            RevisionGrid.ResumeRefreshRevisions();
+                RefreshRevisions();
 
-            RefreshRevisions();
-
-            SetShortcutKeyDisplayStringsFromHotkeySettings();
+                SetShortcutKeyDisplayStringsFromHotkeySettings();
+            }
         }
         else
         {

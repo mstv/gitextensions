@@ -58,7 +58,7 @@ public partial class UserRepositoriesList : GitExtensionsControl
     private Brush _hoverColorBrush = new SolidBrush(SystemColors.InactiveCaption);
     private ListViewItem? _hoveredItem;
     private readonly ListViewGroup _lvgRecentRepositories;
-    private readonly IUserRepositoriesListController _controller = new UserRepositoriesListController(RepositoryHistoryManager.Locals, new InvalidRepositoryRemover());
+    private readonly IUserRepositoriesListController _controller = new UserRepositoriesListController(RepositoryHistoryManager.Locals, new InvalidRepositoryRemover(), new GitExecutorProvider());
     private bool _hasInvalidRepos;
     private ListViewItem? _rightClickedItem;
 
@@ -749,6 +749,8 @@ public partial class UserRepositoriesList : GitExtensionsControl
         Validates.NotNull(menuStrip);
         ToolStripMenuItem dashboardMenu = (ToolStripMenuItem)menuStrip.Items.Cast<ToolStripItem>().SingleOrDefault(p => p.Name == "dashboardToolStripMenuItem");
         dashboardMenu?.DropDownItems.AddRange(menus);
+
+        BeginInvoke(() => textBoxSearch.Focus());
     }
 
     private void tsmiCategories_DropDownOpening(object sender, EventArgs e)

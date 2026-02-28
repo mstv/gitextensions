@@ -36,6 +36,7 @@ public static partial class AppSettings
 
     public static DistributedSettings SettingsContainer { get; private set; }
 
+    private static readonly SettingsPath AdvancedSettingsPath = new AppSettingsPath("Advanced");
     private static readonly SettingsPath AppearanceSettingsPath = new AppSettingsPath("Appearance");
     private static readonly SettingsPath ConfirmationsSettingsPath = new AppSettingsPath("Confirmations");
     private static readonly SettingsPath DetailedSettingsPath = new AppSettingsPath("Detailed");
@@ -1380,6 +1381,7 @@ public static partial class AppSettings
     }
 
     public static ISetting<bool> ShowFindInCommitFilesGitGrep { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowFindInCommitFilesGitGrep), false);
+    public static ISetting<bool> ShowRevisionGridTooltips { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowRevisionGridTooltips), true);
 
     public static bool ShowAvailableDiffTools
     {
@@ -1852,11 +1854,7 @@ public static partial class AppSettings
         set => SetBool("OmitUninterestingDiff", value);
     }
 
-    public static bool UseConsoleEmulatorForCommands
-    {
-        get => GetBool("UseConsoleEmulatorForCommands", true);
-        set => SetBool("UseConsoleEmulatorForCommands", value);
-    }
+    public static ISetting<bool> UseConsoleEmulatorForCommands { get; } = Setting.Create(AdvancedSettingsPath, nameof(UseConsoleEmulatorForCommands), false);
 
     public static GitRefsSortBy RefsSortBy
     {
