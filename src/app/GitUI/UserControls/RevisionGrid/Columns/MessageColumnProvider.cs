@@ -123,7 +123,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
                 e.State.HasFlag(DataGridViewElementStates.Selected),
                 style.NormalFont,
                 ref offset,
-                revision.IsAutostash ? revision.Subject : (revision.ReflogSelector ?? throw new NullReferenceException())[5..],
+                revision.IsAutostash ? revision.Subject : (revision.ReflogSelector ?? throw new InvalidOperationException($"{nameof(revision.ReflogSelector)} must not be null"))[5..],
                 AppColor.OtherTag.GetThemeColor(),
                 RefArrowType.None,
                 messageBounds,

@@ -76,7 +76,7 @@ public sealed class CommitDataManager : ICommitDataManager
 
         if (!TryGetCommitLog(revision.ObjectId.ToString(), appendNotesOnly ? NotesFormat : BodyAndNotesFormat, out string? error, out string? data, cache: false))
         {
-            Trace.WriteLine($"Exception in {nameof(UpdateBodyAndNotes)}: {error}");
+            Trace.WriteLine($"Exception in {nameof(UpdateBodyAndNotes)}: {error}", category: "git");
             return;
         }
 
