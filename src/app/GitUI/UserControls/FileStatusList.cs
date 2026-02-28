@@ -856,7 +856,7 @@ public sealed partial class FileStatusList : GitModuleControl
             await TaskScheduler.Default;
             cancellationToken.ThrowIfCancellationRequested();
 
-            _diffCalculator.SetDiff(revisions, headId, allowMultiDiff: true);
+            _diffCalculator.SetDiff(revisions, headId, allowMultiDiff: true, tsmiShowSkipWorktreeFiles.Checked, tsmiShowUntrackedFiles.Checked);
             IReadOnlyList<FileStatusWithDescription> gitItemStatusesWithDescription = _diffCalculator.Calculate(prevList: [], refreshDiff: true, refreshGrep: false, cancellationToken);
 
             await this.SwitchToMainThreadAsync(cancellationToken);
@@ -2057,6 +2057,7 @@ public sealed partial class FileStatusList : GitModuleControl
             string searchArg = search;
             if (!string.IsNullOrWhiteSpace(searchArg) && !GrepStringRegex.IsMatch(searchArg))
             {
+                searchArg = searchArg.Replace(@"\\", @"\\\\");
                 searchArg = $@"-e ""{searchArg}""";
             }
 

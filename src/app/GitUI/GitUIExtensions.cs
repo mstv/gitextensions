@@ -112,6 +112,7 @@ public static partial class GitUIExtensions
                     useGitColoring: true,
                     showFunctionName: true,
                     commandConfiguration: commandConfiguration,
+                    fileViewer.Encoding,
                     cancellationToken);
 
             if (!result.ExitedSuccessfully)
@@ -211,19 +212,47 @@ public static partial class GitUIExtensions
                 item.Item.Name,
                 item.Item.OldName,
                 firstId?.ToString(),
-                item.SecondRevision.ToString(),
+                item.SecondRevision.ObjectId.ToString(),
                 isTracked: item.Item.IsTracked);
         }
 
-        async Task<string?> GetSelectedPatchAsync(
+        static async Task<string?> GetSelectedPatchAsync(
             FileViewer fileViewer,
             ObjectId firstId,
             ObjectId selectedId,
             GitItemStatus file,
             CancellationToken cancellationToken)
         {
-            (Patch? patch, string? errorMessage) = await GetItemPatchAsync(fileViewer.Module, file, firstId, selectedId,
-                fileViewer.GetExtraDiffArguments(), fileViewer.PatchUseGitColoring, fileViewer.Encoding, cancellationToken);
+            Patch? patch;
+            string? errorMessage;
+
+            IGitModule module = fileViewer.Module;
+            bool isSkipWorktree = file.IsSkipWorktree;
+            if (isSkipWorktree)
+            {
+                module.SkipWorktreeFiles([file], skipWorktree: false, out _);
+            }
+
+            try
+            {
+                (patch, errorMessage) = await GetItemPatchAsync(module, file, firstId, selectedId,
+                    fileViewer.GetExtraDiffArguments(), fileViewer.PatchUseGitColoring, fileViewer.Encoding, cancellationToken);
+            }
+            finally
+            {
+                if (isSkipWorktree)
+                {
+                    try
+                    {
+                        file.IsSkipWorktree = false;
+                        module.SkipWorktreeFiles([file], skipWorktree: true, out _);
+                    }
+                    finally
+                    {
+                        file.IsSkipWorktree = true;
+                    }
+                }
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 

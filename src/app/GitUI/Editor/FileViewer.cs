@@ -147,7 +147,7 @@ public partial class FileViewer : GitModuleControl
 
         internalFileViewer.MouseMove += (_, e) =>
         {
-            if (_viewMode.IsPartialTextView() && !fileviewerToolbar.Visible)
+            if (!fileviewerToolbar.Visible)
             {
                 fileviewerToolbar.Visible = true;
                 fileviewerToolbar.Location = new Point(Width - fileviewerToolbar.Width - 40, 0);
@@ -737,7 +737,7 @@ public partial class FileViewer : GitModuleControl
                 || (!file.Name.EndsWith(".diff", StringComparison.OrdinalIgnoreCase)
                    && !file.Name.EndsWith(".patch", StringComparison.OrdinalIgnoreCase));
             FilePreamble = [];
-            return Module.GetFileText(blobId, Encoding, stripAnsiEscapeCodes) is string s ? s : "";
+            return Module.GetFileText(blobId, Encoding, stripAnsiEscapeCodes) ?? "";
         }
 
         async Task<Image?> GetImageAsync()
@@ -830,7 +830,7 @@ public partial class FileViewer : GitModuleControl
         string GetFileText()
         {
             using FileStream stream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using StreamReader reader = FileReader.OpenStream(stream, GitModule.LosslessEncoding);
+            using StreamReader reader = FileReader.OpenStream(stream, Encoding);
             string content = reader.ReadToEnd();
             FilePreamble = reader.CurrentEncoding.GetPreamble();
             return content;
@@ -990,7 +990,8 @@ public partial class FileViewer : GitModuleControl
         ignoreWhitespaceChangesToolStripMenuItem.Visible = diffCanBeModified;
         ignoreAllWhitespaceChangesToolStripMenuItem.Visible = diffCanBeModified;
 
-        bool isPartialFlexibleView = viewMode.IsPartialTextView() && viewMode is not ViewMode.FixedDiff;
+        bool isPartialTextView = viewMode.IsPartialTextView();
+        bool isPartialFlexibleView = isPartialTextView && viewMode is not ViewMode.FixedDiff;
         increaseNumberOfLinesToolStripMenuItem.Visible = isPartialFlexibleView;
         decreaseNumberOfLinesToolStripMenuItem.Visible = isPartialFlexibleView;
         showEntireFileToolStripMenuItem.Visible = isPartialFlexibleView;
@@ -1005,18 +1006,20 @@ public partial class FileViewer : GitModuleControl
         showPatchToolStripMenuItem.Checked = !(showGitWordColoringToolStripMenuItem.Checked || showDifftasticToolStripMenuItem.Checked);
         SetDifftasticEnabled();
 
-        toolStripSeparator2.Visible = viewMode.IsPartialTextView();
-        treatAllFilesAsTextToolStripMenuItem.Visible = viewMode.IsPartialTextView();
+        toolStripSeparator2.Visible = isPartialTextView;
+        treatAllFilesAsTextToolStripMenuItem.Visible = isPartialTextView;
 
         // toolbar
-        bool hasNextPreviousButton = viewMode.IsPartialTextView();
+        bool hasNextPreviousButton = isPartialTextView;
         nextChangeButton.Visible = hasNextPreviousButton;
         previousChangeButton.Visible = hasNextPreviousButton;
+        toolStripSeparator3.Visible = hasNextPreviousButton;
 
         increaseNumberOfLines.Visible = isPartialFlexibleView;
         decreaseNumberOfLines.Visible = isPartialFlexibleView;
+        toolStripSeparator4.Visible = isPartialFlexibleView;
         showEntireFileButton.Visible = isPartialFlexibleView;
-        showSyntaxHighlighting.Visible = viewMode.IsPartialTextView();
+        showSyntaxHighlighting.Visible = isPartialTextView;
 
         ignoreWhitespaceAtEol.Visible = diffCanBeModified || viewMode is ViewMode.Difftastic;
         ignoreWhiteSpaces.Visible = diffCanBeModified;
