@@ -1,5 +1,4 @@
-using GitExtUtils;
-using GitUIPluginInterfaces;
+﻿using GitExtUtils;
 using ResourceManager.Hotkey;
 
 namespace ResourceManager;
@@ -37,9 +36,8 @@ public class GitExtensionsControl : TranslatedControl
     /// <exception cref="InvalidOperationException">
     ///  If this control is not a <see cref="IGitModuleControl"/>) and is not placed on a <see cref="IGitModuleForm"/>.
     /// </exception>
-    protected IServiceProvider ServiceProvider
-        => this is IGitModuleControl control ? control.UICommands
-            : FindForm() is IGitModuleForm form ? form.UICommands
+    protected virtual IServiceProvider ServiceProvider
+        => FindForm() is IGitModuleForm form ? form.UICommands
             : throw new InvalidOperationException($"no chance to get {nameof(ServiceProvider)}");
 
     #region Hotkeys

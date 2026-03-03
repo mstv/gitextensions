@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using GitCommands;
 using GitCommands.UserRepositoryHistory;
@@ -40,7 +41,10 @@ public sealed class WindowsJumpListManager : IWindowsJumpListManager
     {
         if (TaskbarManager.IsPlatformSupported)
         {
-            TaskbarManager.Instance.ApplicationId = AppSettings.ApplicationId;
+            string id = AppSettings.ApplicationId;
+            TaskbarManager.Instance.ApplicationId = AppSettings.IsPortable()
+                ? $"{id}.{Convert.ToBase64String(SHA1.HashData(Encoding.UTF8.GetBytes(Application.ExecutablePath)))}"
+                : $"{id}.{id}";
         }
     }
 
@@ -86,7 +90,7 @@ public sealed class WindowsJumpListManager : IWindowsJumpListManager
             return;
         }
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(workingDir, nameof(workingDir));
+        ArgumentException.ThrowIfNullOrWhiteSpace(workingDir);
 
         SafeInvoke(() =>
         {
@@ -113,8 +117,7 @@ public sealed class WindowsJumpListManager : IWindowsJumpListManager
             string path = Path.Combine(baseFolder, $"{sb}.gitext");
             File.WriteAllText(path, workingDir);
             JumpList.AddToRecent(path);
-
-            UpdateJumpList();
+            UpdateJumpList(); // in order to refresh at once
 
             if (!ToolbarButtonsCreated)
             {
@@ -224,8 +227,8 @@ public sealed class WindowsJumpListManager : IWindowsJumpListManager
     }
 
     /// <summary>
-    /// Updates the jump list to show recent repositories in the Start menu.
-    /// Uses the built-in Windows localized “Recent” category.
+    ///  Updates the jump list to show recent repositories in the Start menu and at the taskbar icon.
+    ///  Uses the built-in Windows localized "Recent" category.
     /// </summary>
     private static void UpdateJumpList()
     {
