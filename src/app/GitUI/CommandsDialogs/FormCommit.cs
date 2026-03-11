@@ -1749,12 +1749,23 @@ public sealed partial class FormCommit : GitModuleForm
 
     private void StageClick(object sender, EventArgs e)
     {
-        if (_currentFilesList != Unstaged || Module.IsBareRepository())
+        if (Module.IsBareRepository())
         {
             return;
         }
 
-        Stage(Unstaged.SelectedItems.Items().Where(s => !s.IsAssumeUnchanged && !s.IsSkipWorktree).ToList());
+        if (_currentFilesList != Unstaged)
+        {
+            if (Unstaged.FocusedItem is FileStatusItem item)
+            {
+                Stage([item.Item]);
+                Unstaged.SelectFirstVisibleItem();
+            }
+
+            return;
+        }
+
+        Stage(Unstaged.SelectedItems.Items());
         if (Unstaged.IsEmpty)
         {
             Message.Focus();
@@ -1764,7 +1775,7 @@ public sealed partial class FormCommit : GitModuleForm
     private void Unstaged_DoubleClick(object sender, EventArgs e)
     {
         _currentFilesList = Unstaged;
-        Stage(Unstaged.SelectedItems.Items().ToList());
+        Stage(Unstaged.SelectedItems.Items());
         if (Unstaged.IsEmpty)
         {
             Message.Focus();
@@ -1773,7 +1784,7 @@ public sealed partial class FormCommit : GitModuleForm
 
     private void StageAllAccordingToFilter()
     {
-        Stage(Unstaged.GitItemFilteredStatuses.Where(s => !s.IsAssumeUnchanged && !s.IsSkipWorktree).ToList());
+        Stage(Unstaged.GitItemFilteredStatuses);
         Unstaged.SetFilter(string.Empty);
         if (Unstaged.IsEmpty)
         {
@@ -1842,8 +1853,9 @@ public sealed partial class FormCommit : GitModuleForm
         }
     }
 
-    private void Stage(IReadOnlyList<GitItemStatus> items)
+    private void Stage(IEnumerable<GitItemStatus> possibleItems)
     {
+        GitItemStatus[] items = [.. possibleItems.Where(s => !s.IsAssumeUnchanged && !s.IsSkipWorktree)];
         using (WaitCursorScope.Enter())
         {
             EnableStageButtons(false);
@@ -1853,7 +1865,7 @@ public sealed partial class FormCommit : GitModuleForm
 
                 Unstaged.StoreNextItemToSelect();
                 toolStripProgressBar1.Visible = true;
-                toolStripProgressBar1.Maximum = items.Count * 2;
+                toolStripProgressBar1.Maximum = items.Length * 2;
                 toolStripProgressBar1.Value = 0;
 
                 List<GitItemStatus> files = [];
