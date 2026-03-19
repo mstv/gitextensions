@@ -69,18 +69,18 @@ internal sealed class GitExecutor : IGitExecutor
     /// <summary>
     ///  Gets the access to the Windows git executable associated with this executor.
     /// </summary>
-    internal IGitCommandRunner GitWindowsCommandRunner { get; }
+    public IGitCommandRunner GitWindowsCommandRunner { get; }
 
     /// <summary>
     ///  Name of the WSL distro for the GitExecutable, empty string for the app native Windows Git executable.
     ///  This can be seen as the Git "instance" identifier.
     /// </summary>
-    internal string WslDistro { get; }
+    public string WslDistro { get; }
 
     /// <summary>
     ///  Gets a value indicating whether this repository is using the reftable format.
     /// </summary>
-    internal bool IsReftableRepo { get; set; }
+    private bool IsReftableRepo { get; set; }
 
     public string GetSelectedBranch(bool emptyIfDetached = false)
     {
@@ -189,7 +189,7 @@ internal sealed class GitExecutor : IGitExecutor
     ///  The path to the Git directory for the specified repository, or null if the path does not correspond to a
     ///  valid Git repository.
     /// </returns>
-    internal string GetGitDirectory(string repositoryPath)
+    private string GetGitDirectory(string repositoryPath)
     {
         return _gitDirectoryResolverInstance.Resolve(repositoryPath);
     }
