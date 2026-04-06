@@ -29,10 +29,10 @@ public class SplitterPersistenceTests
         _settings = new();
 
         // Stop loading custom diff tools
-        AppSettings.ShowAvailableDiffTools = false;
+        AppSettings.ShowAvailableDiffTools.Value = false;
 
         // We don't want avatars during tests, otherwise we will be attempting to download them from gravatar....
-        AppSettings.ShowAuthorAvatarColumn = false;
+        AppSettings.ShowAuthorAvatarColumn.Value = false;
 
         _windowPositionManager = Substitute.For<IWindowPositionManager>();
 

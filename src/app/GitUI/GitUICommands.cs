@@ -296,7 +296,7 @@ public sealed class GitUICommands : IGitUICommands
 
     public bool WorktreeSwitch(IWin32Window? owner, string worktreePath)
     {
-        if (!AppSettings.DontConfirmSwitchWorktree)
+        if (!AppSettings.DontConfirmSwitchWorktree.Value)
         {
             TaskDialogButton result = TaskDialog.ShowDialog(owner!, new TaskDialogPage
             {
@@ -1241,7 +1241,7 @@ public sealed class GitUICommands : IGitUICommands
             return;
         }
 
-        bool updateSubmodules = AppSettings.UpdateSubmodulesOnCheckout ?? (AppSettings.DontConfirmUpdateSubmodulesOnCheckout ?? MessageBoxes.ConfirmUpdateSubmodules(owner));
+        bool updateSubmodules = AppSettings.UpdateSubmodulesOnCheckout.Value ?? (AppSettings.DontConfirmUpdateSubmodulesOnCheckout.Value ?? MessageBoxes.ConfirmUpdateSubmodules(owner));
 
         if (updateSubmodules)
         {
@@ -2005,22 +2005,22 @@ public sealed class GitUICommands : IGitUICommands
     {
         if (arguments.ContainsKey("merge"))
         {
-            AppSettings.DefaultPullAction = GitPullAction.Merge;
+            AppSettings.DefaultPullAction.Value = GitPullAction.Merge;
         }
 
         if (arguments.ContainsKey("rebase"))
         {
-            AppSettings.DefaultPullAction = GitPullAction.Rebase;
+            AppSettings.DefaultPullAction.Value = GitPullAction.Rebase;
         }
 
         if (arguments.ContainsKey("fetch"))
         {
-            AppSettings.DefaultPullAction = GitPullAction.Fetch;
+            AppSettings.DefaultPullAction.Value = GitPullAction.Fetch;
         }
 
         if (arguments.ContainsKey("autostash"))
         {
-            AppSettings.AutoStash = true;
+            AppSettings.AutoStash.Value = true;
         }
     }
 

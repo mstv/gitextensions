@@ -1781,4 +1781,148 @@ internal sealed class SettingTests
     }
 
     #endregion Test Cases
+
+    #region InterceptedSetting
+
+    [Test]
+    public void InterceptedSetting_should_round_trip_with_transform()
+    {
+        string pathName = Guid.NewGuid().ToString();
+        string settingName = Guid.NewGuid().ToString();
+        AppSettingsPath settingsPath = new(pathName);
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<string> exposed = Setting.CreateIntercepted<int, string>(
+                settingsPath,
+                settingName,
+                defaultValue: "0",
+                read: v => v.ToString(),
+                store: v => int.Parse(v));
+
+            exposed.Value = "42";
+
+            ClassicAssert.That(exposed.Value, Is.EqualTo("42"));
+        });
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<int> inner = Setting.Create(settingsPath, settingName, 0);
+            ClassicAssert.That(inner.Value, Is.EqualTo(42));
+        });
+    }
+
+    [Test]
+    public void InterceptedSetting_should_return_default_value_when_unset()
+    {
+        string pathName = Guid.NewGuid().ToString();
+        string settingName = Guid.NewGuid().ToString();
+        AppSettingsPath settingsPath = new(pathName);
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<string> exposed = Setting.CreateIntercepted<int, string>(
+                settingsPath,
+                settingName,
+                defaultValue: "99",
+                read: v => v.ToString(),
+                store: v => int.Parse(v));
+
+            ClassicAssert.That(exposed.Value, Is.EqualTo("99"));
+        });
+    }
+
+    [Test]
+    public void InterceptedSetting_should_fire_Updated_event()
+    {
+        string pathName = Guid.NewGuid().ToString();
+        string settingName = Guid.NewGuid().ToString();
+        AppSettingsPath settingsPath = new(pathName);
+        bool updated = false;
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<string> exposed = Setting.CreateIntercepted<int, string>(
+                settingsPath,
+                settingName,
+                defaultValue: "0",
+                read: v => v.ToString(),
+                store: v => int.Parse(v));
+
+            exposed.Updated += (_, _) => updated = true;
+            exposed.Value = "7";
+        });
+
+        ClassicAssert.That(updated, Is.True);
+    }
+
+    [Test]
+    public void InterceptedSetting_should_report_IsUnset_correctly()
+    {
+        string pathName = Guid.NewGuid().ToString();
+        string settingName = Guid.NewGuid().ToString();
+        AppSettingsPath settingsPath = new(pathName);
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<string> exposed = Setting.CreateIntercepted<int, string>(
+                settingsPath,
+                settingName,
+                defaultValue: "0",
+                read: v => v.ToString(),
+                store: v => int.Parse(v));
+
+            ClassicAssert.That(exposed.IsUnset, Is.True);
+
+            exposed.Value = "5";
+
+            ClassicAssert.That(exposed.IsUnset, Is.False);
+        });
+    }
+
+    [Test]
+    public void InterceptedSetting_should_invert_bool_values()
+    {
+        string pathName = Guid.NewGuid().ToString();
+        string settingName = Guid.NewGuid().ToString();
+        AppSettingsPath settingsPath = new(pathName);
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<bool> exposed = Setting.CreateIntercepted<bool, bool>(
+                settingsPath,
+                settingName,
+                defaultValue: false,
+                read: v => !v,
+                store: v => !v);
+
+            exposed.Value = true;
+        });
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<bool> inner = Setting.Create(settingsPath, settingName, true);
+            ClassicAssert.That(inner.Value, Is.False);
+        });
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<bool> exposed = Setting.CreateIntercepted<bool, bool>(
+                settingsPath,
+                settingName,
+                defaultValue: false,
+                read: v => !v,
+                store: v => !v);
+
+            exposed.Value = false;
+        });
+
+        AppSettings.UsingContainer(_settingContainer, () =>
+        {
+            ISetting<bool> inner = Setting.Create(settingsPath, settingName, false);
+            ClassicAssert.That(inner.Value, Is.True);
+        });
+    }
+
+    #endregion InterceptedSetting
 }

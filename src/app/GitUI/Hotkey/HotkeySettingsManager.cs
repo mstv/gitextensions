@@ -1,4 +1,4 @@
-using System.Xml;
+﻿using System.Xml;
 using System.Xml.Serialization;
 using GitCommands;
 using GitUI.CommandsDialogs;
@@ -95,7 +95,7 @@ internal class HotkeySettingsManager : IHotkeySettingsManager
             using XmlWriter xmlWriter = XmlWriter.Create(sw, xmlWriterSettings);
 
             _serializer!.Serialize(xmlWriter, settings.ToArray());
-            AppSettings.SerializedHotkeys = sw.ToString();
+            AppSettings.SerializedHotkeys.Value = sw.ToString();
         }
         catch
         {
@@ -153,9 +153,9 @@ internal class HotkeySettingsManager : IHotkeySettingsManager
 
     private static HotkeySettings[]? LoadSerializedSettings()
     {
-        if (!string.IsNullOrWhiteSpace(AppSettings.SerializedHotkeys))
+        if (!string.IsNullOrWhiteSpace(AppSettings.SerializedHotkeys.Value))
         {
-            return LoadSerializedSettings(AppSettings.SerializedHotkeys);
+            return LoadSerializedSettings(AppSettings.SerializedHotkeys.Value);
         }
 
         return null;

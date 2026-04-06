@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using GitCommands;
 using GitCommands.Settings;
 using GitExtensions.Extensibility.Git;
@@ -295,7 +295,7 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Name = "drawNonrelativesGrayToolStripMenuItem",
                 Text = "Draw non relatives gra&y",
                 ExecuteAction = () => _revisionGrid.ToggleDrawNonRelativesGray(),
-                IsCheckedFunc = () => AppSettings.RevisionGraphDrawNonRelativesGray
+                IsCheckedFunc = () => AppSettings.RevisionGraphDrawNonRelativesGray.Value
             },
             new MenuCommand
             {
@@ -314,7 +314,7 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Name = "ShowArtificialCommits",
                 Text = "Show artificial commits",
                 ExecuteAction = () => _revisionGrid.ToggleShowArtificialCommits(),
-                IsCheckedFunc = () => AppSettings.RevisionGraphShowArtificialCommits
+                IsCheckedFunc = () => AppSettings.RevisionGraphShowArtificialCommits.Value
             },
             new MenuCommand
             {
@@ -322,21 +322,21 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Text = "Show stashes",
                 ShortcutKeyDisplayString = GetShortcutKeyDisplayStringFromRevisionGridIfAvailable(RevisionGridControl.Command.ShowStashes),
                 ExecuteAction = () => _revisionGrid.ToggleShowStashes(),
-                IsCheckedFunc = () => AppSettings.ShowStashes
+                IsCheckedFunc = () => AppSettings.ShowStashes.Value
             },
             new MenuCommand
             {
                 Name = "showGitNotesToolStripMenuItem",
                 Text = "Show git &notes",
                 ExecuteAction = () => _revisionGrid.ToggleShowGitNotes(),
-                IsCheckedFunc = () => AppSettings.ShowGitNotes
+                IsCheckedFunc = () => AppSettings.ShowGitNotes.Value
             },
             new MenuCommand
             {
                 Name = "ShowSessionCheckpoints",
                 Text = "Show session checkpoints",
                 ExecuteAction = () => _revisionGrid.ToggleShowSessionRefs(),
-                IsCheckedFunc = () => AppSettings.ShowSessionRefs
+                IsCheckedFunc = () => AppSettings.ShowSessionRefs.Value
             },
 
             MenuCommand.CreateSeparator(),
@@ -348,7 +348,7 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Text = "Show remote &branches",
                 ShortcutKeyDisplayString = GetShortcutKeyDisplayStringFromRevisionGridIfAvailable(RevisionGridControl.Command.ShowRemoteBranches),
                 ExecuteAction = () => _revisionGrid.ToggleShowRemoteBranches(),
-                IsCheckedFunc = () => AppSettings.ShowRemoteBranches
+                IsCheckedFunc = () => AppSettings.ShowRemoteBranches.Value
             },
             new MenuCommand
             {
@@ -356,28 +356,28 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Text = "Show &tags",
                 ShortcutKeyDisplayString = GetShortcutKeyDisplayStringFromRevisionGridIfAvailable(RevisionGridControl.Command.ToggleShowTags),
                 ExecuteAction = () => _revisionGrid.ToggleShowTags(),
-                IsCheckedFunc = () => AppSettings.ShowTags
+                IsCheckedFunc = () => AppSettings.ShowTags.Value
             },
             new MenuCommand
             {
                 Name = "ShowSuperprojectTags",
                 Text = "Show su&perproject tags",
                 ExecuteAction = () => _revisionGrid.ToggleShowSuperprojectTags(),
-                IsCheckedFunc = () => AppSettings.ShowSuperprojectTags
+                IsCheckedFunc = () => AppSettings.ShowSuperprojectTags.Value
             },
             new MenuCommand
             {
                 Name = "ShowSuperprojectRemoteBranches",
                 Text = "Show superpro&ject remote branches",
                 ExecuteAction = () => _revisionGrid.ShowSuperprojectRemoteBranches_ToolStripMenuItemClick(),
-                IsCheckedFunc = () => AppSettings.ShowSuperprojectRemoteBranches
+                IsCheckedFunc = () => AppSettings.ShowSuperprojectRemoteBranches.Value
             },
             new MenuCommand
             {
                 Name = "ShowSuperprojectBranches",
                 Text = "Show sup&erproject branches",
                 ExecuteAction = () => _revisionGrid.ShowSuperprojectBranches_ToolStripMenuItemClick(),
-                IsCheckedFunc = () => AppSettings.ShowSuperprojectBranches
+                IsCheckedFunc = () => AppSettings.ShowSuperprojectBranches.Value
             },
 
             MenuCommand.CreateSeparator(),
@@ -388,35 +388,35 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Name = "showBuildStatusIconToolStripMenuItem",
                 Text = "Show build status &icon",
                 ExecuteAction = () => _revisionGrid.ToggleBuildStatusIconColumn(),
-                IsCheckedFunc = () => AppSettings.ShowBuildStatusIconColumn
+                IsCheckedFunc = () => AppSettings.ShowBuildStatusIconColumn.Value
             },
             new MenuCommand
             {
                 Name = "showBuildStatusTextToolStripMenuItem",
                 Text = "Show build status te&xt",
                 ExecuteAction = () => _revisionGrid.ToggleBuildStatusTextColumn(),
-                IsCheckedFunc = () => AppSettings.ShowBuildStatusTextColumn
+                IsCheckedFunc = () => AppSettings.ShowBuildStatusTextColumn.Value
             },
             new MenuCommand
             {
                 Name = "showCommitMessageBodyToolStripMenuItem",
                 Text = "Show commit message body",
                 ExecuteAction = () => _revisionGrid.ToggleShowCommitBodyInRevisionGrid(),
-                IsCheckedFunc = () => AppSettings.ShowCommitBodyInRevisionGrid
+                IsCheckedFunc = () => AppSettings.ShowCommitBodyInRevisionGrid.Value
             },
             new MenuCommand
             {
                 Name = "showAuthorDateToolStripMenuItem",
                 Text = "Sho&w author date",
                 ExecuteAction = () => _revisionGrid.ToggleShowAuthorDate(),
-                IsCheckedFunc = () => AppSettings.ShowAuthorDate
+                IsCheckedFunc = () => AppSettings.ShowAuthorDate.Value
             },
             new MenuCommand
             {
                 Name = "showRelativeDateToolStripMenuItem",
                 Text = "Show relati&ve date",
                 ExecuteAction = () => _revisionGrid.ToggleShowRelativeDate(),
-                IsCheckedFunc = () => AppSettings.RelativeDate
+                IsCheckedFunc = () => AppSettings.RelativeDate.Value
             },
 
             MenuCommand.CreateSeparator(),
@@ -427,7 +427,7 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Name = "showRevisionGraphColumnToolStripMenuItem",
                 Text = "Show revision &graph column",
                 ExecuteAction = () => _revisionGrid.ToggleRevisionGraphColumn(),
-                IsCheckedFunc = () => AppSettings.ShowRevisionGridGraphColumn
+                IsCheckedFunc = () => AppSettings.ShowRevisionGridGraphColumn.Value
             },
             new MenuCommand
             {
@@ -441,28 +441,28 @@ internal class RevisionGridMenuCommands : MenuCommandsBase
                 Name = "showAuthorAvatarColumnToolStripMenuItem",
                 Text = "Show aut&hor avatar column",
                 ExecuteAction = () => _revisionGrid.ToggleAuthorAvatarColumn(),
-                IsCheckedFunc = () => AppSettings.ShowAuthorAvatarColumn
+                IsCheckedFunc = () => AppSettings.ShowAuthorAvatarColumn.Value
             },
             new MenuCommand
             {
                 Name = "showAuthorNameColumnToolStripMenuItem",
                 Text = "Show a&uthor name column",
                 ExecuteAction = () => _revisionGrid.ToggleAuthorNameColumn(),
-                IsCheckedFunc = () => AppSettings.ShowAuthorNameColumn
+                IsCheckedFunc = () => AppSettings.ShowAuthorNameColumn.Value
             },
             new MenuCommand
             {
                 Name = "showDateColumnToolStripMenuItem",
                 Text = "Show &date column",
                 ExecuteAction = () => _revisionGrid.ToggleDateColumn(),
-                IsCheckedFunc = () => AppSettings.ShowDateColumn
+                IsCheckedFunc = () => AppSettings.ShowDateColumn.Value
             },
             new MenuCommand
             {
                 Name = "showIdColumnToolStripMenuItem",
                 Text = "Show SHA&-1 column",
                 ExecuteAction = () => _revisionGrid.ToggleObjectIdColumn(),
-                IsCheckedFunc = () => AppSettings.ShowObjectIdColumn
+                IsCheckedFunc = () => AppSettings.ShowObjectIdColumn.Value
             },
 
             MenuCommand.CreateSeparator(),

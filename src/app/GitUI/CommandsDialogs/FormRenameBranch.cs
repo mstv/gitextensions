@@ -10,7 +10,7 @@ namespace GitUI.CommandsDialogs;
 public sealed partial class FormRenameBranch : GitModuleForm
 {
     private readonly IGitBranchNameNormaliser _branchNameNormaliser;
-    private readonly GitBranchNameOptions _gitBranchNameOptions = new(AppSettings.AutoNormaliseSymbol);
+    private readonly GitBranchNameOptions _gitBranchNameOptions = new(AppSettings.AutoNormaliseSymbol.Value);
     private readonly string _oldName;
 
     public FormRenameBranch(IGitUICommands commands, string defaultBranch)
@@ -26,7 +26,7 @@ public sealed partial class FormRenameBranch : GitModuleForm
 
     private void BranchNameTextBox_Leave(object sender, EventArgs e)
     {
-        if (!AppSettings.AutoNormaliseBranchName || !BranchNameTextBox.Text.Any(GitBranchNameNormaliser.IsValidChar))
+        if (!AppSettings.AutoNormaliseBranchName.Value || !BranchNameTextBox.Text.Any(GitBranchNameNormaliser.IsValidChar))
         {
             return;
         }

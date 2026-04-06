@@ -82,12 +82,12 @@ internal abstract class BaseRefTree : BaseRevisionTree
 
     protected IEnumerable<IGitRef> PrioritizedBranches(IReadOnlyList<IGitRef> branches)
     {
-        return OrderByPriority(branches, node => node.LocalName, AppSettings.PrioritizedBranchNames);
+        return OrderByPriority(branches, node => node.LocalName, AppSettings.PrioritizedBranchNames.Value!);
     }
 
     protected IEnumerable<RemoteRepoNode> PrioritizedRemotes(IReadOnlyList<RemoteRepoNode> remotes)
     {
-        return OrderByPriority(remotes.OrderBy(node => node.FullPath).ToList(), node => node.FullPath, AppSettings.PrioritizedRemoteNames);
+        return OrderByPriority(remotes.OrderBy(node => node.FullPath).ToList(), node => node.FullPath, AppSettings.PrioritizedRemoteNames.Value!);
     }
 
     /// <summary>

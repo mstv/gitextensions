@@ -15,6 +15,7 @@ git submodule update --init --recursive
 * Make only high confidence suggestions when reviewing code changes.
 * Always use the latest version C#, currently C# 13 features.
 * Files must have CRLF line endings.
+* C# files must be encoded as UTF-8 with BOM (`utf-8-bom` as specified in `.editorconfig`). When reading and writing files programmatically (e.g. via scripts), use `UTF8Encoding(true)` in .NET or `encoding='utf-8-sig'` in Python to preserve the BOM. Standard .NET APIs like `File.WriteAllText` default to UTF-8 _without_ BOM and will silently strip it.
 * When creating or modifying code, follow all StyleCop analyzer rules.
 * Test changes locally or verify StyleCop compliance before committing when possible.
 

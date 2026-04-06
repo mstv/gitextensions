@@ -205,7 +205,7 @@ internal sealed class RevisionGraphColumnProvider : ColumnProvider
 
     public override void ApplySettings()
     {
-        Column.Visible = AppSettings.ShowRevisionGridGraphColumn;
+        Column.Visible = AppSettings.ShowRevisionGridGraphColumn.Value;
     }
 
     public override void Clear()

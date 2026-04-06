@@ -34,7 +34,7 @@ public sealed class AvatarPersistentCacheTests : AvatarCacheTestBase
         _fileInfoFactory.New(Arg.Any<string>()).Returns(_fileInfo);
         _fileSystem.FileInfo.Returns(_fileInfoFactory);
 
-        AppSettings.AvatarProvider = AvatarProvider.Default;
+        AppSettings.AvatarProvider.Value = AvatarProvider.Default;
 
         _cache = new FileSystemAvatarCache(_inner, _fileSystem);
         _email1AvatarPath = Path.Combine(_avatarImageCachePath, $"{_email1}.{_size}px.png");

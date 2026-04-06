@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
 using GitCommands;
 using GitCommands.Config;
@@ -135,7 +135,7 @@ public sealed partial class FormPull : GitExtensionsDialog
         InitializeComponent();
         InitializeComplete();
 
-        PanelLeftImage.Visible = !AppSettings.DontShowHelpImages;
+        PanelLeftImage.Visible = !AppSettings.DontShowHelpImages.Value;
         PanelLeftImage.IsOnHoverShowImage2NoticeText = _hoverShowImageLabelText.Text;
 
         _remotesManager = new ConfigFileRemoteSettingsManager(() => Module);
@@ -144,7 +144,7 @@ public sealed partial class FormPull : GitExtensionsDialog
 
         if (pullAction == GitPullAction.None)
         {
-            pullAction = AppSettings.DefaultPullAction;
+            pullAction = AppSettings.DefaultPullAction.Value;
         }
 
         switch (pullAction)
@@ -192,7 +192,7 @@ public sealed partial class FormPull : GitExtensionsDialog
         }
 
         localBranch.Enabled = Fetch.Checked;
-        AutoStash.Checked = AppSettings.AutoStash;
+        AutoStash.Checked = AppSettings.AutoStash.Value;
 
         ErrorOccurred = false;
 
@@ -261,7 +261,7 @@ public sealed partial class FormPull : GitExtensionsDialog
                 messageBoxTitle = string.Format(_pruneFromCaption.Text, remote);
             }
 
-            bool isActionConfirmed = AppSettings.DontConfirmFetchAndPruneAll
+            bool isActionConfirmed = AppSettings.DontConfirmFetchAndPruneAll.Value
                                      || MessageBoxes.Show(
                                          owner,
                                          _pullFetchPruneAllConfirmation.Text,
@@ -522,7 +522,7 @@ public sealed partial class FormPull : GitExtensionsDialog
                 // If the "Update submodules on checkout" option is `true`, initialize and update
                 // all submodules. If it's `false` don't initialize/update the submodules. If it's
                 // indeterminate, ask the user what they'd like to do.
-                if (AppSettings.UpdateSubmodulesOnCheckout ?? AppSettings.DontConfirmUpdateSubmodulesOnCheckout ?? AskIfSubmodulesShouldBeInitialized())
+                if (AppSettings.UpdateSubmodulesOnCheckout.Value ?? AppSettings.DontConfirmUpdateSubmodulesOnCheckout.Value ?? AskIfSubmodulesShouldBeInitialized())
                 {
                     UICommands.StartUpdateSubmodulesDialog(this);
                 }
@@ -569,7 +569,7 @@ public sealed partial class FormPull : GitExtensionsDialog
                 return;
             }
 
-            bool? messageBoxResult = AppSettings.AutoPopStashAfterPull;
+            bool? messageBoxResult = AppSettings.AutoPopStashAfterPull.Value;
             if (messageBoxResult is null)
             {
                 TaskDialogPage page = new()
@@ -589,7 +589,7 @@ public sealed partial class FormPull : GitExtensionsDialog
 
                 if (page.Verification.Checked)
                 {
-                    AppSettings.AutoPopStashAfterPull = messageBoxResult;
+                    AppSettings.AutoPopStashAfterPull.Value = messageBoxResult;
                 }
             }
 
@@ -628,12 +628,12 @@ public sealed partial class FormPull : GitExtensionsDialog
 
     private void UpdateSettingsDuringPull()
     {
-        AppSettings.FormPullAction =
+        AppSettings.FormPullAction.Value =
             Merge.Checked ? GitPullAction.Merge :
             Rebase.Checked ? GitPullAction.Rebase :
-            Fetch.Checked ? AppSettings.FormPullAction = GitPullAction.Fetch : GitPullAction.Default;
+            Fetch.Checked ? AppSettings.FormPullAction.Value = GitPullAction.Fetch : GitPullAction.Default;
 
-        AppSettings.AutoStash = AutoStash.Checked;
+        AppSettings.AutoStash.Value = AutoStash.Checked;
     }
 
     private DialogResult ShouldRebaseMergeCommit()
@@ -662,7 +662,7 @@ public sealed partial class FormPull : GitExtensionsDialog
         if (!Fetch.Checked && AutoStash.Checked && !Module.IsBareRepository() &&
             Module.GitStatus(UntrackedFilesMode.No, IgnoreSubmodulesMode.All).Count > 0)
         {
-            UICommands.StashSave(owner, AppSettings.IncludeUntrackedFilesInAutoStash);
+            UICommands.StashSave(owner, AppSettings.IncludeUntrackedFilesInAutoStash.Value);
             return true;
         }
 

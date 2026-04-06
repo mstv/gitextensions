@@ -1,4 +1,4 @@
-using GitCommands;
+﻿using GitCommands;
 using GitCommands.Git;
 using GitCommands.UserRepositoryHistory;
 using GitExtensions.Extensibility;
@@ -66,9 +66,9 @@ public partial class ForkAndCloneForm : GitExtensionsForm
     private void Init()
     {
         ThreadHelper.ThrowIfNotOnUIThread();
-        if (!string.IsNullOrEmpty(AppSettings.DefaultCloneDestinationPath))
+        if (!string.IsNullOrEmpty(AppSettings.DefaultCloneDestinationPath.Value))
         {
-            destinationTB.Text = AppSettings.DefaultCloneDestinationPath;
+            destinationTB.Text = AppSettings.DefaultCloneDestinationPath.Value;
         }
         else
         {

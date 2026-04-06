@@ -1,4 +1,4 @@
-using GitCommands;
+﻿using GitCommands;
 using GitCommands.Config;
 using GitCommands.DiffMergeTools;
 using GitCommands.Git;
@@ -379,9 +379,9 @@ public partial class ChecklistSettingsPage : SettingsPageWithHeader
 
     private bool CheckTranslationConfigSettings()
     {
-        return RenderSettingSetUnset(() => string.IsNullOrEmpty(AppSettings.Translation),
+        return RenderSettingSetUnset(() => string.IsNullOrEmpty(AppSettings.Translation.Value),
                                 translationConfig, translationConfig_Fix,
-                                _noLanguageConfigured.Text, string.Format(_languageConfigured.Text, AppSettings.Translation));
+                                _noLanguageConfigured.Text, string.Format(_languageConfigured.Text, AppSettings.Translation.Value));
     }
 
     private bool CheckSSHSettings()

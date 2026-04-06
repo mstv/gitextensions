@@ -27,13 +27,13 @@ internal sealed class CommitIdColumnProvider : ColumnProvider
             Resizable = DataGridViewTriState.True,
             Width = DpiUtil.Scale(60),
             MinimumWidth = DpiUtil.Scale(32),
-            Visible = AppSettings.ShowObjectIdColumn
+            Visible = AppSettings.ShowObjectIdColumn.Value
         };
     }
 
     public override void ApplySettings()
     {
-        Column.Visible = AppSettings.ShowObjectIdColumn;
+        Column.Visible = AppSettings.ShowObjectIdColumn.Value;
     }
 
     private int GetCharLengthForColumnWidth(int width)

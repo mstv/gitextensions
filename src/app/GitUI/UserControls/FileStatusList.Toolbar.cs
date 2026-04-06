@@ -1,4 +1,4 @@
-using GitCommands;
+﻿using GitCommands;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils.GitUI.Theming;
 using GitUI.Properties;
@@ -13,7 +13,7 @@ partial class FileStatusList
 
     private string? _findUsingOptionsPrefix;
 
-    // order in AppSettings.FileStatusFindInFilesGitGrepTypeIndex
+    // order in AppSettings.FileStatusFindInFilesGitGrepTypeIndex.Value
     private ToolStripMenuItem[] FindUsingMenuItems => field ??= [tsmiFindUsingDialog, tsmiFindUsingInputBox, tsmiFindUsingBoth];
 
     private void ApplyGroupBy()
@@ -195,15 +195,15 @@ partial class FileStatusList
 
     private void RefreshOnFormFocus_Click(object sender, EventArgs e)
     {
-        AppSettings.RefreshArtificialCommitOnApplicationActivated = tsmiRefreshOnFormFocus.Checked;
+        AppSettings.RefreshArtificialCommitOnApplicationActivated.Value = tsmiRefreshOnFormFocus.Checked;
     }
 
     private void Settings_DropDownOpening(object sender, EventArgs e)
     {
-        tsmiRefreshOnFormFocus.Checked = AppSettings.RefreshArtificialCommitOnApplicationActivated;
+        tsmiRefreshOnFormFocus.Checked = AppSettings.RefreshArtificialCommitOnApplicationActivated.Value;
 
         tsmiShowDiffForAllParents.Visible = _enableDisablingShowDiffForAllParents;
-        tsmiShowDiffForAllParents.Checked = AppSettings.ShowDiffForAllParents;
+        tsmiShowDiffForAllParents.Checked = AppSettings.ShowDiffForAllParents.Value;
         tsmiShowDiffForAllParents.ToolTipText = TranslatedStrings.ShowDiffForAllParentsTooltip;
     }
 
@@ -222,7 +222,7 @@ partial class FileStatusList
 
     private void ShowDiffForAllParents_Click(object sender, EventArgs e)
     {
-        AppSettings.ShowDiffForAllParents = tsmiShowDiffForAllParents.Checked;
+        AppSettings.ShowDiffForAllParents.Value = tsmiShowDiffForAllParents.Checked;
         CancellationToken cancellationToken = _reloadSequence.Next();
         FileStatusListLoading();
         ThreadHelper.FileAndForget(async () =>
@@ -302,6 +302,7 @@ partial class FileStatusList
             {
                 ToolStripItem toolbarItem = Toolbar.Items[itemIndex];
                 string settingsKey = $"{nameof(FileStatusList)}.{nameof(Toolbar)}.Visibility.{toolbarItem.Name}";
+#pragma warning disable CS0618 // Dynamic settings key based on toolbar item name
                 ToolStripMenuItem menuItem = new()
                 {
                     CheckOnClick = true,
@@ -316,6 +317,7 @@ partial class FileStatusList
                     toolbarItem.Visible = menuItem.Checked;
                     UpdateToolbar();
                 };
+#pragma warning restore CS0618
                 tsmiToolbar.DropDown.Items.Add(menuItem);
             }
         }

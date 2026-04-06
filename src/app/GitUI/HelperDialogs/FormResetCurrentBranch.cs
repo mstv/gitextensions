@@ -68,7 +68,7 @@ public partial class FormResetCurrentBranch : GitModuleForm
 
     private void Ok_Click(object sender, EventArgs e)
     {
-        bool updateSubmodules = AppSettings.UpdateSubmodulesOnCheckout is true && Module.HasSubmodules() && Revision.ObjectId != Module.GetCurrentCheckout();
+        bool updateSubmodules = AppSettings.UpdateSubmodulesOnCheckout.Value is true && Module.HasSubmodules() && Revision.ObjectId != Module.GetCurrentCheckout();
 
         if (Soft.Checked)
         {

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using GitCommands;
@@ -323,7 +323,7 @@ public partial class EditNetSpell : GitModuleControl
 
     private void AddWordSuggestions(int pos)
     {
-        if (!AppSettings.ProvideAutocompletion)
+        if (!AppSettings.ProvideAutocompletion.Value)
         {
             return;
         }
@@ -394,7 +394,7 @@ public partial class EditNetSpell : GitModuleControl
 
     private void ToggleAutoCompletion()
     {
-        if (!AppSettings.ProvideAutocompletion || Site?.DesignMode is true)
+        if (!AppSettings.ProvideAutocompletion.Value || Site?.DesignMode is true)
         {
             CloseAutoComplete();
             CancelAutoComplete();
@@ -458,7 +458,7 @@ public partial class EditNetSpell : GitModuleControl
 
     private void MarkLines()
     {
-        if (!AppSettings.MarkIllFormedLinesInCommitMsg)
+        if (!AppSettings.MarkIllFormedLinesInCommitMsg.Value)
         {
             return;
         }
@@ -554,18 +554,18 @@ public partial class EditNetSpell : GitModuleControl
 
         ToolStripMenuItem mi = new(_markIllFormedLinesText.Text)
         {
-            Checked = AppSettings.MarkIllFormedLinesInCommitMsg
+            Checked = AppSettings.MarkIllFormedLinesInCommitMsg.Value
         };
         mi.Click += MarkIllFormedLinesInCommitMsgClick;
         SpellCheckContextMenu.Items.Add(mi);
 
         mi = new ToolStripMenuItem(_autoCompletionText.Text)
         {
-            Checked = AppSettings.ProvideAutocompletion
+            Checked = AppSettings.ProvideAutocompletion.Value
         };
         mi.Click += (s, _) =>
         {
-            AppSettings.ProvideAutocompletion = !AppSettings.ProvideAutocompletion;
+            AppSettings.ProvideAutocompletion.Value = !AppSettings.ProvideAutocompletion.Value;
             ToggleAutoCompletion();
         };
         SpellCheckContextMenu.Items.Add(mi);
@@ -594,7 +594,7 @@ public partial class EditNetSpell : GitModuleControl
 
     private void MarkIllFormedLinesInCommitMsgClick(object? sender, EventArgs e)
     {
-        AppSettings.MarkIllFormedLinesInCommitMsg = !AppSettings.MarkIllFormedLinesInCommitMsg;
+        AppSettings.MarkIllFormedLinesInCommitMsg.Value = !AppSettings.MarkIllFormedLinesInCommitMsg.Value;
         CheckSpelling();
     }
 
@@ -741,7 +741,7 @@ public partial class EditNetSpell : GitModuleControl
         {
             UndoHighlighting();
         }
-        else if (e.Control && !e.Alt && e.KeyCode == Keys.Space && AppSettings.ProvideAutocompletion)
+        else if (e.Control && !e.Alt && e.KeyCode == Keys.Space && AppSettings.ProvideAutocompletion.Value)
         {
             UpdateOrShowAutoComplete(true);
             e.Handled = true;
@@ -912,7 +912,7 @@ public partial class EditNetSpell : GitModuleControl
 
     public void RefreshAutoCompleteWords()
     {
-        if (AppSettings.ProvideAutocompletion)
+        if (AppSettings.ProvideAutocompletion.Value)
         {
             InitializeAutoCompleteWordsTask();
         }
@@ -1016,7 +1016,7 @@ public partial class EditNetSpell : GitModuleControl
             return;
         }
 
-        if (_autoCompleteListTask is null || !AppSettings.ProvideAutocompletion)
+        if (_autoCompleteListTask is null || !AppSettings.ProvideAutocompletion.Value)
         {
             return;
         }

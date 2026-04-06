@@ -45,9 +45,9 @@ public partial class FormOpenDirectory : GitExtensionsForm
     {
         List<string> directories = [];
 
-        if (!string.IsNullOrWhiteSpace(AppSettings.DefaultCloneDestinationPath))
+        if (!string.IsNullOrWhiteSpace(AppSettings.DefaultCloneDestinationPath.Value))
         {
-            directories.Add(AppSettings.DefaultCloneDestinationPath.EnsureTrailingPathSeparator());
+            directories.Add(AppSettings.DefaultCloneDestinationPath.Value.EnsureTrailingPathSeparator());
         }
 
         if (!string.IsNullOrWhiteSpace(currentModule?.WorkingDir))
@@ -63,9 +63,9 @@ public partial class FormOpenDirectory : GitExtensionsForm
 
         if (directories.Count == 0)
         {
-            if (!string.IsNullOrWhiteSpace(AppSettings.RecentWorkingDir))
+            if (!string.IsNullOrWhiteSpace(AppSettings.RecentWorkingDir.Value))
             {
-                directories.Add(AppSettings.RecentWorkingDir.EnsureTrailingPathSeparator());
+                directories.Add(AppSettings.RecentWorkingDir.Value.EnsureTrailingPathSeparator());
             }
 
             string homeDir = EnvironmentConfiguration.GetHomeDir();

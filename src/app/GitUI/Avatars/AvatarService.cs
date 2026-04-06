@@ -30,7 +30,7 @@ public static class AvatarService
     /// </summary>
     public static void UpdateAvatarProvider()
     {
-        HotSwapProvider.Provider = CreateAvatarProvider(AppSettings.AvatarProvider, AppSettings.AvatarFallbackType);
+        HotSwapProvider.Provider = CreateAvatarProvider(AppSettings.AvatarProvider.Value, AppSettings.AvatarFallbackType.Value);
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public static class AvatarService
             return provider switch
             {
                 AvatarProvider.Default => BuildDefaultMainProvider(),
-                AvatarProvider.Custom => CustomAvatarProvider.ParseTemplateString(AppSettings.CustomAvatarTemplate, lazyDownloader.Value),
+                AvatarProvider.Custom => CustomAvatarProvider.ParseTemplateString(AppSettings.CustomAvatarTemplate.Value!, lazyDownloader.Value),
                 _ => null,
             };
         }
@@ -109,7 +109,7 @@ public static class AvatarService
     private static (IAvatarProvider provider, IAvatarCacheCleaner cacheCleaner) SetupCachingAndFallback()
     {
         FileSystemAvatarCache persistentCacheProvider = new(HotSwapProvider);
-        AvatarMemoryCache memoryCachedProvider = new(persistentCacheProvider, AppSettings.AvatarCacheSize);
+        AvatarMemoryCache memoryCachedProvider = new(persistentCacheProvider, AppSettings.AvatarCacheSize.Value);
 
         MultiCacheCleaner cacheCleaner = new(memoryCachedProvider, persistentCacheProvider);
 

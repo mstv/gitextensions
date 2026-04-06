@@ -1,4 +1,7 @@
-﻿namespace GitCommands.UserRepositoryHistory;
+﻿// Uses dynamic settings keys for repository history serialization.
+#pragma warning disable CS0618 // Type or member is obsolete
+
+namespace GitCommands.UserRepositoryHistory;
 
 /// <summary>
 /// Provides the ability to persist and retrieve collections of user's git repositories.

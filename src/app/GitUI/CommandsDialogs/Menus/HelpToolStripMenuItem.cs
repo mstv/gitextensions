@@ -15,7 +15,7 @@ internal partial class HelpToolStripMenuItem : ToolStripMenuItemEx
 
     private void this_DropDownOpening(object sender, EventArgs e)
     {
-        tsmiTelemetryEnabled.Checked = AppSettings.TelemetryEnabled ?? false;
+        tsmiTelemetryEnabled.Checked = AppSettings.TelemetryEnabled.Value ?? false;
     }
 
     private void AboutToolStripMenuItemClick(object sender, EventArgs e)

@@ -71,7 +71,7 @@ public sealed class BuildServerWatcher : IBuildServerWatcher, IDisposable
         // ensure the column visibility reflects the user's display preferences
         if (buildServerAdapter is not null)
         {
-            ColumnProvider.Column.Visible = AppSettings.ShowBuildStatusIconColumn || AppSettings.ShowBuildStatusTextColumn;
+            ColumnProvider.Column.Visible = AppSettings.ShowBuildStatusIconColumn.Value || AppSettings.ShowBuildStatusTextColumn.Value;
         }
 
         await TaskScheduler.Default;
@@ -426,7 +426,7 @@ public sealed class BuildServerWatcher : IBuildServerWatcher, IDisposable
             IGitModule module = _module();
             IReadOnlyList<string> remoteNames = module.GetRemoteNames();
 
-            string[] prioritizedNames = AppSettings.PrioritizedBuildServerRemoteNames
+            string[] prioritizedNames = AppSettings.PrioritizedBuildServerRemoteNames.Value!
                 .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             IEnumerable<string> orderedRemotes = remoteNames

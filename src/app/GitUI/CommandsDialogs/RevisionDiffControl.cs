@@ -571,7 +571,7 @@ public partial class RevisionDiffControl : GitModuleControl, IRevisionGridFileUp
             return;
         }
 
-        if (AppSettings.OpenSubmoduleDiffInSeparateWindow && item.Item.IsSubmodule)
+        if (AppSettings.OpenSubmoduleDiffInSeparateWindow.Value && item.Item.IsSubmodule)
         {
             DiffFiles.InvokeAndForget(DiffFiles.OpenSubmoduleAsync);
         }

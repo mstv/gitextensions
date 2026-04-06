@@ -69,7 +69,7 @@ internal partial class ToolsToolStripMenuItem : ToolStripMenuItemEx
 
     private void OnShowSettingsClick(object sender, EventArgs e)
     {
-        string translation = AppSettings.Translation;
+        string translation = AppSettings.Translation.Value!;
         CommitInfoPosition commitInfoPosition = AppSettings.CommitInfoPosition;
 
         UICommands.StartSettingsDialog(OwnerForm);

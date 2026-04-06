@@ -119,13 +119,13 @@ internal static class Program
             FormFixHome.CheckHomePath();
         }
 
-        if (string.IsNullOrEmpty(AppSettings.Translation))
+        if (string.IsNullOrEmpty(AppSettings.Translation.Value))
         {
             using FormChooseTranslation formChoose = new();
             formChoose.ShowDialog();
         }
 
-        AppSettings.TelemetryEnabled ??= MessageBoxes.Show(
+        AppSettings.TelemetryEnabled.Value ??= MessageBoxes.Show(
             null,
             ResourceManager.TranslatedStrings.TelemetryPermissionMessage,
             ResourceManager.TranslatedStrings.TelemetryPermissionCaption,
@@ -242,11 +242,11 @@ internal static class Program
             }
         }
 
-        if (args.Length <= 1 && workingDir is null && AppSettings.StartWithRecentWorkingDir)
+        if (args.Length <= 1 && workingDir is null && AppSettings.StartWithRecentWorkingDir.Value)
         {
-            if (GitModule.IsValidGitWorkingDir(AppSettings.RecentWorkingDir))
+            if (GitModule.IsValidGitWorkingDir(AppSettings.RecentWorkingDir.Value))
             {
-                workingDir = AppSettings.RecentWorkingDir;
+                workingDir = AppSettings.RecentWorkingDir.Value;
             }
         }
 

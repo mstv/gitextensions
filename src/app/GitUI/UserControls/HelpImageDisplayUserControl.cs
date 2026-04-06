@@ -154,6 +154,7 @@ public partial class HelpImageDisplayUserControl : GitExtensionsControl
         return UniqueIsExpandedSettingsId ?? "MUST_BE_SET";
     }
 
+#pragma warning disable CS0618 // Dynamic settings key from GetId()
     private void SaveIsExpandedValueInSettings(bool value)
     {
         AppSettings.SetBool("HelpIsExpanded" + GetId(), value);
@@ -163,6 +164,7 @@ public partial class HelpImageDisplayUserControl : GitExtensionsControl
     {
         return AppSettings.GetBool("HelpIsExpanded" + GetId(), defaultValue);
     }
+#pragma warning restore CS0618
 
     private void UpdateControlSize()
     {

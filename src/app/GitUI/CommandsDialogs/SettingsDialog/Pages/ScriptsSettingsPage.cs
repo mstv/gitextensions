@@ -221,7 +221,7 @@ Diff selection:
             scripts.Add(proxy);
         }
 
-        AppSettings.OwnScripts = _scriptsManager.SerializeIntoXml();
+        AppSettings.OwnScripts.Value = _scriptsManager.SerializeIntoXml();
 
         base.PageToSettings();
     }

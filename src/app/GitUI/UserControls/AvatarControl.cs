@@ -25,13 +25,13 @@ public sealed partial class AvatarControl : GitExtensionsControl
             {
                 CheckOnClick = true,
                 Tag = avatarProvider,
-                Checked = avatarProvider == AppSettings.AvatarProvider,
+                Checked = avatarProvider == AppSettings.AvatarProvider.Value,
                 Text = avatarProvider.GetDescription(),
             };
 
             item.Click += delegate
             {
-                AppSettings.AvatarProvider = avatarProvider;
+                AppSettings.AvatarProvider.Value = avatarProvider;
                 ClearCache();
             };
 
@@ -49,7 +49,7 @@ public sealed partial class AvatarControl : GitExtensionsControl
 
             item.Click += delegate
             {
-                AppSettings.AvatarFallbackType = defaultImageType;
+                AppSettings.AvatarFallbackType.Value = defaultImageType;
                 ClearCache();
             };
 
@@ -120,7 +120,7 @@ public sealed partial class AvatarControl : GitExtensionsControl
 
         string? email = Email;
 
-        if (!AppSettings.ShowAuthorAvatarInCommitInfo || string.IsNullOrWhiteSpace(email))
+        if (!AppSettings.ShowAuthorAvatarInCommitInfo.Value || string.IsNullOrWhiteSpace(email))
         {
             RefreshImage(Images.User80);
             return;
@@ -149,12 +149,12 @@ public sealed partial class AvatarControl : GitExtensionsControl
 
     private void OnDefaultImageDropDownOpening(object sender, EventArgs e)
     {
-        UpdateMenuItemSelection(fallbackAvatarStyleToolStripMenuItem.DropDownItems, AppSettings.AvatarFallbackType);
+        UpdateMenuItemSelection(fallbackAvatarStyleToolStripMenuItem.DropDownItems, AppSettings.AvatarFallbackType.Value);
     }
 
     private void avatarProviderToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
     {
-        UpdateMenuItemSelection(avatarProviderToolStripMenuItem.DropDownItems, AppSettings.AvatarProvider);
+        UpdateMenuItemSelection(avatarProviderToolStripMenuItem.DropDownItems, AppSettings.AvatarProvider.Value);
     }
 
     private static void UpdateMenuItemSelection<T>(ToolStripItemCollection toolStripItems, T currentValue)

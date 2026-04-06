@@ -197,10 +197,12 @@ internal class FormBrowseMenus : ITranslate, IDisposable
         return;
 
         static bool IsVisibleByDefault(string buttonKey) => !buttonKey.Contains(FormBrowse.FetchPullToolbarShortcutsPrefix);
+#pragma warning disable CS0618 // Dynamic settings key with toolbar prefix
         static void SaveVisibilitySetting(string key, bool visible, bool defaultValue = true)
             => AppSettings.SetBool(toolbarSettingsPrefix + key, visible == defaultValue ? null : visible);
         static bool LoadVisibilitySetting(string key, bool defaultValue = true)
             => AppSettings.GetBool(toolbarSettingsPrefix + key, defaultValue);
+#pragma warning restore CS0618
 
         static bool BelongToAGroup(ToolStripItem toolbarItem, out string groupName)
         {

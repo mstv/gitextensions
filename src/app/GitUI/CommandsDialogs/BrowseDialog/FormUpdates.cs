@@ -117,7 +117,7 @@ public partial class FormUpdates : GitExtensionsDialog
     private void CheckForNewerVersion(string releases)
     {
         IEnumerable<ReleaseVersion> versions = ReleaseVersion.Parse(releases);
-        IEnumerable<ReleaseVersion> updates = ReleaseVersion.GetNewerVersions(_currentVersion, AppSettings.CheckForReleaseCandidates, versions);
+        IEnumerable<ReleaseVersion> updates = ReleaseVersion.GetNewerVersions(_currentVersion, AppSettings.CheckForReleaseCandidates.Value, versions);
 
         ReleaseVersion? update = updates.OrderBy(version => version.ApplicationVersion).LastOrDefault();
         if (update is not null)

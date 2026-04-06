@@ -6,6 +6,9 @@ using Current = GitCommands.UserRepositoryHistory;
 
 namespace GitCommandsTests.UserRepositoryHistory.Legacy;
 
+// CS0618: Tests exercise the legacy settings API
+#pragma warning disable CS0618
+
 [TestFixture]
 public class RepositoryStorageTests
 {

@@ -20,7 +20,7 @@ public sealed class FileSystemAvatarCache : IAvatarProvider, IAvatarCacheCleaner
         _inner = inner;
         _fileSystem = fileSystem ?? new FileSystem();
 
-        _cacheDays = AppSettings.AvatarImageCacheDays;
+        _cacheDays = AppSettings.AvatarImageCacheDays.Value;
         if (_cacheDays < 1)
         {
             const int DefaultCacheDays = 30;
@@ -106,7 +106,7 @@ public sealed class FileSystemAvatarCache : IAvatarProvider, IAvatarCacheCleaner
                     return true;
                 }
 
-                if (AppSettings.AvatarProvider == AvatarProvider.None)
+                if (AppSettings.AvatarProvider.Value == AvatarProvider.None)
                 {
                     // No need to refresh because the image returned is always the same.
                     return false;

@@ -86,18 +86,18 @@ public class HotkeySettingsManagerTests
     [Test]
     public async Task Can_save_settings()
     {
-        string? originalHotkeys = AppSettings.SerializedHotkeys;
+        string? originalHotkeys = AppSettings.SerializedHotkeys.Value;
 
         try
         {
             _settingsManager.SaveSettings(CreateHotkeySettings(2));
 
             // Verify as a string, as the xml verifier ignores line breaks.
-            await Verifier.Verify(AppSettings.SerializedHotkeys);
+            await Verifier.Verify(AppSettings.SerializedHotkeys.Value);
         }
         finally
         {
-            AppSettings.SerializedHotkeys = originalHotkeys!;
+            AppSettings.SerializedHotkeys.Value = originalHotkeys!;
         }
     }
 

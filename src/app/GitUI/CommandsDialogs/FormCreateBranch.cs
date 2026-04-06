@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using GitCommands;
 using GitCommands.Git;
 using GitExtensions.Extensibility;
@@ -16,7 +16,7 @@ public sealed partial class FormCreateBranch : GitExtensionsDialog
     private readonly TranslationString _branchNameIsNotValid = new("“{0}” is not valid branch name.");
     private readonly TranslationString _creatingOrphanBranch = new("Creating orphan branch (repository has no commits)");
     private readonly IGitBranchNameNormaliser _branchNameNormaliser = new GitBranchNameNormaliser();
-    private readonly GitBranchNameOptions _gitBranchNameOptions = new(AppSettings.AutoNormaliseSymbol);
+    private readonly GitBranchNameOptions _gitBranchNameOptions = new(AppSettings.AutoNormaliseSymbol.Value);
 
     public bool CheckoutAfterCreation { get; set; } = true;
     public bool UserAbleToChangeRevision { get; set; } = true;
@@ -82,7 +82,7 @@ public sealed partial class FormCreateBranch : GitExtensionsDialog
 
     private void BranchNameTextBox_Leave(object sender, EventArgs e)
     {
-        if (!AppSettings.AutoNormaliseBranchName || !BranchNameTextBox.Text.Any(GitBranchNameNormaliser.IsValidChar))
+        if (!AppSettings.AutoNormaliseBranchName.Value || !BranchNameTextBox.Text.Any(GitBranchNameNormaliser.IsValidChar))
         {
             return;
         }

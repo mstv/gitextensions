@@ -10,13 +10,13 @@ public class ScriptManagerTests
     [Test]
     public async Task Can_save_settings()
     {
-        string? originalScripts = AppSettings.OwnScripts;
+        string? originalScripts = AppSettings.OwnScripts.Value;
 
         try
         {
             ScriptsManager scriptsManager = new();
 
-            AppSettings.OwnScripts = "<ArrayOfScriptInfo />";
+            AppSettings.OwnScripts.Value = "<ArrayOfScriptInfo />";
 
             BindingList<ScriptInfo> scripts = scriptsManager.GetScripts();
 
@@ -34,7 +34,7 @@ public class ScriptManagerTests
         }
         finally
         {
-            AppSettings.OwnScripts = originalScripts;
+            AppSettings.OwnScripts.Value = originalScripts;
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace GitCommands.UserRepositoryHistory.Legacy;
+﻿// Uses dynamic settings keys for legacy repository history migration.
+#pragma warning disable CS0618 // Type or member is obsolete
+
+namespace GitCommands.UserRepositoryHistory.Legacy;
 
 /// <summary>
 /// Provides the ability to persist and retrieve collections of user's git repositories.

@@ -28,13 +28,13 @@ public sealed class CommitTemplateItem
     public static void SaveToSettings(CommitTemplateItem[]? items)
     {
         string strVal = SerializeCommitTemplates(items);
-        AppSettings.CommitTemplates = strVal;
+        AppSettings.CommitTemplates.Value = strVal;
     }
 
     public static CommitTemplateItem[]? LoadFromSettings()
     {
-        string? serializedString = AppSettings.CommitTemplates;
-        CommitTemplateItem[]? templates = DeserializeCommitTemplates(serializedString, out bool shouldBeUpdated);
+        string? serializedString = AppSettings.CommitTemplates.Value;
+        CommitTemplateItem[]? templates = DeserializeCommitTemplates(serializedString!, out bool shouldBeUpdated);
         if (shouldBeUpdated)
         {
             SaveToSettings(templates!);

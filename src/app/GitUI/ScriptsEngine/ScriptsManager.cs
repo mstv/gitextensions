@@ -18,7 +18,7 @@ internal sealed partial class ScriptsManager : IScriptsManager, IScriptsRunner
     {
         if (_scripts is null)
         {
-            _scripts = DeserializeFromXml(AppSettings.OwnScripts);
+            _scripts = DeserializeFromXml(AppSettings.OwnScripts.Value);
             FixAmbiguousHotkeyCommandIdentifiers(_scripts);
         }
 

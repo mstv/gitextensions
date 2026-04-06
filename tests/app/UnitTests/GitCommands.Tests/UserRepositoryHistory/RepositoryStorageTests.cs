@@ -47,6 +47,7 @@ public class RepositoryStorageTests
     [Test]
     public void Load_should_return_collection()
     {
+#pragma warning disable CS0618 // Test exercises the legacy settings API
         AppSettings.SetString("a", "repos");
         List<Repository> history =
         [
@@ -62,6 +63,7 @@ public class RepositoryStorageTests
 
         ];
         _repositorySerialiser.Deserialize(Arg.Any<string>()).Returns(x => history);
+#pragma warning restore CS0618
 
         IReadOnlyList<Repository> repositories = _repositoryStorage.Load("a");
 

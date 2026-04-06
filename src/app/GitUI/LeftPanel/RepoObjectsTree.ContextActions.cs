@@ -91,7 +91,7 @@ partial class RepoObjectsTree : IMenuItemFactory
         _sortByContextMenuItem.Enable(isSingleRefSelected);
 
         // If refs are sorted by git (GitRefsSortBy = Default) don't show sort order options
-        bool showSortOrder = AppSettings.RefsSortBy != GitRefsSortBy.Default;
+        bool showSortOrder = AppSettings.RefsSortBy.Value != GitRefsSortBy.Default;
         _sortOrderContextMenuItem.Enable(isSingleRefSelected && showSortOrder);
     }
 

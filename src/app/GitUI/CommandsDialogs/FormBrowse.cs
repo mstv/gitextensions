@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -369,8 +369,8 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
             {
                 IReadOnlyList<GitItemStatus>? status = e?.ItemStatuses;
 
-                bool countToolbar = AppSettings.ShowGitStatusInBrowseToolbar;
-                bool countArtificial = AppSettings.ShowGitStatusForArtificialCommits && AppSettings.RevisionGraphShowArtificialCommits;
+                bool countToolbar = AppSettings.ShowGitStatusInBrowseToolbar.Value;
+                bool countArtificial = AppSettings.ShowGitStatusForArtificialCommits.Value && AppSettings.RevisionGraphShowArtificialCommits.Value;
 
                 Brush brush = UpdateCommitButtonAndGetBrush(status, countToolbar);
 
@@ -380,7 +380,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
                 {
                     UpdateStatusInTaskbar();
 
-                    if (AppSettings.ShowSubmoduleStatus)
+                    if (AppSettings.ShowSubmoduleStatus.Value)
                     {
                         Validates.NotNull(_submoduleStatusProvider);
 
@@ -464,7 +464,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     protected override void OnApplicationActivated()
     {
-        if (AppSettings.RefreshArtificialCommitOnApplicationActivated)
+        if (AppSettings.RefreshArtificialCommitOnApplicationActivated.Value)
         {
             if (CommitInfoTabControl.SelectedTab == DiffTabPage)
             {
@@ -667,7 +667,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private static bool NeedsGitStatusMonitor()
     {
-        return AppSettings.ShowGitStatusInBrowseToolbar || (AppSettings.ShowGitStatusForArtificialCommits && AppSettings.RevisionGraphShowArtificialCommits);
+        return AppSettings.ShowGitStatusInBrowseToolbar.Value || (AppSettings.ShowGitStatusForArtificialCommits.Value && AppSettings.RevisionGraphShowArtificialCommits.Value);
     }
 
     private void UICommands_PostRepositoryChanged(object? sender, GitUIEventArgs e)
@@ -745,7 +745,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         FillCommitInfo(selectedRevision);
 
         // If the revision's body has been updated then the grid needs to be refreshed to display it
-        if (AppSettings.ShowCommitBodyInRevisionGrid && selectedRevision?.HasMultiLineMessage is true && old != (selectedRevision.Body, selectedRevision.Notes))
+        if (AppSettings.ShowCommitBodyInRevisionGrid.Value && selectedRevision?.HasMultiLineMessage is true && old != (selectedRevision.Body, selectedRevision.Notes))
         {
             RevisionGrid.Refresh();
         }
@@ -935,9 +935,9 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         using (WaitCursorScope.Enter())
         {
             // check for updates
-            if (AppSettings.CheckForUpdates && AppSettings.LastUpdateCheck.AddDays(7) < DateTime.Now)
+            if (AppSettings.CheckForUpdates.Value && AppSettings.LastUpdateCheck.Value.AddDays(7) < DateTime.Now)
             {
-                AppSettings.LastUpdateCheck = DateTime.Now;
+                AppSettings.LastUpdateCheck.Value = DateTime.Now;
                 FormUpdates updateForm = new(AppSettings.AppVersion);
                 updateForm.SearchForUpdatesAndShow(ownerWindow: this, alwaysShow: false);
             }
@@ -1045,7 +1045,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
                 _formBrowseMenus.InsertRevisionGridMainMenuItems(repositoryToolStripMenuItem);
 
-                if (AppSettings.ShowAheadBehindData)
+                if (AppSettings.ShowAheadBehindData.Value)
                 {
                     string currentBranch = RevisionGrid.CurrentBranch.Value;
                     ThreadHelper.FileAndForget(async () =>
@@ -1166,12 +1166,12 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
         // check if we are in the middle of an action (merge/rebase/etc.)
         notificationBarGitActionInProgress.RefreshGitAction(
-            checkForConflicts: AppSettings.GitAsyncWhenMinimized || (WindowState != FormWindowState.Minimized));
+            checkForConflicts: AppSettings.GitAsyncWhenMinimized.Value || (WindowState != FormWindowState.Minimized));
     }
 
     private void UpdateStashCount()
     {
-        if (AppSettings.ShowStashCount && !Module.IsBareRepository())
+        if (AppSettings.ShowStashCount.Value && !Module.IsBareRepository())
         {
             ThreadHelper.FileAndForget(async () =>
             {
@@ -1435,7 +1435,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void OnShowSettingsClick(object sender, EventArgs e)
     {
-        string translation = AppSettings.Translation;
+        string translation = AppSettings.Translation.Value!;
         CommitInfoPosition commitInfoPosition = AppSettings.CommitInfoPosition;
 
         // Await plugin registration
@@ -1450,7 +1450,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     {
         Module?.InvalidateGitSettings();
 
-        if (oldTranslation != AppSettings.Translation)
+        if (oldTranslation != AppSettings.Translation.Value)
         {
             Translator.Translate(this, AppSettings.CurrentTranslation);
         }
@@ -1636,7 +1636,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void StashChangesToolStripMenuItemClick(object sender, EventArgs e)
     {
-        UICommands.StashSave(this, AppSettings.IncludeUntrackedFilesInManualStash);
+        UICommands.StashSave(this, AppSettings.IncludeUntrackedFilesInManualStash.Value);
         UpdateStashCount();
     }
 
@@ -1711,7 +1711,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         {
             RevisionGrid.SuspendRefreshRevisions();
             string path = Module.WorkingDir;
-            AppSettings.RecentWorkingDir = path;
+            AppSettings.RecentWorkingDir.Value = path;
 
             HideDashboard();
 
@@ -2008,7 +2008,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
         CommitInfoTabControl.SelectedTab = TreeTabPage;
 
-        AppSettings.ShowSplitViewLayout = true;
+        AppSettings.ShowSplitViewLayout.Value = true;
         RefreshSplitViewLayout();
 
         fileTree.ExecuteCommand(RevisionDiffControl.Command.FindFile);
@@ -2088,7 +2088,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
             case Command.QuickPullOrFetch: toolStripButtonPull.PerformButtonClick(); break;
             case Command.QuickPush: UICommands.StartPushDialog(this, true); break;
             case Command.CloseRepository: SetWorkingDir(""); break;
-            case Command.Stash: UICommands.StashSave(this, AppSettings.IncludeUntrackedFilesInManualStash); break;
+            case Command.Stash: UICommands.StashSave(this, AppSettings.IncludeUntrackedFilesInManualStash.Value); break;
             case Command.StashStaged: UICommands.StashStaged(this); break;
             case Command.StashPop: UICommands.StashPop(this); break;
             case Command.OpenCommitsWithDifftool: RevisionGrid.DiffSelectedCommitsWithDifftool(); break;
@@ -2105,7 +2105,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
             case Command.ToggleBetweenArtificialAndHeadCommits: RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.ToggleBetweenArtificialAndHeadCommits); break;
             case Command.GoToChild: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToChild)); break;
             case Command.GoToParent: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToParent)); break;
-            case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction, isSilent: false); break;
+            case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction.Value, isSilent: false); break;
             case Command.Push: UICommands.StartPushDialog(this, pushOnShow: ModifierKeys.HasFlag(Keys.Shift)); break;
             case Command.CreateBranch: UICommands.StartCreateBranchDialog(this, RevisionGrid.LatestSelectedRevision?.ObjectId); break;
             case Command.MergeBranches: UICommands.StartMergeBranchDialog(this, null); break;
@@ -2352,23 +2352,23 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         this.ForceActivate();
 
         // "Pull/Fetch..." menu item always opens the dialog
-        DoPull(pullAction: AppSettings.FormPullAction, isSilent: false);
+        DoPull(pullAction: AppSettings.FormPullAction.Value, isSilent: false);
     }
 
     private void ToolStripButtonPullClick(object sender, EventArgs e)
     {
         // Clicking on the Pull button toolbar button will perform the default selected action silently,
         // except if that action is to open the dialog (PullAction.None)
-        bool isSilent = AppSettings.DefaultPullAction != GitPullAction.None;
-        GitPullAction pullAction = AppSettings.DefaultPullAction != GitPullAction.None ?
-            AppSettings.DefaultPullAction : AppSettings.FormPullAction;
+        bool isSilent = AppSettings.DefaultPullAction.Value != GitPullAction.None;
+        GitPullAction pullAction = AppSettings.DefaultPullAction.Value != GitPullAction.None ?
+            AppSettings.DefaultPullAction.Value : AppSettings.FormPullAction.Value;
         DoPull(pullAction: pullAction, isSilent: isSilent);
     }
 
     private void pullToolStripMenuItem1_Click(object sender, EventArgs e)
     {
         // "Open Pull Dialog..." toolbar menu item always open the dialog with the current default action
-        DoPull(pullAction: AppSettings.FormPullAction, isSilent: false);
+        DoPull(pullAction: AppSettings.FormPullAction.Value, isSilent: false);
     }
 
     private void mergeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2430,7 +2430,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
                         return;
                     }
 
-                    // This may occur at various filters, like AppSettings.ShowOnlyFirstParent
+                    // This may occur at various filters, like AppSettings.ShowOnlyFirstParent.Value
                     // will hide other than the first parent.
                     MessageBoxes.RevisionFilteredInGrid(this, commitId);
                 }
@@ -2532,7 +2532,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     private void UpdateSubmodulesStructure()
     {
         // Submodule status is updated on git-status updates. To make sure supermodule status is updated, update immediately (once)
-        bool updateStatus = AppSettings.ShowSubmoduleStatus && _gitStatusMonitor.Active;
+        bool updateStatus = AppSettings.ShowSubmoduleStatus.Value && _gitStatusMonitor.Active;
 
         toolStripButtonLevelUp.ToolTipText = "";
 
@@ -2802,9 +2802,9 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void toggleSplitViewLayout_Click(object sender, EventArgs e)
     {
-        AppSettings.ShowSplitViewLayout = !AppSettings.ShowSplitViewLayout;
+        AppSettings.ShowSplitViewLayout.Value = !AppSettings.ShowSplitViewLayout.Value;
         DiagnosticsClient.TrackEvent("Layout change",
-            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout), AppSettings.ShowSplitViewLayout.ToString() } });
+            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout.Value), AppSettings.ShowSplitViewLayout.Value.ToString() } });
 
         RefreshSplitViewLayout();
     }
@@ -2822,7 +2822,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
             // Refresh the left panel, update visibility of objects separately
             // Get the "main" stash commit, including the reflog selector
             Lazy<IReadOnlyCollection<GitRevision>> getStashRevs = new(() =>
-                !AppSettings.ShowStashes
+                !AppSettings.ShowStashes.Value
                 ? []
                 : new RevisionReader(new GitModule(UICommands.GetRequiredService<IGitExecutorProvider>(), UICommands.Module.WorkingDir)).GetStashes(CancellationToken.None));
 
@@ -2862,9 +2862,9 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void RefreshSplitViewLayout()
     {
-        RightSplitContainer.Panel2Collapsed = !AppSettings.ShowSplitViewLayout;
+        RightSplitContainer.Panel2Collapsed = !AppSettings.ShowSplitViewLayout.Value;
         DiagnosticsClient.TrackEvent("Layout change",
-            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout), AppSettings.ShowSplitViewLayout.ToString() } });
+            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout.Value), AppSettings.ShowSplitViewLayout.Value.ToString() } });
 
         RefreshLayoutToggleButtonStates();
     }
@@ -2872,7 +2872,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     private void RefreshLayoutToggleButtonStates()
     {
         toggleLeftPanel.Checked = !MainSplitContainer.Panel1Collapsed;
-        toggleSplitViewLayout.Checked = AppSettings.ShowSplitViewLayout;
+        toggleSplitViewLayout.Checked = AppSettings.ShowSplitViewLayout.Value;
 
         int commitInfoPositionNumber = (int)AppSettings.CommitInfoPosition;
         ToolStripItem selectedMenuItem = menuCommitInfoPosition.DropDownItems[commitInfoPositionNumber];
@@ -3042,7 +3042,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void undoLastCommitToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        if (AppSettings.DontConfirmUndoLastCommit || MessageBoxes.Show(this, _undoLastCommitText.Text, _undoLastCommitCaption.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+        if (AppSettings.DontConfirmUndoLastCommit.Value || MessageBoxes.Show(this, _undoLastCommitText.Text, _undoLastCommitCaption.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
         {
             ArgumentString args = Commands.Reset(ResetMode.Soft, "HEAD~1");
             Module.GitExecutable.GetOutput(args);

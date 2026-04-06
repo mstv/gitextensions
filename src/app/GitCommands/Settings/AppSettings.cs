@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿// Internal callers still use the legacy Get/Set methods for properties that can't yet be converted to ISetting<T>.
+#pragma warning disable CS0618 // Type or member is obsolete
+
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -95,7 +98,6 @@ public static partial class AppSettings
             ImportFromRegistry();
         }
 
-        MigrateAvatarSettings();
         MigrateSshSettings();
 
         return;
@@ -156,44 +158,21 @@ public static partial class AppSettings
         _documentationBaseUrl = $"https://git-extensions-documentation.readthedocs.org/{docVersion}";
     }
 
-    public static bool? TelemetryEnabled
-    {
-        get => GetBool("TelemetryEnabled");
-        set => SetBool("TelemetryEnabled", value);
-    }
+    public static ISetting<bool?> TelemetryEnabled { get; } = Setting.Create<bool>(RootSettingsPath, "TelemetryEnabled");
 
-    public static bool AutoNormaliseBranchName
-    {
-        get => GetBool("AutoNormaliseBranchName", true);
-        set => SetBool("AutoNormaliseBranchName", value);
-    }
+    public static ISetting<bool> AutoNormaliseBranchName { get; } = Setting.Create(RootSettingsPath, "AutoNormaliseBranchName", defaultValue: true);
 
-    public static string AutoNormaliseSymbol
-    {
-        // when persisted "" is treated as null, so use "+" instead
-        get
-        {
-            string value = GetString("AutoNormaliseSymbol", "_");
-            return value == "+" ? "" : value;
-        }
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                value = "+";
-            }
-
-            SetString("AutoNormaliseSymbol", value);
-        }
-    }
+    // When persisted, "" is treated as null, so "+" is stored instead.
+    public static ISetting<string> AutoNormaliseSymbol { get; } = Setting.CreateIntercepted<string, string>(
+        RootSettingsPath,
+        "AutoNormaliseSymbol",
+        defaultValue: "_",
+        read: v => v == "+" ? "" : v,
+        store: v => string.IsNullOrWhiteSpace(v) ? "+" : v);
 
     public static string FileEditorCommand => @$"""{AppSettings.GetGitExtensionsFullPath()}"" fileeditor";
 
-    public static bool RememberAmendCommitState
-    {
-        get => GetBool("RememberAmendCommitState", true);
-        set => SetBool("RememberAmendCommitState", value);
-    }
+    public static ISetting<bool> RememberAmendCommitState { get; } = Setting.Create(RootSettingsPath, "RememberAmendCommitState", defaultValue: true);
 
     public static void UsingContainer(DistributedSettings settingsContainer, Action action)
     {
@@ -305,11 +284,11 @@ public static partial class AppSettings
         set => WriteStringRegValue("CascadeShellMenuItems", value);
     }
 
-    public static ISetting<int> FileStatusFindInFilesGitGrepTypeIndex { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusFindInFilesGitGrepTypeIndex), 1);
+    public static ISetting<int> FileStatusFindInFilesGitGrepTypeIndex { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusFindInFilesGitGrepTypeIndex), defaultValue: 1);
 
-    public static ISetting<bool> FileStatusMergeSingleItemWithFolder { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusMergeSingleItemWithFolder), false);
+    public static ISetting<bool> FileStatusMergeSingleItemWithFolder { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusMergeSingleItemWithFolder), defaultValue: false);
 
-    public static ISetting<bool> FileStatusShowGroupNodesInFlatList { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusShowGroupNodesInFlatList), false);
+    public static ISetting<bool> FileStatusShowGroupNodesInFlatList { get; } = Setting.Create(FileStatusSettingsPath, nameof(FileStatusShowGroupNodesInFlatList), defaultValue: false);
 
     public static string SshPath
     {
@@ -378,117 +357,61 @@ public static partial class AppSettings
     }
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static bool WslGitEnabled
-    {
-        get => GetBool("WslGitEnabled", true);
-    }
+    public static ISetting<bool> WslGitEnabled { get; } = Setting.Create(RootSettingsPath, "WslGitEnabled", defaultValue: true);
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static string WslCommand
-    {
-        get => GetString(nameof(WslCommand), "wsl");
-    }
+    public static ISetting<string> WslCommand { get; } = Setting.Create(RootSettingsPath, nameof(WslCommand), defaultValue: "wsl");
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static string WslGitCommand
-    {
-        get => GetString(nameof(WslGitCommand), "git");
-    }
+    public static ISetting<string> WslGitCommand { get; } = Setting.Create(RootSettingsPath, nameof(WslGitCommand), defaultValue: "git");
 
-    public static bool StashKeepIndex
-    {
-        get => GetBool("stashkeepindex", false);
-        set => SetBool("stashkeepindex", value);
-    }
+    public static ISetting<bool> StashKeepIndex { get; } = Setting.Create(RootSettingsPath, "stashkeepindex", defaultValue: false);
 
-    public static bool DontConfirmStashDrop
-    {
-        // History Compatibility: The settings was originally was called 'StashConfirmDropShow', and then it was inverted.
-        // To maintain the compat with the existing user settings negate the retrieved value.
-        get => !GetBool("stashconfirmdropshow", true);
-        set => SetBool("stashconfirmdropshow", !value);
-    }
+    // History Compatibility: The setting was originally called 'StashConfirmDropShow', and then it was inverted.
+    // To maintain compat with existing user settings, negate the stored value.
+    public static ISetting<bool> DontConfirmStashDrop { get; } = Setting.CreateIntercepted<bool, bool>(
+        RootSettingsPath,
+        "stashconfirmdropshow",
+        defaultValue: false,
+        read: v => !v,
+        store: v => !v);
 
-    public static bool ApplyPatchIgnoreWhitespace
-    {
-        get => GetBool("applypatchignorewhitespace", false);
-        set => SetBool("applypatchignorewhitespace", value);
-    }
+    public static ISetting<bool> ApplyPatchIgnoreWhitespace { get; } = Setting.Create(RootSettingsPath, "applypatchignorewhitespace", defaultValue: false);
 
-    public static bool ApplyPatchSignOff
-    {
-        get => GetBool("applypatchsignoff", true);
-        set => SetBool("applypatchsignoff", value);
-    }
+    public static ISetting<bool> ApplyPatchSignOff { get; } = Setting.Create(RootSettingsPath, "applypatchsignoff", defaultValue: true);
 
-    public static bool UseHistogramDiffAlgorithm
-    {
-        // History Compatibility: The settings key has patience in the name for historical reasons
-        get => GetBool("usepatiencediffalgorithm", false);
-        set => SetBool("usepatiencediffalgorithm", value);
-    }
+    // History Compatibility: The settings key has patience in the name for historical reasons
+    public static ISetting<bool> UseHistogramDiffAlgorithm { get; } = Setting.Create(RootSettingsPath, "usepatiencediffalgorithm", defaultValue: false);
 
     /// <summary>
     /// Use Git coloring for selected commands
     /// </summary>
-    public static ISetting<bool> UseGitColoring { get; } = Setting.Create(AppearanceSettingsPath, nameof(UseGitColoring), true);
+    public static ISetting<bool> UseGitColoring { get; } = Setting.Create(AppearanceSettingsPath, nameof(UseGitColoring), defaultValue: true);
 
     /// <summary>
     /// Color the background at changes (invert colors).
     /// </summary>
-    public static ISetting<bool> ReverseGitColoring { get; } = Setting.Create(AppearanceSettingsPath, nameof(ReverseGitColoring), true);
+    public static ISetting<bool> ReverseGitColoring { get; } = Setting.Create(AppearanceSettingsPath, nameof(ReverseGitColoring), defaultValue: true);
 
-    public static bool ShowErrorsWhenStagingFiles
-    {
-        get => GetBool("showerrorswhenstagingfiles", true);
-        set => SetBool("showerrorswhenstagingfiles", value);
-    }
+    public static ISetting<bool> ShowErrorsWhenStagingFiles { get; } = Setting.Create(RootSettingsPath, "showerrorswhenstagingfiles", defaultValue: true);
 
-    public static bool EnsureCommitMessageSecondLineEmpty
-    {
-        get => GetBool("addnewlinetocommitmessagewhenmissing", true);
-        set => SetBool("addnewlinetocommitmessagewhenmissing", value);
-    }
+    public static ISetting<bool> EnsureCommitMessageSecondLineEmpty { get; } = Setting.Create(RootSettingsPath, "addnewlinetocommitmessagewhenmissing", defaultValue: true);
 
-    public static string LastCommitMessage
-    {
-        get => GetString("lastCommitMessage", "");
-        set => SetString("lastCommitMessage", value);
-    }
+    public static ISetting<string> LastCommitMessage { get; } = Setting.Create(RootSettingsPath, "lastCommitMessage", defaultValue: "");
 
-    public static int CommitDialogNumberOfPreviousMessages
-    {
-        get => GetInt("commitDialogNumberOfPreviousMessages", 6);
-        set => SetInt("commitDialogNumberOfPreviousMessages", value);
-    }
+    public static ISetting<int> CommitDialogNumberOfPreviousMessages { get; } = Setting.Create(RootSettingsPath, "commitDialogNumberOfPreviousMessages", defaultValue: 6);
 
-    public static ISetting<bool> CommitDialogSelectStagedOnEnterMessage { get; } = Setting.Create(DialogSettingsPath, nameof(CommitDialogSelectStagedOnEnterMessage), true);
+    public static ISetting<bool> CommitDialogSelectStagedOnEnterMessage { get; } = Setting.Create(DialogSettingsPath, nameof(CommitDialogSelectStagedOnEnterMessage), defaultValue: true);
 
-    public static bool CommitDialogShowOnlyMyMessages
-    {
-        get => GetBool("commitDialogShowOnlyMyMessages", false);
-        set => SetBool("commitDialogShowOnlyMyMessages", value);
-    }
+    public static ISetting<bool> CommitDialogShowOnlyMyMessages { get; } = Setting.Create(RootSettingsPath, "commitDialogShowOnlyMyMessages", defaultValue: false);
 
-    public static bool ShowCommitAndPush
-    {
-        get => GetBool("showcommitandpush", true);
-        set => SetBool("showcommitandpush", value);
-    }
+    public static ISetting<bool> ShowCommitAndPush { get; } = Setting.Create(RootSettingsPath, "showcommitandpush", defaultValue: true);
 
-    public static bool ShowResetWorkTreeChanges
-    {
-        get => GetBool("showresetunstagedchanges", true);
-        set => SetBool("showresetunstagedchanges", value);
-    }
+    public static ISetting<bool> ShowResetWorkTreeChanges { get; } = Setting.Create(RootSettingsPath, "showresetunstagedchanges", defaultValue: true);
 
-    public static bool ShowResetAllChanges
-    {
-        get => GetBool("showresetallchanges", true);
-        set => SetBool("showresetallchanges", value);
-    }
+    public static ISetting<bool> ShowResetAllChanges { get; } = Setting.Create(RootSettingsPath, "showresetallchanges", defaultValue: true);
 
-    public static ISetting<bool> ShowConEmuTab { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowConEmuTab), true);
+    public static ISetting<bool> ShowConEmuTab { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowConEmuTab), defaultValue: true);
 
     private const string ConEmuStyleDefault = "Default";
     private const string ConEmuStyleDark = "<Tomorrow Night>";
@@ -508,13 +431,13 @@ public static partial class AppSettings
             : style;
     }
 
-    public static ISetting<string> ConEmuTerminal { get; } = Setting.Create(DetailedSettingsPath, nameof(ConEmuTerminal), "bash");
-    public static ISetting<int> OutputHistoryDepth { get; } = Setting.Create(DetailedSettingsPath, nameof(OutputHistoryDepth), 20);
-    public static ISetting<bool> OutputHistoryPanelVisible { get; } = Setting.Create(DetailedSettingsPath, nameof(OutputHistoryPanelVisible), false);
-    public static ISetting<bool> ShowOutputHistoryAsTab { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowOutputHistoryAsTab), true);
-    public static ISetting<bool> UseBrowseForFileHistory { get; } = Setting.Create(DetailedSettingsPath, nameof(UseBrowseForFileHistory), true);
-    public static ISetting<bool> UseDiffViewerForBlame { get; } = Setting.Create(DetailedSettingsPath, nameof(UseDiffViewerForBlame), false);
-    public static ISetting<bool> ShowGpgInformation { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowGpgInformation), true);
+    public static ISetting<string> ConEmuTerminal { get; } = Setting.Create(DetailedSettingsPath, nameof(ConEmuTerminal), defaultValue: "bash");
+    public static ISetting<int> OutputHistoryDepth { get; } = Setting.Create(DetailedSettingsPath, nameof(OutputHistoryDepth), defaultValue: 20);
+    public static ISetting<bool> OutputHistoryPanelVisible { get; } = Setting.Create(DetailedSettingsPath, nameof(OutputHistoryPanelVisible), defaultValue: false);
+    public static ISetting<bool> ShowOutputHistoryAsTab { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowOutputHistoryAsTab), defaultValue: true);
+    public static ISetting<bool> UseBrowseForFileHistory { get; } = Setting.Create(DetailedSettingsPath, nameof(UseBrowseForFileHistory), defaultValue: true);
+    public static ISetting<bool> UseDiffViewerForBlame { get; } = Setting.Create(DetailedSettingsPath, nameof(UseDiffViewerForBlame), defaultValue: false);
+    public static ISetting<bool> ShowGpgInformation { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowGpgInformation), defaultValue: true);
 
     public static CommitInfoPosition CommitInfoPosition
     {
@@ -525,107 +448,53 @@ public static partial class AppSettings
         set => DetailedSettingsPath.SetEnum("CommitInfoPosition", value);
     }
 
-    public static ISetting<bool> MessageEditorWordWrap => Setting.Create(DetailedSettingsPath, nameof(MessageEditorWordWrap), false);
+    public static ISetting<bool> MessageEditorWordWrap => Setting.Create(DetailedSettingsPath, nameof(MessageEditorWordWrap), defaultValue: false);
 
-    public static bool ShowSplitViewLayout
-    {
-        get => DetailedSettingsPath.GetBool("ShowSplitViewLayout", true);
-        set => DetailedSettingsPath.SetBool("ShowSplitViewLayout", value);
-    }
+    public static ISetting<bool> ShowSplitViewLayout { get; } = Setting.Create(DetailedSettingsPath, nameof(ShowSplitViewLayout), defaultValue: true);
 
-    public static bool ProvideAutocompletion
-    {
-        get => GetBool("provideautocompletion", true);
-        set => SetBool("provideautocompletion", value);
-    }
+    public static ISetting<bool> ProvideAutocompletion { get; } = Setting.Create(RootSettingsPath, "provideautocompletion", defaultValue: true);
 
-    public static TruncatePathMethod TruncatePathMethod
-    {
-        get => GetEnum("truncatepathmethod", TruncatePathMethod.None);
-        set => SetEnum("truncatepathmethod", value);
-    }
+    public static ISetting<TruncatePathMethod> TruncatePathMethod { get; } = Setting.Create(RootSettingsPath, "truncatepathmethod", GitCommands.TruncatePathMethod.None);
 
-    public static bool ShowGitStatusInBrowseToolbar
-    {
-        get => GetBool("showgitstatusinbrowsetoolbar", true);
-        set => SetBool("showgitstatusinbrowsetoolbar", value);
-    }
+    public static ISetting<bool> ShowGitStatusInBrowseToolbar { get; } = Setting.Create(RootSettingsPath, "showgitstatusinbrowsetoolbar", defaultValue: true);
 
-    public static bool ShowGitStatusForArtificialCommits
-    {
-        get => GetBool("showgitstatusforartificialcommits", true);
-        set => SetBool("showgitstatusforartificialcommits", value);
-    }
+    public static ISetting<bool> ShowGitStatusForArtificialCommits { get; } = Setting.Create(RootSettingsPath, "showgitstatusforartificialcommits", defaultValue: true);
 
     public static EnumRuntimeSetting<RevisionSortOrder> RevisionSortOrder { get; } = new(RootSettingsPath, nameof(RevisionSortOrder), GitCommands.RevisionSortOrder.GitDefault);
 
-    public static bool CommitInfoShowContainedInBranches => CommitInfoShowContainedInBranchesLocal ||
-                                                            CommitInfoShowContainedInBranchesRemote ||
-                                                            CommitInfoShowContainedInBranchesRemoteIfNoLocal;
+    public static bool CommitInfoShowContainedInBranches => CommitInfoShowContainedInBranchesLocal.Value ||
+                                                            CommitInfoShowContainedInBranchesRemote.Value ||
+                                                            CommitInfoShowContainedInBranchesRemoteIfNoLocal.Value;
 
-    public static bool CommitInfoShowContainedInBranchesLocal
-    {
-        get => GetBool("commitinfoshowcontainedinbrancheslocal", true);
-        set => SetBool("commitinfoshowcontainedinbrancheslocal", value);
-    }
+    public static ISetting<bool> CommitInfoShowContainedInBranchesLocal { get; } = Setting.Create(RootSettingsPath, "commitinfoshowcontainedinbrancheslocal", defaultValue: true);
 
-    public static bool CheckForUncommittedChangesInCheckoutBranch
-    {
-        get => GetBool("checkforuncommittedchangesincheckoutbranch", true);
-        set => SetBool("checkforuncommittedchangesincheckoutbranch", value);
-    }
+    public static ISetting<bool> CheckForUncommittedChangesInCheckoutBranch { get; } = Setting.Create(RootSettingsPath, "checkforuncommittedchangesincheckoutbranch", defaultValue: true);
 
-    public static bool AlwaysShowCheckoutBranchDlg
-    {
-        get => GetBool("AlwaysShowCheckoutBranchDlg", false);
-        set => SetBool("AlwaysShowCheckoutBranchDlg", value);
-    }
+    public static ISetting<bool> AlwaysShowCheckoutBranchDlg { get; } = Setting.Create(RootSettingsPath, "AlwaysShowCheckoutBranchDlg", defaultValue: false);
 
-    public static bool CommitAndPushForcedWhenAmend
-    {
-        get => GetBool("CommitAndPushForcedWhenAmend", false);
-        set => SetBool("CommitAndPushForcedWhenAmend", value);
-    }
+    public static ISetting<bool> CommitAndPushForcedWhenAmend { get; } = Setting.Create(RootSettingsPath, "CommitAndPushForcedWhenAmend", defaultValue: false);
 
-    public static bool CommitInfoShowContainedInBranchesRemote
-    {
-        get => GetBool("commitinfoshowcontainedinbranchesremote", false);
-        set => SetBool("commitinfoshowcontainedinbranchesremote", value);
-    }
+    public static ISetting<bool> CommitInfoShowContainedInBranchesRemote { get; } = Setting.Create(RootSettingsPath, "commitinfoshowcontainedinbranchesremote", defaultValue: false);
 
-    public static bool CommitInfoShowContainedInBranchesRemoteIfNoLocal
-    {
-        get => GetBool("commitinfoshowcontainedinbranchesremoteifnolocal", false);
-        set => SetBool("commitinfoshowcontainedinbranchesremoteifnolocal", value);
-    }
+    public static ISetting<bool> CommitInfoShowContainedInBranchesRemoteIfNoLocal { get; } = Setting.Create(RootSettingsPath, "commitinfoshowcontainedinbranchesremoteifnolocal", defaultValue: false);
 
-    public static bool CommitInfoShowContainedInTags
-    {
-        get => GetBool("commitinfoshowcontainedintags", true);
-        set => SetBool("commitinfoshowcontainedintags", value);
-    }
+    public static ISetting<bool> CommitInfoShowContainedInTags { get; } = Setting.Create(RootSettingsPath, "commitinfoshowcontainedintags", defaultValue: true);
 
-    public static bool CommitInfoShowTagThisCommitDerivesFrom
-    {
-        get => GetBool("commitinfoshowtagthiscommitderivesfrom", true);
-        set => SetBool("commitinfoshowtagthiscommitderivesfrom", value);
-    }
+    public static ISetting<bool> CommitInfoShowTagThisCommitDerivesFrom { get; } = Setting.Create(RootSettingsPath, "commitinfoshowtagthiscommitderivesfrom", defaultValue: true);
 
     #region Avatars
 
     public static string AvatarImageCachePath => Path.Combine(LocalApplicationDataPath.Value!, "Images\\");
 
-    public static AvatarFallbackType AvatarFallbackType
-    {
-        get => GetEnumViaString("GravatarDefaultImageType", AvatarFallbackType.AuthorInitials);
-        set => SetString("GravatarDefaultImageType", value.ToString());
-    }
+    // Migrate-on-read: legacy stored values "AuthorInitials" and "Gravatar" are mapped to current enum values.
+    public static ISetting<AvatarFallbackType> AvatarFallbackType { get; } = Setting.CreateIntercepted<string, AvatarFallbackType>(
+        RootSettingsPath,
+        "GravatarDefaultImageType",
+        defaultValue: GitCommands.AvatarFallbackType.AuthorInitials,
+        read: v => v switch { "None" => GitCommands.AvatarFallbackType.AuthorInitials, _ => Enum.TryParse(v, out AvatarFallbackType e) ? e : GitCommands.AvatarFallbackType.AuthorInitials },
+        store: v => v.ToString());
 
-    public static string CustomAvatarTemplate
-    {
-        get => GetString("CustomAvatarTemplate", string.Empty);
-        set => SetString("CustomAvatarTemplate", value);
-    }
+    public static ISetting<string> CustomAvatarTemplate { get; } = Setting.Create(RootSettingsPath, "CustomAvatarTemplate", defaultValue: "");
 
     /// <summary>
     /// Gets the size of the commit author avatar. Set to 80px.
@@ -633,121 +502,27 @@ public static partial class AppSettings
     /// <remarks>The value should be scaled with DPI.</remarks>
     public static int AuthorImageSizeInCommitInfo => 80;
 
-    public static int AvatarImageCacheDays
-    {
-        get => GetInt("authorimagecachedays", 13);
-        set => SetInt("authorimagecachedays", value);
-    }
+    public static ISetting<int> AvatarImageCacheDays { get; } = Setting.Create(RootSettingsPath, "authorimagecachedays", defaultValue: 13);
 
-    public static bool ShowAuthorAvatarInCommitInfo
-    {
-        get => GetBool("showauthorgravatar", true);
-        set => SetBool("showauthorgravatar", value);
-    }
+    public static ISetting<bool> ShowAuthorAvatarInCommitInfo { get; } = Setting.Create(RootSettingsPath, "showauthorgravatar", defaultValue: true);
 
-    public static AvatarProvider AvatarProvider
-    {
-        get => GetEnumViaString("Appearance.AvatarProvider", AvatarProvider.None);
-        set => SetString("Appearance.AvatarProvider", value.ToString());
-    }
+    // Migrate-on-read: legacy stored values "AuthorInitials" and "Gravatar" are mapped to current enum values.
+    public static ISetting<AvatarProvider> AvatarProvider { get; } = Setting.CreateIntercepted<string, AvatarProvider>(
+        RootSettingsPath,
+        "Appearance.AvatarProvider",
+        defaultValue: GitCommands.AvatarProvider.None,
+        read: v => v switch { "AuthorInitials" => GitCommands.AvatarProvider.None, "Gravatar" => GitCommands.AvatarProvider.Default, _ => Enum.TryParse(v, out AvatarProvider e) ? e : GitCommands.AvatarProvider.None },
+        store: v => v.ToString());
 
-    public static int AvatarCacheSize
-    {
-        get => GetInt("Appearance.AvatarCacheSize", 200);
-        set => SetInt("Appearance.AvatarCacheSize", value);
-    }
+    public static ISetting<int> AvatarCacheSize { get; } = Setting.Create(RootSettingsPath, "Appearance.AvatarCacheSize", defaultValue: 200);
 
     // Currently not configurable in UI (Set manually in settings file)
     // Names from here: https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.brushes?view=windowsdesktop-7.0
     // or #AARRGGBB code
-    public static string AvatarAuthorInitialsPalette
-    {
-        get => GetString("Appearance.AvatarAuthorInitialsPalette", "SlateGray,RoyalBlue,Purple,OrangeRed,Teal,OliveDrab");
-        set => SetString("Appearance.AvatarAuthorInitialsPalette", value);
-    }
+    public static ISetting<string> AvatarAuthorInitialsPalette { get; } = Setting.Create(RootSettingsPath, "Appearance.AvatarAuthorInitialsPalette", defaultValue: "SlateGray,RoyalBlue,Purple,OrangeRed,Teal,OliveDrab");
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static float AvatarAuthorInitialsLuminanceThreshold => GetFloat("AvatarAuthorInitialsLuminanceThreshold", 0.5f);
-
-    /// <summary>
-    /// Loads a setting with GetString and parses it to an enum
-    /// </summary>
-    /// <remarks>
-    /// It's currently a limitation by <see cref="SettingsCache"/> that a given setting can
-    /// only ever use GetString/SetString or GetEnum/SetEnum but not both. This is the case
-    /// because <see cref="SettingsCache"/> caches a typed/parsed value of the setting and
-    /// crashes at <see cref="SettingsCache.TryGetValue(string, out string?)"/>
-    /// if the type that is requested doesn't match the cached type.
-    /// </remarks>
-    private static TEnum GetEnumViaString<TEnum>(string settingName, TEnum defaultValue)
-        where TEnum : struct
-    {
-        string? settingStringValue = GetString(settingName, defaultValue.ToString());
-
-        if (Enum.TryParse(settingStringValue, out TEnum settingEnumValue))
-        {
-            return settingEnumValue;
-        }
-
-        return defaultValue;
-    }
-
-    private static void MigrateAvatarSettings()
-    {
-        // Load settings as strings to support obsolete settings that are no longer
-        // part of the enums AvatarProvider or AvatarFallbackType.
-
-        string provider = GetString("Appearance.AvatarProvider", "Default");
-
-        // if the provider turns out to be the obsolete "author initials" we can skip loading
-        // the fallback image, because it will be overwritten anyways, so loading it is postponed.
-        string fallbackImage;
-
-        bool providerChanged = false;
-        bool fallbackImageChanged = false;
-
-        if (provider == "AuthorInitials")
-        {
-            provider = AvatarProvider.None.ToString();
-            fallbackImage = AvatarFallbackType.AuthorInitials.ToString();
-
-            providerChanged = true;
-            fallbackImageChanged = true;
-        }
-        else
-        {
-            if (provider == "Gravatar")
-            {
-                provider = AvatarProvider.Default.ToString();
-                providerChanged = true;
-            }
-
-            // if provider was not "AuthorInitials" the fallback image
-            // is loaded to check if it has to be migrated.
-            fallbackImage = GetString("GravatarDefaultImageType", "AuthorInitials");
-
-            if (fallbackImage == "None")
-            {
-                fallbackImage = AvatarFallbackType.AuthorInitials.ToString();
-                fallbackImageChanged = true;
-            }
-        }
-
-        if (providerChanged)
-        {
-            SetString("Appearance.AvatarProvider", provider);
-        }
-
-        if (fallbackImageChanged)
-        {
-            SetString("GravatarDefaultImageType", fallbackImage);
-        }
-
-        if (providerChanged || fallbackImageChanged)
-        {
-            SaveSettings();
-        }
-    }
+    public static ISetting<float> AvatarAuthorInitialsLuminanceThreshold { get; } = Setting.Create(RootSettingsPath, "AvatarAuthorInitialsLuminanceThreshold", defaultValue: 0.5f);
 
     private static void MigrateSshSettings()
     {
@@ -798,17 +573,13 @@ public static partial class AppSettings
 
     #endregion
 
-    public static string Translation
-    {
-        get => GetString("translation", "");
-        set => SetString("translation", value);
-    }
+    public static ISetting<string> Translation { get; } = Setting.Create(RootSettingsPath, "translation", defaultValue: "");
 
     private static string? _currentTranslation;
 
     public static string? CurrentTranslation
     {
-        get => _currentTranslation ?? Translation;
+        get => _currentTranslation ?? Translation.Value;
         set => _currentTranslation = value;
     }
 
@@ -863,346 +634,131 @@ public static partial class AppSettings
         }
     }
 
-    public static bool UserProfileHomeDir
-    {
-        get => GetBool("userprofilehomedir", false);
-        set => SetBool("userprofilehomedir", value);
-    }
+    public static ISetting<bool> UserProfileHomeDir { get; } = Setting.Create(RootSettingsPath, "userprofilehomedir", defaultValue: false);
 
-    public static string CustomHomeDir
-    {
-        get => GetString("customhomedir", "");
-        set => SetString("customhomedir", value);
-    }
+    public static ISetting<string> CustomHomeDir { get; } = Setting.Create(RootSettingsPath, "customhomedir", defaultValue: "");
 
-    public static bool EnableAutoScale
-    {
-        get => GetBool("enableautoscale", true);
-        set => SetBool("enableautoscale", value);
-    }
+    public static ISetting<bool> EnableAutoScale { get; } = Setting.Create(RootSettingsPath, "enableautoscale", defaultValue: true);
 
-    public static bool CloseCommitDialogAfterCommit
-    {
-        get => GetBool("closecommitdialogaftercommit", true);
-        set => SetBool("closecommitdialogaftercommit", value);
-    }
+    public static ISetting<bool> CloseCommitDialogAfterCommit { get; } = Setting.Create(RootSettingsPath, "closecommitdialogaftercommit", defaultValue: true);
 
-    public static bool CloseCommitDialogAfterLastCommit
-    {
-        get => GetBool("closecommitdialogafterlastcommit", true);
-        set => SetBool("closecommitdialogafterlastcommit", value);
-    }
+    public static ISetting<bool> CloseCommitDialogAfterLastCommit { get; } = Setting.Create(RootSettingsPath, "closecommitdialogafterlastcommit", defaultValue: true);
 
-    public static bool RefreshArtificialCommitOnApplicationActivated
-    {
-        get => GetBool("refreshcommitdialogonformfocus", false);
-        set => SetBool("refreshcommitdialogonformfocus", value);
-    }
+    public static ISetting<bool> RefreshArtificialCommitOnApplicationActivated { get; } = Setting.Create(RootSettingsPath, "refreshcommitdialogonformfocus", defaultValue: false);
 
-    public static bool StageInSuperprojectAfterCommit
-    {
-        get => GetBool("stageinsuperprojectaftercommit", true);
-        set => SetBool("stageinsuperprojectaftercommit", value);
-    }
+    public static ISetting<bool> StageInSuperprojectAfterCommit { get; } = Setting.Create(RootSettingsPath, "stageinsuperprojectaftercommit", defaultValue: true);
 
-    public static bool FollowRenamesInFileHistory
-    {
-        get => GetBool("followrenamesinfilehistory", true);
-        set => SetBool("followrenamesinfilehistory", value);
-    }
+    public static ISetting<bool> FollowRenamesInFileHistory { get; } = Setting.Create(RootSettingsPath, "followrenamesinfilehistory", defaultValue: true);
 
-    public static bool FollowRenamesInFileHistoryExactOnly
-    {
-        get => GetBool("followrenamesinfilehistoryexactonly", false);
-        set => SetBool("followrenamesinfilehistoryexactonly", value);
-    }
+    public static ISetting<bool> FollowRenamesInFileHistoryExactOnly { get; } = Setting.Create(RootSettingsPath, "followrenamesinfilehistoryexactonly", defaultValue: false);
 
-    public static bool FullHistoryInFileHistory
-    {
-        get => GetBool("fullhistoryinfilehistory", false);
-        set => SetBool("fullhistoryinfilehistory", value);
-    }
+    public static ISetting<bool> FullHistoryInFileHistory { get; } = Setting.Create(RootSettingsPath, "fullhistoryinfilehistory", defaultValue: false);
 
-    public static bool SimplifyMergesInFileHistory
-    {
-        get => GetBool("simplifymergesinfileHistory", false);
-        set => SetBool("simplifymergesinfileHistory", value);
-    }
+    public static ISetting<bool> SimplifyMergesInFileHistory { get; } = Setting.Create(RootSettingsPath, "simplifymergesinfileHistory", defaultValue: false);
 
-    public static bool LoadFileHistoryOnShow
-    {
-        get => GetBool("LoadFileHistoryOnShow", true);
-        set => SetBool("LoadFileHistoryOnShow", value);
-    }
+    public static ISetting<bool> LoadFileHistoryOnShow { get; } = Setting.Create(RootSettingsPath, "LoadFileHistoryOnShow", defaultValue: true);
 
-    public static bool LoadBlameOnShow
-    {
-        get => GetBool("LoadBlameOnShow", true);
-        set => SetBool("LoadBlameOnShow", value);
-    }
+    public static ISetting<bool> LoadBlameOnShow { get; } = Setting.Create(RootSettingsPath, "LoadBlameOnShow", defaultValue: true);
 
-    public static bool DetectCopyInFileOnBlame
-    {
-        get => GetBool("DetectCopyInFileOnBlame", false);
-        set => SetBool("DetectCopyInFileOnBlame", value);
-    }
+    public static ISetting<bool> DetectCopyInFileOnBlame { get; } = Setting.Create(RootSettingsPath, "DetectCopyInFileOnBlame", defaultValue: false);
 
-    public static bool DetectCopyInAllOnBlame
-    {
-        get => GetBool("DetectCopyInAllOnBlame", false);
-        set => SetBool("DetectCopyInAllOnBlame", value);
-    }
+    public static ISetting<bool> DetectCopyInAllOnBlame { get; } = Setting.Create(RootSettingsPath, "DetectCopyInAllOnBlame", defaultValue: false);
 
-    public static bool IgnoreWhitespaceOnBlame
-    {
-        get => GetBool("IgnoreWhitespaceOnBlame", true);
-        set => SetBool("IgnoreWhitespaceOnBlame", value);
-    }
+    public static ISetting<bool> IgnoreWhitespaceOnBlame { get; } = Setting.Create(RootSettingsPath, "IgnoreWhitespaceOnBlame", defaultValue: true);
 
-    public static bool OpenSubmoduleDiffInSeparateWindow
-    {
-        get => GetBool("opensubmodulediffinseparatewindow", false);
-        set => SetBool("opensubmodulediffinseparatewindow", value);
-    }
+    public static ISetting<bool> OpenSubmoduleDiffInSeparateWindow { get; } = Setting.Create(RootSettingsPath, "opensubmodulediffinseparatewindow", defaultValue: false);
 
     /// <summary>
     /// Gets or sets whether to show artificial commits in the revision graph.
     /// </summary>
-    public static bool RevisionGraphShowArtificialCommits
-    {
-        get => GetBool("revisiongraphshowworkingdirchanges", true);
-        set => SetBool("revisiongraphshowworkingdirchanges", value);
-    }
+    public static ISetting<bool> RevisionGraphShowArtificialCommits { get; } = Setting.Create(RootSettingsPath, "revisiongraphshowworkingdirchanges", defaultValue: true);
 
-    public static bool RevisionGraphDrawAlternateBackColor
-    {
-        get => GetBool("RevisionGraphDrawAlternateBackColor", true);
-        set => SetBool("RevisionGraphDrawAlternateBackColor", value);
-    }
+    public static ISetting<bool> RevisionGraphDrawAlternateBackColor { get; } = Setting.Create(RootSettingsPath, "RevisionGraphDrawAlternateBackColor", defaultValue: true);
 
-    public static bool RevisionGraphDrawNonRelativesGray
-    {
-        get => GetBool("revisiongraphdrawnonrelativesgray", true);
-        set => SetBool("revisiongraphdrawnonrelativesgray", value);
-    }
+    public static ISetting<bool> RevisionGraphDrawNonRelativesGray { get; } = Setting.Create(RootSettingsPath, "revisiongraphdrawnonrelativesgray", defaultValue: true);
 
-    public static bool RevisionGraphDrawNonRelativesTextGray
-    {
-        get => GetBool("revisiongraphdrawnonrelativestextgray", false);
-        set => SetBool("revisiongraphdrawnonrelativestextgray", value);
-    }
+    public static ISetting<bool> RevisionGraphDrawNonRelativesTextGray { get; } = Setting.Create(RootSettingsPath, "revisiongraphdrawnonrelativestextgray", defaultValue: false);
 
     public static readonly Dictionary<string, Encoding> AvailableEncodings = [];
 
     /// <summary>
     /// Gets or sets the default pull action that is performed by the toolbar icon when it is clicked on.
     /// </summary>
-    public static GitPullAction DefaultPullAction
-    {
-        get => GetEnum("DefaultPullAction", GitPullAction.Merge);
-        set => SetEnum("DefaultPullAction", value);
-    }
+    public static ISetting<GitPullAction> DefaultPullAction { get; } = Setting.Create(RootSettingsPath, "DefaultPullAction", defaultValue: GitPullAction.Merge);
 
     /// <summary>
     /// Gets or sets the default pull action as configured in the FormPull dialog.
     /// </summary>
-    public static GitPullAction FormPullAction
-    {
-        get => GetEnum("FormPullAction", GitPullAction.Merge);
-        set => SetEnum("FormPullAction", value);
-    }
+    public static ISetting<GitPullAction> FormPullAction { get; } = Setting.Create(RootSettingsPath, "FormPullAction", defaultValue: GitPullAction.Merge);
 
-    public static bool AutoStash
-    {
-        get => GetBool("autostash", false);
-        set => SetBool("autostash", value);
-    }
+    public static ISetting<bool> AutoStash { get; } = Setting.Create(RootSettingsPath, "autostash", defaultValue: false);
 
-    public static bool RebaseAutoStash
-    {
-        get => GetBool("RebaseAutostash", false);
-        set => SetBool("RebaseAutostash", value);
-    }
+    public static ISetting<bool> RebaseAutoStash { get; } = Setting.Create(RootSettingsPath, "RebaseAutostash", defaultValue: false);
 
-    public static LocalChangesAction CheckoutBranchAction
-    {
-        get => GetEnum("checkoutbranchaction", LocalChangesAction.DontChange);
-        set => SetEnum("checkoutbranchaction", value);
-    }
+    public static ISetting<LocalChangesAction> CheckoutBranchAction { get; } = Setting.Create(RootSettingsPath, "checkoutbranchaction", defaultValue: LocalChangesAction.DontChange);
 
     public static ISetting<bool> CheckoutOtherBranchAfterReset { get; } = Setting.Create(DialogSettingsPath, nameof(CheckoutOtherBranchAfterReset), defaultValue: true);
 
-    public static bool UseDefaultCheckoutBranchAction
-    {
-        get => GetBool("UseDefaultCheckoutBranchAction", false);
-        set => SetBool("UseDefaultCheckoutBranchAction", value);
-    }
+    public static ISetting<bool> UseDefaultCheckoutBranchAction { get; } = Setting.Create(RootSettingsPath, "UseDefaultCheckoutBranchAction", defaultValue: false);
 
-    public static bool DontShowHelpImages
-    {
-        get => GetBool("DontShowHelpImages", false);
-        set => SetBool("DontShowHelpImages", value);
-    }
+    public static ISetting<bool> DontShowHelpImages { get; } = Setting.Create(RootSettingsPath, "DontShowHelpImages", defaultValue: false);
 
-    public static bool AlwaysShowAdvOpt
-    {
-        get => GetBool("AlwaysShowAdvOpt", false);
-        set => SetBool("AlwaysShowAdvOpt", value);
-    }
+    public static ISetting<bool> AlwaysShowAdvOpt { get; } = Setting.Create(RootSettingsPath, "AlwaysShowAdvOpt", defaultValue: false);
 
-    public static bool DontConfirmAmend
-    {
-        get => GetBool("DontConfirmAmend", false);
-        set => SetBool("DontConfirmAmend", value);
-    }
+    public static ISetting<bool> DontConfirmAmend { get; } = Setting.Create(RootSettingsPath, "DontConfirmAmend", defaultValue: false);
 
-    public static bool DontConfirmDeleteUnmergedBranch
-    {
-        get => GetBool("DontConfirmDeleteUnmergedBranch", false);
-        set => SetBool("DontConfirmDeleteUnmergedBranch", value);
-    }
+    public static ISetting<bool> DontConfirmDeleteUnmergedBranch { get; } = Setting.Create(RootSettingsPath, "DontConfirmDeleteUnmergedBranch", defaultValue: false);
 
-    public static bool DontConfirmCommitIfNoBranch
-    {
-        get => GetBool("DontConfirmCommitIfNoBranch", false);
-        set => SetBool("DontConfirmCommitIfNoBranch", value);
-    }
+    public static ISetting<bool> DontConfirmCommitIfNoBranch { get; } = Setting.Create(RootSettingsPath, "DontConfirmCommitIfNoBranch", defaultValue: false);
 
-    public static ISetting<bool> ConfirmBranchCheckout { get; } = Setting.Create(ConfirmationsSettingsPath, nameof(ConfirmBranchCheckout), false);
+    public static ISetting<bool> ConfirmBranchCheckout { get; } = Setting.Create(ConfirmationsSettingsPath, nameof(ConfirmBranchCheckout), defaultValue: false);
 
-    public static bool? AutoPopStashAfterPull
-    {
-        get => GetBool("AutoPopStashAfterPull");
-        set => SetBool("AutoPopStashAfterPull", value);
-    }
+    public static ISetting<bool?> AutoPopStashAfterPull { get; } = Setting.Create<bool>(RootSettingsPath, "AutoPopStashAfterPull");
 
-    public static bool? AutoPopStashAfterCheckoutBranch
-    {
-        get => GetBool("AutoPopStashAfterCheckoutBranch");
-        set => SetBool("AutoPopStashAfterCheckoutBranch", value);
-    }
+    public static ISetting<bool?> AutoPopStashAfterCheckoutBranch { get; } = Setting.Create<bool>(RootSettingsPath, "AutoPopStashAfterCheckoutBranch");
 
-    public static GitPullAction? AutoPullOnPushRejectedAction
-    {
-        get => GetNullableEnum<GitPullAction>("AutoPullOnPushRejectedAction");
-        set => SetNullableEnum("AutoPullOnPushRejectedAction", value);
-    }
+    public static ISetting<GitPullAction?> AutoPullOnPushRejectedAction { get; } = Setting.Create<GitPullAction>(RootSettingsPath, "AutoPullOnPushRejectedAction");
 
-    public static bool DontConfirmPushNewBranch
-    {
-        get => GetBool("DontConfirmPushNewBranch", false);
-        set => SetBool("DontConfirmPushNewBranch", value);
-    }
+    public static ISetting<bool> DontConfirmPushNewBranch { get; } = Setting.Create(RootSettingsPath, "DontConfirmPushNewBranch", defaultValue: false);
 
-    public static bool DontConfirmAddTrackingRef
-    {
-        get => GetBool("DontConfirmAddTrackingRef", false);
-        set => SetBool("DontConfirmAddTrackingRef", value);
-    }
+    public static ISetting<bool> DontConfirmAddTrackingRef { get; } = Setting.Create(RootSettingsPath, "DontConfirmAddTrackingRef", defaultValue: false);
 
-    public static bool DontConfirmCommitAfterConflictsResolved
-    {
-        get => GetBool("DontConfirmCommitAfterConflictsResolved", false);
-        set => SetBool("DontConfirmCommitAfterConflictsResolved", value);
-    }
+    public static ISetting<bool> DontConfirmCommitAfterConflictsResolved { get; } = Setting.Create(RootSettingsPath, "DontConfirmCommitAfterConflictsResolved", defaultValue: false);
 
-    public static bool DontConfirmSecondAbortConfirmation
-    {
-        get => GetBool("DontConfirmSecondAbortConfirmation", false);
-        set => SetBool("DontConfirmSecondAbortConfirmation", value);
-    }
+    public static ISetting<bool> DontConfirmSecondAbortConfirmation { get; } = Setting.Create(RootSettingsPath, "DontConfirmSecondAbortConfirmation", defaultValue: false);
 
-    public static bool DontConfirmRebase
-    {
-        get => GetBool("DontConfirmRebase", false);
-        set => SetBool("DontConfirmRebase", value);
-    }
+    public static ISetting<bool> DontConfirmRebase { get; } = Setting.Create(RootSettingsPath, "DontConfirmRebase", defaultValue: false);
 
-    public static bool DontConfirmResolveConflicts
-    {
-        get => GetBool("DontConfirmResolveConflicts", false);
-        set => SetBool("DontConfirmResolveConflicts", value);
-    }
+    public static ISetting<bool> DontConfirmResolveConflicts { get; } = Setting.Create(RootSettingsPath, "DontConfirmResolveConflicts", defaultValue: false);
 
-    public static bool DontConfirmUndoLastCommit
-    {
-        get => GetBool("DontConfirmUndoLastCommit", false);
-        set => SetBool("DontConfirmUndoLastCommit", value);
-    }
+    public static ISetting<bool> DontConfirmUndoLastCommit { get; } = Setting.Create(RootSettingsPath, "DontConfirmUndoLastCommit", defaultValue: false);
 
-    public static bool DontConfirmFetchAndPruneAll
-    {
-        get => GetBool("DontConfirmFetchAndPruneAll", false);
-        set => SetBool("DontConfirmFetchAndPruneAll", value);
-    }
+    public static ISetting<bool> DontConfirmFetchAndPruneAll { get; } = Setting.Create(RootSettingsPath, "DontConfirmFetchAndPruneAll", defaultValue: false);
 
-    public static bool DontConfirmSwitchWorktree
-    {
-        get => GetBool("DontConfirmSwitchWorktree", false);
-        set => SetBool("DontConfirmSwitchWorktree", value);
-    }
+    public static ISetting<bool> DontConfirmSwitchWorktree { get; } = Setting.Create(RootSettingsPath, "DontConfirmSwitchWorktree", defaultValue: false);
 
-    public static bool IncludeUntrackedFilesInAutoStash
-    {
-        get => GetBool("includeUntrackedFilesInAutoStash", false);
-        set => SetBool("includeUntrackedFilesInAutoStash", value);
-    }
+    public static ISetting<bool> IncludeUntrackedFilesInAutoStash { get; } = Setting.Create(RootSettingsPath, "includeUntrackedFilesInAutoStash", defaultValue: false);
 
-    public static bool IncludeUntrackedFilesInManualStash
-    {
-        get => GetBool("includeUntrackedFilesInManualStash", false);
-        set => SetBool("includeUntrackedFilesInManualStash", value);
-    }
+    public static ISetting<bool> IncludeUntrackedFilesInManualStash { get; } = Setting.Create(RootSettingsPath, "includeUntrackedFilesInManualStash", defaultValue: false);
 
-    public static bool ShowRemoteBranches
-    {
-        get => GetBool("showRemoteBranches", true);
-        set => SetBool("showRemoteBranches", value);
-    }
+    public static ISetting<bool> ShowRemoteBranches { get; } = Setting.Create(RootSettingsPath, "showRemoteBranches", defaultValue: true);
 
     public static BoolRuntimeSetting ShowReflogReferences { get; } = new(RootSettingsPath, nameof(ShowReflogReferences), false);
 
-    public static bool ShowStashes
-    {
-        get => GetBool("showStashes", true);
-        set => SetBool("showStashes", value);
-    }
+    public static ISetting<bool> ShowStashes { get; } = Setting.Create(RootSettingsPath, "showStashes", defaultValue: true);
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static int MaxStashesWithUntrackedFiles
-    {
-        get => GetInt("maxStashesWithUntrackedFiles", 10);
-    }
+    public static ISetting<int> MaxStashesWithUntrackedFiles { get; } = Setting.Create(RootSettingsPath, "maxStashesWithUntrackedFiles", defaultValue: 10);
 
-    public static bool ShowSuperprojectTags
-    {
-        get => GetBool("showSuperprojectTags", false);
-        set => SetBool("showSuperprojectTags", value);
-    }
+    public static ISetting<bool> ShowSuperprojectTags { get; } = Setting.Create(RootSettingsPath, "showSuperprojectTags", defaultValue: false);
 
-    public static bool ShowSuperprojectBranches
-    {
-        get => GetBool("showSuperprojectBranches", true);
-        set => SetBool("showSuperprojectBranches", value);
-    }
+    public static ISetting<bool> ShowSuperprojectBranches { get; } = Setting.Create(RootSettingsPath, "showSuperprojectBranches", defaultValue: true);
 
-    public static bool ShowSuperprojectRemoteBranches
-    {
-        get => GetBool("showSuperprojectRemoteBranches", false);
-        set => SetBool("showSuperprojectRemoteBranches", value);
-    }
+    public static ISetting<bool> ShowSuperprojectRemoteBranches { get; } = Setting.Create(RootSettingsPath, "showSuperprojectRemoteBranches", defaultValue: false);
 
-    public static bool? UpdateSubmodulesOnCheckout
-    {
-        get => GetBool("updateSubmodulesOnCheckout");
-        set => SetBool("updateSubmodulesOnCheckout", value);
-    }
+    public static ISetting<bool?> UpdateSubmodulesOnCheckout { get; } = Setting.Create<bool>(RootSettingsPath, "updateSubmodulesOnCheckout");
 
-    public static bool? DontConfirmUpdateSubmodulesOnCheckout
-    {
-        get => GetBool("dontConfirmUpdateSubmodulesOnCheckout");
-        set => SetBool("dontConfirmUpdateSubmodulesOnCheckout", value);
-    }
+    public static ISetting<bool?> DontConfirmUpdateSubmodulesOnCheckout { get; } = Setting.Create<bool>(RootSettingsPath, "dontConfirmUpdateSubmodulesOnCheckout");
 
     public static string Dictionary
     {
@@ -1210,144 +766,65 @@ public static partial class AppSettings
         set => SettingsContainer.Detached().Dictionary = value;
     }
 
-    public static bool ShowGitCommandLine
-    {
-        get => GetBool("showgitcommandline", false);
-        set => SetBool("showgitcommandline", value);
-    }
+    public static ISetting<bool> ShowGitCommandLine { get; } = Setting.Create(RootSettingsPath, "showgitcommandline", defaultValue: false);
 
-    public static bool ShowStashCount
-    {
-        get => GetBool("showstashcount", false);
-        set => SetBool("showstashcount", value);
-    }
+    public static ISetting<bool> ShowStashCount { get; } = Setting.Create(RootSettingsPath, "showstashcount", defaultValue: false);
 
-    public static bool ShowAheadBehindData
-    {
-        get => GetBool("showaheadbehinddata", true);
-        set => SetBool("showaheadbehinddata", value);
-    }
+    public static ISetting<bool> ShowAheadBehindData { get; } = Setting.Create(RootSettingsPath, "showaheadbehinddata", defaultValue: true);
 
-    public static bool ShowSubmoduleStatus
-    {
-        get => GetBool("showsubmodulestatus", false);
-        set => SetBool("showsubmodulestatus", value);
-    }
+    public static ISetting<bool> ShowSubmoduleStatus { get; } = Setting.Create(RootSettingsPath, "showsubmodulestatus", defaultValue: false);
 
-    public static bool RelativeDate
-    {
-        get => GetBool("relativedate", true);
-        set => SetBool("relativedate", value);
-    }
+    public static ISetting<bool> RelativeDate { get; } = Setting.Create(RootSettingsPath, "relativedate", defaultValue: true);
 
-    public static bool ShowGitNotes
-    {
-        get => GetBool("showgitnotes", false);
-        set => SetBool("showgitnotes", value);
-    }
+    public static ISetting<bool> ShowGitNotes { get; } = Setting.Create(RootSettingsPath, "showgitnotes", defaultValue: false);
 
-    public static bool ShowSessionRefs
-    {
-        get => GetBool("showSessionRefs", false);
-        set => SetBool("showSessionRefs", value);
-    }
+    public static ISetting<bool> ShowSessionRefs { get; } = Setting.Create(RootSettingsPath, "showSessionRefs", defaultValue: false);
 
-    public static ISetting<bool> ShowGitNotesColumn { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowGitNotesColumn), false);
+    public static ISetting<bool> ShowGitNotesColumn { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowGitNotesColumn), defaultValue: false);
 
-    public static bool ShowAnnotatedTagsMessages
-    {
-        get => GetBool("showannotatedtagsmessages", true);
-        set => SetBool("showannotatedtagsmessages", value);
-    }
+    public static ISetting<bool> ShowAnnotatedTagsMessages { get; } = Setting.Create(RootSettingsPath, "showannotatedtagsmessages", defaultValue: true);
 
     // History Compatibility: The meaning of this value is changed in the GUI, setting name is kept for compatibility
-    public static bool HideMergeCommits
-    {
-        get => !GetBool("showmergecommits", true);
-        set => SetBool("showmergecommits", !value);
-    }
+    public static ISetting<bool> HideMergeCommits { get; } = Setting.CreateIntercepted<bool, bool>(
+        RootSettingsPath,
+        "showmergecommits",
+        defaultValue: false,
+        read: v => !v,
+        store: v => !v);
 
-    public static bool ShowTags
-    {
-        get => GetBool("showtags", true);
-        set => SetBool("showtags", value);
-    }
+    public static ISetting<bool> ShowTags { get; } = Setting.Create(RootSettingsPath, "showtags", defaultValue: true);
 
     #region Revision grid column visibilities
 
-    public static bool ShowRevisionGridGraphColumn
-    {
-        get => GetBool("showrevisiongridgraphcolumn", true);
-        set => SetBool("showrevisiongridgraphcolumn", value);
-    }
+    public static ISetting<bool> ShowRevisionGridGraphColumn { get; } = Setting.Create(RootSettingsPath, "showrevisiongridgraphcolumn", defaultValue: true);
 
-    public static bool ShowAuthorAvatarColumn
-    {
-        get => GetBool("showrevisiongridauthoravatarcolumn", true);
-        set => SetBool("showrevisiongridauthoravatarcolumn", value);
-    }
+    public static ISetting<bool> ShowAuthorAvatarColumn { get; } = Setting.Create(RootSettingsPath, "showrevisiongridauthoravatarcolumn", defaultValue: true);
 
-    public static bool ShowAuthorNameColumn
-    {
-        get => GetBool("showrevisiongridauthornamecolumn", true);
-        set => SetBool("showrevisiongridauthornamecolumn", value);
-    }
+    public static ISetting<bool> ShowAuthorNameColumn { get; } = Setting.Create(RootSettingsPath, "showrevisiongridauthornamecolumn", defaultValue: true);
 
-    public static bool ShowDateColumn
-    {
-        get => GetBool("showrevisiongriddatecolumn", true);
-        set => SetBool("showrevisiongriddatecolumn", value);
-    }
+    public static ISetting<bool> ShowDateColumn { get; } = Setting.Create(RootSettingsPath, "showrevisiongriddatecolumn", defaultValue: true);
 
-    public static bool ShowObjectIdColumn
-    {
-        get => GetBool("showids", true);
-        set => SetBool("showids", value);
-    }
+    public static ISetting<bool> ShowObjectIdColumn { get; } = Setting.Create(RootSettingsPath, "showids", defaultValue: true);
 
-    public static bool ShowBuildStatusIconColumn
-    {
-        get => GetBool("showbuildstatusiconcolumn", true);
-        set => SetBool("showbuildstatusiconcolumn", value);
-    }
+    public static ISetting<bool> ShowBuildStatusIconColumn { get; } = Setting.Create(RootSettingsPath, "showbuildstatusiconcolumn", defaultValue: true);
 
-    public static bool ShowBuildStatusTextColumn
-    {
-        get => GetBool("showbuildstatustextcolumn", false);
-        set => SetBool("showbuildstatustextcolumn", value);
-    }
+    public static ISetting<bool> ShowBuildStatusTextColumn { get; } = Setting.Create(RootSettingsPath, "showbuildstatustextcolumn", defaultValue: false);
 
     #endregion
 
-    public static bool ShowAuthorDate
-    {
-        get => GetBool("showauthordate", true);
-        set => SetBool("showauthordate", value);
-    }
+    public static ISetting<bool> ShowAuthorDate { get; } = Setting.Create(RootSettingsPath, "showauthordate", defaultValue: true);
 
-    public static bool CloseProcessDialog
-    {
-        get => GetBool("closeprocessdialog", false);
-        set => SetBool("closeprocessdialog", value);
-    }
+    public static ISetting<bool> CloseProcessDialog { get; } = Setting.Create(RootSettingsPath, "closeprocessdialog", defaultValue: false);
 
-    public static ISetting<bool> ShowProcessDialogPasswordInput => Setting.Create(DetailedSettingsPath, nameof(ShowProcessDialogPasswordInput), false);
+    public static ISetting<bool> ShowProcessDialogPasswordInput => Setting.Create(DetailedSettingsPath, nameof(ShowProcessDialogPasswordInput), defaultValue: false);
 
     public static BoolRuntimeSetting ShowCurrentBranchOnly { get; } = new(RootSettingsPath, nameof(ShowCurrentBranchOnly), false);
 
-    public static bool ShowSimplifyByDecoration
-    {
-        get => GetBool("showsimplifybydecoration", false);
-        set => SetBool("showsimplifybydecoration", value);
-    }
+    public static ISetting<bool> ShowSimplifyByDecoration { get; } = Setting.Create(RootSettingsPath, "showsimplifybydecoration", defaultValue: false);
 
     public static BoolRuntimeSetting BranchFilterEnabled { get; } = new(RootSettingsPath, nameof(BranchFilterEnabled), false);
 
-    public static bool ShowOnlyFirstParent
-    {
-        get => GetBool("showfirstparent", false);
-        set => SetBool("showfirstparent", value);
-    }
+    public static ISetting<bool> ShowOnlyFirstParent { get; } = Setting.Create(RootSettingsPath, "showfirstparent", defaultValue: false);
 
     public static string[] RevisionFilterDropdowns
     {
@@ -1355,29 +832,13 @@ public static partial class AppSettings
         set => SetString("RevisionFilterDropdowns", string.Join("\n", value ?? []));
     }
 
-    public static bool CommitDialogSelectionFilter
-    {
-        get => GetBool("commitdialogselectionfilter", false);
-        set => SetBool("commitdialogselectionfilter", value);
-    }
+    public static ISetting<bool> CommitDialogSelectionFilter { get; } = Setting.Create(RootSettingsPath, "commitdialogselectionfilter", defaultValue: false);
 
-    public static string DefaultCloneDestinationPath
-    {
-        get => GetString("defaultclonedestinationpath", string.Empty);
-        set => SetString("defaultclonedestinationpath", value);
-    }
+    public static ISetting<string> DefaultCloneDestinationPath { get; } = Setting.Create(RootSettingsPath, "defaultclonedestinationpath", defaultValue: "");
 
-    public static int RevisionGridQuickSearchTimeout
-    {
-        get => GetInt("revisiongridquicksearchtimeout", 4000);
-        set => SetInt("revisiongridquicksearchtimeout", value);
-    }
+    public static ISetting<int> RevisionGridQuickSearchTimeout { get; } = Setting.Create(RootSettingsPath, "revisiongridquicksearchtimeout", defaultValue: 4000);
 
-    public static bool ShowCommitBodyInRevisionGrid
-    {
-        get => GetBool("ShowCommitBodyInRevisionGrid", true);
-        set => SetBool("ShowCommitBodyInRevisionGrid", value);
-    }
+    public static ISetting<bool> ShowCommitBodyInRevisionGrid { get; } = Setting.Create(RootSettingsPath, "ShowCommitBodyInRevisionGrid", defaultValue: true);
 
     /// <summary>Gets or sets the path to the GNU/Linux tools (bash, ps, sh, ssh, etc.), e.g. "C:\Program Files\Git\usr\bin\"</summary>
     public static string LinuxToolsDir
@@ -1391,51 +852,26 @@ public static partial class AppSettings
         }
     }
 
-    public static int MaxRevisionGraphCommits
-    {
-        get => GetInt("maxrevisiongraphcommits", 100000);
-        set => SetInt("maxrevisiongraphcommits", value);
-    }
+    public static ISetting<int> MaxRevisionGraphCommits { get; } = Setting.Create(RootSettingsPath, "maxrevisiongraphcommits", defaultValue: 100000);
 
-    public static bool ShowDiffForAllParents
-    {
-        get => GetBool("showdiffforallparents", true);
-        set => SetBool("showdiffforallparents", value);
-    }
+    public static ISetting<bool> ShowDiffForAllParents { get; } = Setting.Create(RootSettingsPath, "showdiffforallparents", defaultValue: true);
 
-    public static ISetting<bool> ShowFindInCommitFilesGitGrep { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowFindInCommitFilesGitGrep), false);
-    public static ISetting<bool> ShowRevisionGridTooltips { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowRevisionGridTooltips), true);
+    public static ISetting<bool> ShowFindInCommitFilesGitGrep { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowFindInCommitFilesGitGrep), defaultValue: false);
+    public static ISetting<bool> ShowRevisionGridTooltips { get; } = Setting.Create(AppearanceSettingsPath, nameof(ShowRevisionGridTooltips), defaultValue: true);
 
-    public static bool ShowAvailableDiffTools
-    {
-        get => GetBool("difftools.showavailable", true);
-        set => SetBool("difftools.showavailable", value);
-    }
+    public static ISetting<bool> ShowAvailableDiffTools { get; } = Setting.Create(RootSettingsPath, "difftools.showavailable", defaultValue: true);
 
-    public static int DiffVerticalRulerPosition
-    {
-        get => GetInt("diffverticalrulerposition", 0);
-        set => SetInt("diffverticalrulerposition", value);
-    }
+    public static ISetting<int> DiffVerticalRulerPosition { get; } = Setting.Create(RootSettingsPath, "diffverticalrulerposition", defaultValue: 0);
 
-    public static ISetting<string> GitGrepUserArguments { get; } = Setting.Create(DialogSettingsPath, nameof(GitGrepUserArguments), "");
+    public static ISetting<string> GitGrepUserArguments { get; } = Setting.Create(DialogSettingsPath, nameof(GitGrepUserArguments), defaultValue: "");
 
-    public static ISetting<bool> GitGrepIgnoreCase { get; } = Setting.Create(DialogSettingsPath, nameof(GitGrepIgnoreCase), false);
+    public static ISetting<bool> GitGrepIgnoreCase { get; } = Setting.Create(DialogSettingsPath, nameof(GitGrepIgnoreCase), defaultValue: false);
 
-    public static ISetting<bool> GitGrepMatchWholeWord { get; } = Setting.Create(DialogSettingsPath, nameof(GitGrepMatchWholeWord), false);
+    public static ISetting<bool> GitGrepMatchWholeWord { get; } = Setting.Create(DialogSettingsPath, nameof(GitGrepMatchWholeWord), defaultValue: false);
 
-    [MaybeNull]
-    public static string RecentWorkingDir
-    {
-        get => GetString("RecentWorkingDir", null);
-        set => SetString("RecentWorkingDir", value);
-    }
+    public static ISetting<string> RecentWorkingDir { get; } = Setting.Create(RootSettingsPath, "RecentWorkingDir", defaultValue: (string?)null);
 
-    public static bool StartWithRecentWorkingDir
-    {
-        get => GetBool("StartWithRecentWorkingDir", false);
-        set => SetBool("StartWithRecentWorkingDir", value);
-    }
+    public static ISetting<bool> StartWithRecentWorkingDir { get; } = Setting.Create(RootSettingsPath, "StartWithRecentWorkingDir", defaultValue: false);
 
     public static string Plink
     {
@@ -1474,23 +910,11 @@ public static partial class AppSettings
         }
     }
 
-    public static bool AutoStartPageant
-    {
-        get => GetBool("autostartpageant", true);
-        set => SetBool("autostartpageant", value);
-    }
+    public static ISetting<bool> AutoStartPageant { get; } = Setting.Create(RootSettingsPath, "autostartpageant", defaultValue: true);
 
-    public static bool MarkIllFormedLinesInCommitMsg
-    {
-        get => GetBool("markillformedlinesincommitmsg", true);
-        set => SetBool("markillformedlinesincommitmsg", value);
-    }
+    public static ISetting<bool> MarkIllFormedLinesInCommitMsg { get; } = Setting.Create(RootSettingsPath, "markillformedlinesincommitmsg", defaultValue: true);
 
-    public static bool UseSystemVisualStyle
-    {
-        get => GetBool("systemvisualstyle", true);
-        set => SetBool("systemvisualstyle", value);
-    }
+    public static ISetting<bool> UseSystemVisualStyle { get; } = Setting.Create(RootSettingsPath, "systemvisualstyle", defaultValue: true);
 
     public static ThemeId ThemeId
     {
@@ -1551,37 +975,21 @@ public static partial class AppSettings
         set => SetFont("conemuconsolefont", value);
     }
 
-    public static bool ShowEolMarkerAsGlyph
-    {
-        get => GetBool("ShowEolMarkerAsGlyph", false);
-        set => SetBool("ShowEolMarkerAsGlyph", value);
-    }
+    public static ISetting<bool> ShowEolMarkerAsGlyph { get; } = Setting.Create(RootSettingsPath, "ShowEolMarkerAsGlyph", defaultValue: false);
 
     #endregion
 
-    public static bool MulticolorBranches
-    {
-        get => GetBool("multicolorbranches", true);
-        set => SetBool("multicolorbranches", value);
-    }
+    public static ISetting<bool> MulticolorBranches { get; } = Setting.Create(RootSettingsPath, "multicolorbranches", defaultValue: true);
 
-    public static bool HighlightAuthoredRevisions
-    {
-        get { return GetBool("highlightauthoredrevisions", true); }
-        set { SetBool("highlightauthoredrevisions", value); }
-    }
+    public static ISetting<bool> HighlightAuthoredRevisions { get; } = Setting.Create(RootSettingsPath, "highlightauthoredrevisions", defaultValue: true);
 
-    public static bool FillRefLabels
-    {
-        get => GetBool("FillRefLabels", false);
-        set => SetBool("FillRefLabels", value);
-    }
+    public static ISetting<bool> FillRefLabels { get; } = Setting.Create(RootSettingsPath, "FillRefLabels", defaultValue: false);
 
-    public static ISetting<bool> MergeGraphLanesHavingCommonParent { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(MergeGraphLanesHavingCommonParent), true);
+    public static ISetting<bool> MergeGraphLanesHavingCommonParent { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(MergeGraphLanesHavingCommonParent), defaultValue: true);
 
-    public static ISetting<bool> RenderGraphWithDiagonals { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(RenderGraphWithDiagonals), true);
+    public static ISetting<bool> RenderGraphWithDiagonals { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(RenderGraphWithDiagonals), defaultValue: true);
 
-    public static ISetting<bool> StraightenGraphDiagonals { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(StraightenGraphDiagonals), true);
+    public static ISetting<bool> StraightenGraphDiagonals { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(StraightenGraphDiagonals), defaultValue: true);
 
     /// <summary>
     ///  The limit when to skip the straightening of revision graph segments.
@@ -1591,37 +999,21 @@ public static partial class AppSettings
     ///  Straightening inserts gaps making the graph wider. If it already has to display many segments, i.e. parallel branches, there would be a low benefit of straightening.<br></br>
     ///  So rather skip the - in this case particularly expensive - RevisionGraphRow.BuildSegmentLanes function and call it only if the row is visible.
     /// </remarks>
-    public static ISetting<int> StraightenGraphSegmentsLimit { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(StraightenGraphSegmentsLimit), 80);
+    public static ISetting<int> StraightenGraphSegmentsLimit { get; } = Setting.Create(RevisionGraphSettingsPath, nameof(StraightenGraphSegmentsLimit), defaultValue: 80);
 
-    public static string LastFormatPatchDir
-    {
-        get => GetString("lastformatpatchdir", "");
-        set => SetString("lastformatpatchdir", value);
-    }
+    public static ISetting<string> LastFormatPatchDir { get; } = Setting.Create(RootSettingsPath, "lastformatpatchdir", defaultValue: "");
 
     public static EnumRuntimeSetting<IgnoreWhitespaceKind> IgnoreWhitespaceKind { get; } = new(RootSettingsPath, nameof(IgnoreWhitespaceKind), Settings.IgnoreWhitespaceKind.None);
 
-    public static bool RememberIgnoreWhiteSpacePreference
-    {
-        get => GetBool("rememberIgnoreWhiteSpacePreference", true);
-        set => SetBool("rememberIgnoreWhiteSpacePreference", value);
-    }
+    public static ISetting<bool> RememberIgnoreWhiteSpacePreference { get; } = Setting.Create(RootSettingsPath, "rememberIgnoreWhiteSpacePreference", defaultValue: true);
 
     public static BoolRuntimeSetting ShowNonPrintingChars { get; } = new(RootSettingsPath, nameof(ShowNonPrintingChars), false);
 
-    public static bool RememberShowNonPrintingCharsPreference
-    {
-        get => GetBool("RememberShowNonPrintableCharsPreference", false);
-        set => SetBool("RememberShowNonPrintableCharsPreference", value);
-    }
+    public static ISetting<bool> RememberShowNonPrintingCharsPreference { get; } = Setting.Create(RootSettingsPath, "RememberShowNonPrintableCharsPreference", defaultValue: false);
 
     public static BoolRuntimeSetting ShowEntireFile { get; } = new(RootSettingsPath, nameof(ShowEntireFile), false);
 
-    public static bool RememberShowEntireFilePreference
-    {
-        get => GetBool("RememberShowEntireFilePreference", false);
-        set => SetBool("RememberShowEntireFilePreference", value);
-    }
+    public static ISetting<bool> RememberShowEntireFilePreference { get; } = Setting.Create(RootSettingsPath, "RememberShowEntireFilePreference", defaultValue: false);
 
     /// <summary>
     /// Diff appearance, alternatives to "patch" viewer.
@@ -1631,37 +1023,29 @@ public static partial class AppSettings
     /// <summary>
     /// Gets or sets whether to remember the preference for diff appearance.
     /// </summary>
-    public static ISetting<bool> RememberDiffDisplayAppearance { get; } = Setting.Create(AppearanceSettingsPath, nameof(RememberDiffDisplayAppearance), false);
+    public static ISetting<bool> RememberDiffDisplayAppearance { get; } = Setting.Create(AppearanceSettingsPath, nameof(RememberDiffDisplayAppearance), defaultValue: false);
 
     public static int NumberOfContextLines
     {
         get
         {
             const int defaultValue = 3;
-            return RememberNumberOfContextLines ? GetInt("NumberOfContextLines", defaultValue) : defaultValue;
+            return RememberNumberOfContextLines.Value ? GetInt("NumberOfContextLines", defaultValue) : defaultValue;
         }
         set
         {
-            if (RememberNumberOfContextLines)
+            if (RememberNumberOfContextLines.Value)
             {
                 SetInt("NumberOfContextLines", value);
             }
         }
     }
 
-    public static bool RememberNumberOfContextLines
-    {
-        get => GetBool("RememberNumberOfContextLines", false);
-        set => SetBool("RememberNumberOfContextLines", value);
-    }
+    public static ISetting<bool> RememberNumberOfContextLines { get; } = Setting.Create(RootSettingsPath, "RememberNumberOfContextLines", defaultValue: false);
 
     public static BoolRuntimeSetting ShowSyntaxHighlightingInDiff { get; } = new(RootSettingsPath, nameof(ShowSyntaxHighlightingInDiff), true);
 
-    public static bool RememberShowSyntaxHighlightingInDiff
-    {
-        get => GetBool("RememberShowSyntaxHighlightingInDiff", true);
-        set => SetBool("RememberShowSyntaxHighlightingInDiff", value);
-    }
+    public static ISetting<bool> RememberShowSyntaxHighlightingInDiff { get; } = Setting.Create(RootSettingsPath, "RememberShowSyntaxHighlightingInDiff", defaultValue: true);
 
     public static string GetDictionaryDir()
     {
@@ -1711,195 +1095,71 @@ public static partial class AppSettings
         }
     }
 
-    public static bool ShowRepoCurrentBranch
-    {
-        get => GetBool("dashboardshowcurrentbranch", true);
-        set => SetBool("dashboardshowcurrentbranch", value);
-    }
+    public static ISetting<bool> ShowRepoCurrentBranch { get; } = Setting.Create(RootSettingsPath, "dashboardshowcurrentbranch", defaultValue: true);
 
-    public static string? OwnScripts
-    {
-        get => GetString("ownScripts", "");
-        set => SetString("ownScripts", value ?? "");
-    }
+    public static ISetting<string> OwnScripts { get; } = Setting.Create(RootSettingsPath, "ownScripts", defaultValue: "");
 
-    public static int RecursiveSubmodules
-    {
-        get => GetInt("RecursiveSubmodules", 1);
-        set => SetInt("RecursiveSubmodules", value);
-    }
+    public static ISetting<int> RecursiveSubmodules { get; } = Setting.Create(RootSettingsPath, "RecursiveSubmodules", defaultValue: 1);
 
-    public static ShorteningRecentRepoPathStrategy ShorteningRecentRepoPathStrategy
-    {
-        get => GetEnum("ShorteningRecentRepoPathStrategy", ShorteningRecentRepoPathStrategy.None);
-        set => SetEnum("ShorteningRecentRepoPathStrategy", value);
-    }
+    public static ISetting<ShorteningRecentRepoPathStrategy> ShorteningRecentRepoPathStrategy { get; } = Setting.Create(RootSettingsPath, "ShorteningRecentRepoPathStrategy", GitCommands.ShorteningRecentRepoPathStrategy.None);
 
-    public static int MaxTopRepositories
-    {
-        // History Compatibility: Keep original key to maintain the compatibility with the existing user settings
-        get => GetInt("MaxMostRecentRepositories", 0);
-        set => SetInt("MaxMostRecentRepositories", value);
-    }
+    // History Compatibility: Keep original key to maintain the compatibility with the existing user settings
+    public static ISetting<int> MaxTopRepositories { get; } = Setting.Create(RootSettingsPath, "MaxMostRecentRepositories", defaultValue: 0);
 
-    public static int RecentRepositoriesHistorySize
-    {
-        get => GetInt("history size", 30);
-        set => SetInt("history size", value);
-    }
+    public static ISetting<int> RecentRepositoriesHistorySize { get; } = Setting.Create(RootSettingsPath, "history size", defaultValue: 30);
 
-    public static ISetting<bool> HideTopRepositoriesFromRecentList { get; } = Setting.Create(RecentRepositories, nameof(HideTopRepositoriesFromRecentList), false);
+    public static ISetting<bool> HideTopRepositoriesFromRecentList { get; } = Setting.Create(RecentRepositories, nameof(HideTopRepositoriesFromRecentList), defaultValue: false);
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static int RemotesCacheLength
-    {
-        get => GetInt("RemotesCacheLength", 30);
-    }
+    public static ISetting<int> RemotesCacheLength { get; } = Setting.Create(RootSettingsPath, "RemotesCacheLength", defaultValue: 30);
 
-    public static int RecentReposComboMinWidth
-    {
-        get => GetInt("RecentReposComboMinWidth", 0);
-        set => SetInt("RecentReposComboMinWidth", value);
-    }
+    public static ISetting<int> RecentReposComboMinWidth { get; } = Setting.Create(RootSettingsPath, "RecentReposComboMinWidth", defaultValue: 0);
 
-    [MaybeNull]
-    public static string SerializedHotkeys
-    {
-        get => GetString("SerializedHotkeys", null);
-        set => SetString("SerializedHotkeys", value);
-    }
+    public static ISetting<string> SerializedHotkeys { get; } = Setting.Create(RootSettingsPath, "SerializedHotkeys", defaultValue: (string?)null);
 
-    public static bool SortTopRepos
-    {
-        get => GetBool("SortMostRecentRepos", false);
-        set => SetBool("SortMostRecentRepos", value);
-    }
+    public static ISetting<bool> SortTopRepos { get; } = Setting.Create(RootSettingsPath, "SortMostRecentRepos", defaultValue: false);
 
-    public static bool SortRecentRepos
-    {
-        get => GetBool("SortLessRecentRepos", false);
-        set => SetBool("SortLessRecentRepos", value);
-    }
+    public static ISetting<bool> SortRecentRepos { get; } = Setting.Create(RootSettingsPath, "SortLessRecentRepos", defaultValue: false);
 
-    public static bool DontCommitMerge
-    {
-        get => GetBool("DontCommitMerge", false);
-        set => SetBool("DontCommitMerge", value);
-    }
+    public static ISetting<bool> DontCommitMerge { get; } = Setting.Create(RootSettingsPath, "DontCommitMerge", defaultValue: false);
 
-    public static int CommitValidationMaxCntCharsFirstLine
-    {
-        get => GetInt("CommitValidationMaxCntCharsFirstLine", 0);
-        set => SetInt("CommitValidationMaxCntCharsFirstLine", value);
-    }
+    public static ISetting<int> CommitValidationMaxCntCharsFirstLine { get; } = Setting.Create(RootSettingsPath, "CommitValidationMaxCntCharsFirstLine", defaultValue: 0);
 
-    public static int CommitValidationMaxCntCharsPerLine
-    {
-        get => GetInt("CommitValidationMaxCntCharsPerLine", 0);
-        set => SetInt("CommitValidationMaxCntCharsPerLine", value);
-    }
+    public static ISetting<int> CommitValidationMaxCntCharsPerLine { get; } = Setting.Create(RootSettingsPath, "CommitValidationMaxCntCharsPerLine", defaultValue: 0);
 
-    public static bool CommitValidationSecondLineMustBeEmpty
-    {
-        get => GetBool("CommitValidationSecondLineMustBeEmpty", false);
-        set => SetBool("CommitValidationSecondLineMustBeEmpty", value);
-    }
+    public static ISetting<bool> CommitValidationSecondLineMustBeEmpty { get; } = Setting.Create(RootSettingsPath, "CommitValidationSecondLineMustBeEmpty", defaultValue: false);
 
-    public static bool CommitValidationIndentAfterFirstLine
-    {
-        get => GetBool("CommitValidationIndentAfterFirstLine", true);
-        set => SetBool("CommitValidationIndentAfterFirstLine", value);
-    }
+    public static ISetting<bool> CommitValidationIndentAfterFirstLine { get; } = Setting.Create(RootSettingsPath, "CommitValidationIndentAfterFirstLine", defaultValue: true);
 
-    public static bool CommitValidationAutoWrap
-    {
-        get => GetBool("CommitValidationAutoWrap", true);
-        set => SetBool("CommitValidationAutoWrap", value);
-    }
+    public static ISetting<bool> CommitValidationAutoWrap { get; } = Setting.Create(RootSettingsPath, "CommitValidationAutoWrap", defaultValue: true);
 
-    public static string CommitValidationRegEx
-    {
-        get => GetString("CommitValidationRegEx", string.Empty);
-        set => SetString("CommitValidationRegEx", value);
-    }
+    public static ISetting<string> CommitValidationRegEx { get; } = Setting.Create(RootSettingsPath, "CommitValidationRegEx", defaultValue: "");
 
-    public static string CommitTemplates
-    {
-        get => GetString("CommitTemplates", string.Empty);
-        set => SetString("CommitTemplates", value);
-    }
+    public static ISetting<string> CommitTemplates { get; } = Setting.Create(RootSettingsPath, "CommitTemplates", defaultValue: "");
 
-    public static bool CreateLocalBranchForRemote
-    {
-        get => GetBool("CreateLocalBranchForRemote", false);
-        set => SetBool("CreateLocalBranchForRemote", value);
-    }
+    public static ISetting<bool> CreateLocalBranchForRemote { get; } = Setting.Create(RootSettingsPath, "CreateLocalBranchForRemote", defaultValue: false);
 
-    public static bool UseFormCommitMessage
-    {
-        get => GetBool("UseFormCommitMessage", true);
-        set => SetBool("UseFormCommitMessage", value);
-    }
+    public static ISetting<bool> UseFormCommitMessage { get; } = Setting.Create(RootSettingsPath, "UseFormCommitMessage", defaultValue: true);
 
-    public static bool CommitAutomaticallyAfterCherryPick
-    {
-        get => GetBool("CommitAutomaticallyAfterCherryPick", false);
-        set => SetBool("CommitAutomaticallyAfterCherryPick", value);
-    }
+    public static ISetting<bool> CommitAutomaticallyAfterCherryPick { get; } = Setting.Create(RootSettingsPath, "CommitAutomaticallyAfterCherryPick", defaultValue: false);
 
-    public static bool AddCommitReferenceToCherryPick
-    {
-        get => GetBool("AddCommitReferenceToCherryPick", false);
-        set => SetBool("AddCommitReferenceToCherryPick", value);
-    }
+    public static ISetting<bool> AddCommitReferenceToCherryPick { get; } = Setting.Create(RootSettingsPath, "AddCommitReferenceToCherryPick", defaultValue: false);
 
-    public static DateTime LastUpdateCheck
-    {
-        get => GetDate("LastUpdateCheck", default);
-        set => SetDate("LastUpdateCheck", value);
-    }
+    public static ISetting<DateTime> LastUpdateCheck { get; } = Setting.Create(RootSettingsPath, "LastUpdateCheck", defaultValue: default(DateTime));
 
-    public static bool CheckForUpdates
-    {
-        get => GetBool("CheckForUpdates", true);
-        set => SetBool("CheckForUpdates", value);
-    }
+    public static ISetting<bool> CheckForUpdates { get; } = Setting.Create(RootSettingsPath, "CheckForUpdates", defaultValue: true);
 
-    public static bool CheckForReleaseCandidates
-    {
-        get => GetBool("CheckForReleaseCandidates", false);
-        set => SetBool("CheckForReleaseCandidates", value);
-    }
+    public static ISetting<bool> CheckForReleaseCandidates { get; } = Setting.Create(RootSettingsPath, "CheckForReleaseCandidates", defaultValue: false);
 
-    public static bool OmitUninterestingDiff
-    {
-        get => GetBool("OmitUninterestingDiff", false);
-        set => SetBool("OmitUninterestingDiff", value);
-    }
+    public static ISetting<bool> OmitUninterestingDiff { get; } = Setting.Create(RootSettingsPath, "OmitUninterestingDiff", defaultValue: false);
 
-    public static bool UseConsoleEmulatorForCommands
-    {
-        get => GetBool("UseConsoleEmulatorForCommands", true);
-        set => SetBool("UseConsoleEmulatorForCommands", value);
-    }
+    public static ISetting<bool> UseConsoleEmulatorForCommands { get; } = Setting.Create(RootSettingsPath, "UseConsoleEmulatorForCommands", defaultValue: true);
 
-    public static GitRefsSortBy RefsSortBy
-    {
-        get => GetEnum("RefsSortBy", GitRefsSortBy.Default);
-        set => SetEnum("RefsSortBy", value);
-    }
+    public static ISetting<GitRefsSortBy> RefsSortBy { get; } = Setting.Create(RootSettingsPath, "RefsSortBy", defaultValue: GitRefsSortBy.Default);
 
-    public static GitRefsSortOrder RefsSortOrder
-    {
-        get => GetEnum("RefsSortOrder", GitRefsSortOrder.Descending);
-        set => SetEnum("RefsSortOrder", value);
-    }
+    public static ISetting<GitRefsSortOrder> RefsSortOrder { get; } = Setting.Create(RootSettingsPath, "RefsSortOrder", defaultValue: GitRefsSortOrder.Descending);
 
-    public static DiffListSortType DiffListSorting
-    {
-        get => GetEnum("DiffListSortType", DiffListSortType.FilePath);
-        set => SetEnum("DiffListSortType", value);
-    }
+    public static ISetting<DiffListSortType> DiffListSorting { get; } = Setting.Create(RootSettingsPath, "DiffListSortType", defaultValue: DiffListSortType.FilePath);
 
     public static string GetGitExtensionsFullPath()
     {
@@ -1949,189 +1209,80 @@ public static partial class AppSettings
         }
     }
 
-    public static bool RepoObjectsTreeShowBranches
-    {
-        get => GetBool("RepoObjectsTree.ShowBranches", true);
-        set => SetBool("RepoObjectsTree.ShowBranches", value);
-    }
+    public static ISetting<bool> RepoObjectsTreeShowBranches { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.ShowBranches", defaultValue: true);
 
-    public static bool RepoObjectsTreeShowRemotes
-    {
-        get => GetBool("RepoObjectsTree.ShowRemotes", true);
-        set => SetBool("RepoObjectsTree.ShowRemotes", value);
-    }
+    public static ISetting<bool> RepoObjectsTreeShowRemotes { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.ShowRemotes", defaultValue: true);
 
-    public static bool RepoObjectsTreeShowTags
-    {
-        get => GetBool("RepoObjectsTree.ShowTags", true);
-        set => SetBool("RepoObjectsTree.ShowTags", value);
-    }
+    public static ISetting<bool> RepoObjectsTreeShowTags { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.ShowTags", defaultValue: true);
 
-    public static bool RepoObjectsTreeShowStashes
-    {
-        get => GetBool("RepoObjectsTree.ShowStashes", true);
-        set => SetBool("RepoObjectsTree.ShowStashes", value);
-    }
+    public static ISetting<bool> RepoObjectsTreeShowStashes { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.ShowStashes", defaultValue: true);
 
-    public static bool RepoObjectsTreeShowSubmodules
-    {
-        get => GetBool("RepoObjectsTree.ShowSubmodules", true);
-        set => SetBool("RepoObjectsTree.ShowSubmodules", value);
-    }
+    public static ISetting<bool> RepoObjectsTreeShowSubmodules { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.ShowSubmodules", defaultValue: true);
 
-    public static bool RepoObjectsTreeShowWorktrees
-    {
-        get => GetBool("RepoObjectsTree.ShowWorktrees", true);
-        set => SetBool("RepoObjectsTree.ShowWorktrees", value);
-    }
+    public static ISetting<bool> RepoObjectsTreeShowWorktrees { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.ShowWorktrees", defaultValue: true);
 
-    public static int RepoObjectsTreeBranchesIndex
-    {
-        get => GetInt("RepoObjectsTree.BranchesIndex", 0);
-        set => SetInt("RepoObjectsTree.BranchesIndex", value);
-    }
+    public static ISetting<int> RepoObjectsTreeBranchesIndex { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.BranchesIndex", defaultValue: 0);
 
-    public static int RepoObjectsTreeRemotesIndex
-    {
-        get => GetInt("RepoObjectsTree.RemotesIndex", 1);
-        set => SetInt("RepoObjectsTree.RemotesIndex", value);
-    }
+    public static ISetting<int> RepoObjectsTreeRemotesIndex { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.RemotesIndex", defaultValue: 1);
 
-    public static int RepoObjectsTreeWorktreesIndex
-    {
-        get => GetInt("RepoObjectsTree.WorktreesIndex", 2);
-        set => SetInt("RepoObjectsTree.WorktreesIndex", value);
-    }
+    public static ISetting<int> RepoObjectsTreeWorktreesIndex { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.WorktreesIndex", defaultValue: 2);
 
-    public static int RepoObjectsTreeTagsIndex
-    {
-        get => GetInt("RepoObjectsTree.TagsIndex", 3);
-        set => SetInt("RepoObjectsTree.TagsIndex", value);
-    }
+    public static ISetting<int> RepoObjectsTreeTagsIndex { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.TagsIndex", defaultValue: 3);
 
-    public static int RepoObjectsTreeSubmodulesIndex
-    {
-        get => GetInt("RepoObjectsTree.SubmodulesIndex", 4);
-        set => SetInt("RepoObjectsTree.SubmodulesIndex", value);
-    }
+    public static ISetting<int> RepoObjectsTreeSubmodulesIndex { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.SubmodulesIndex", defaultValue: 4);
 
-    public static int RepoObjectsTreeStashesIndex
-    {
-        get => GetInt("RepoObjectsTree.StashesIndex", 5);
-        set => SetInt("RepoObjectsTree.StashesIndex", value);
-    }
+    public static ISetting<int> RepoObjectsTreeStashesIndex { get; } = Setting.Create(RootSettingsPath, "RepoObjectsTree.StashesIndex", defaultValue: 5);
 
-    public static string PrioritizedBranchNames
-    {
-        get => GetString("PrioritizedBranchNames", "main[^/]*|master[^/]*|release/.*");
-        set => SetString("PrioritizedBranchNames", value);
-    }
+    public static ISetting<string> PrioritizedBranchNames { get; } = Setting.Create(RootSettingsPath, "PrioritizedBranchNames", defaultValue: "main[^/]*|master[^/]*|release/.*");
 
-    public static string PrioritizedRemoteNames
-    {
-        get => GetString("PrioritizedRemoteNames", "origin|upstream");
-        set => SetString("PrioritizedRemoteNames", value);
-    }
+    public static ISetting<string> PrioritizedRemoteNames { get; } = Setting.Create(RootSettingsPath, "PrioritizedRemoteNames", defaultValue: "origin|upstream");
 
     /// <summary>
     ///  Remote names to prefer when auto-detecting build server integration, separated by <c>|</c>.
     ///  Defaults to <c>upstream|origin</c> so that forks resolve to the upstream project's CI.
     /// </summary>
-    public static string PrioritizedBuildServerRemoteNames
-    {
-        get => GetString("PrioritizedBuildServerRemoteNames", "upstream|origin|remote");
-        set => SetString("PrioritizedBuildServerRemoteNames", value);
-    }
+    public static ISetting<string> PrioritizedBuildServerRemoteNames { get; } = Setting.Create(RootSettingsPath, "PrioritizedBuildServerRemoteNames", defaultValue: "upstream|origin|remote");
 
-    public static bool BlameDisplayAuthorFirst
-    {
-        get => GetBool("Blame.DisplayAuthorFirst", false);
-        set => SetBool("Blame.DisplayAuthorFirst", value);
-    }
+    public static ISetting<bool> BlameDisplayAuthorFirst { get; } = Setting.Create(RootSettingsPath, "Blame.DisplayAuthorFirst", defaultValue: false);
 
-    public static bool BlameShowAuthor
-    {
-        get => GetBool("Blame.ShowAuthor", true);
-        set => SetBool("Blame.ShowAuthor", value);
-    }
+    public static ISetting<bool> BlameShowAuthor { get; } = Setting.Create(RootSettingsPath, "Blame.ShowAuthor", defaultValue: true);
 
-    public static bool BlameShowAuthorDate
-    {
-        get => GetBool("Blame.ShowAuthorDate", true);
-        set => SetBool("Blame.ShowAuthorDate", value);
-    }
+    public static ISetting<bool> BlameShowAuthorDate { get; } = Setting.Create(RootSettingsPath, "Blame.ShowAuthorDate", defaultValue: true);
 
-    public static bool BlameShowAuthorTime
-    {
-        get => GetBool("Blame.ShowAuthorTime", true);
-        set => SetBool("Blame.ShowAuthorTime", value);
-    }
+    public static ISetting<bool> BlameShowAuthorTime { get; } = Setting.Create(RootSettingsPath, "Blame.ShowAuthorTime", defaultValue: true);
 
-    public static bool BlameShowLineNumbers
-    {
-        get => GetBool("Blame.ShowLineNumbers", false);
-        set => SetBool("Blame.ShowLineNumbers", value);
-    }
+    public static ISetting<bool> BlameShowLineNumbers { get; } = Setting.Create(RootSettingsPath, "Blame.ShowLineNumbers", defaultValue: false);
 
-    public static bool BlameShowOriginalFilePath
-    {
-        get => GetBool("Blame.ShowOriginalFilePath", true);
-        set => SetBool("Blame.ShowOriginalFilePath", value);
-    }
+    public static ISetting<bool> BlameShowOriginalFilePath { get; } = Setting.Create(RootSettingsPath, "Blame.ShowOriginalFilePath", defaultValue: true);
 
-    public static bool BlameShowAuthorAvatar
-    {
-        get => GetBool("Blame.ShowAuthorAvatar", true);
-        set => SetBool("Blame.ShowAuthorAvatar", value);
-    }
+    public static ISetting<bool> BlameShowAuthorAvatar { get; } = Setting.Create(RootSettingsPath, "Blame.ShowAuthorAvatar", defaultValue: true);
 
-    public static bool AutomaticContinuousScroll
-    {
-        get => GetBool("DiffViewer.AutomaticContinuousScroll", false);
-        set => SetBool("DiffViewer.AutomaticContinuousScroll", value);
-    }
+    public static ISetting<bool> AutomaticContinuousScroll { get; } = Setting.Create(RootSettingsPath, "DiffViewer.AutomaticContinuousScroll", defaultValue: false);
 
-    public static int AutomaticContinuousScrollDelay
-    {
-        get => GetInt("DiffViewer.AutomaticContinuousScrollDelay", 600);
-        set => SetInt("DiffViewer.AutomaticContinuousScrollDelay", value);
-    }
+    public static ISetting<int> AutomaticContinuousScrollDelay { get; } = Setting.Create(RootSettingsPath, "DiffViewer.AutomaticContinuousScrollDelay", defaultValue: 600);
 
     public static IEnumerable<string> CustomGenericRemoteNames
     {
         get => GetString("CustomGenericRemoteNames", string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries);
     }
 
-    public static bool LogCaptureCallStacks
-    {
-        get => GetBool("Log.CaptureCallStacks", false);
-        set => SetBool("Log.CaptureCallStacks", value);
-    }
+    public static ISetting<bool> LogCaptureCallStacks { get; } = Setting.Create(RootSettingsPath, "Log.CaptureCallStacks", defaultValue: false);
 
     // There is a bug in .NET/.NET Designer that fails to execute Properties.Settings.Default call.
     // Return false whilst we're in the designer.
     public static bool IsPortable() => !IsDesignMode && Properties.Settings.Default.IsPortable;
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static bool WriteErrorLog
-    {
-        get => GetBool("WriteErrorLog", false);
-    }
+    public static ISetting<bool> WriteErrorLog { get; } = Setting.Create(RootSettingsPath, "WriteErrorLog", defaultValue: false);
 
     // Currently not configurable in UI (Set manually in settings file)
-    public static bool WorkaroundActivateFromMinimize
-    {
-        get => GetBool("WorkaroundActivateFromMinimize", false);
-    }
+    public static ISetting<bool> WorkaroundActivateFromMinimize { get; } = Setting.Create(RootSettingsPath, "WorkaroundActivateFromMinimize", defaultValue: false);
 
-    public static bool GitAsyncWhenMinimized
-    {
-        get => GetBool("GitAsyncWhenMinimized", false);
-    }
+    public static ISetting<bool> GitAsyncWhenMinimized { get; } = Setting.Create(RootSettingsPath, "GitAsyncWhenMinimized", defaultValue: false);
 
-    public static ISetting<bool> IsEditorSettingsMigrated { get; } = Setting.Create(MigrationSettingsPath, nameof(IsEditorSettingsMigrated), false);
+    public static ISetting<bool> IsEditorSettingsMigrated { get; } = Setting.Create(MigrationSettingsPath, nameof(IsEditorSettingsMigrated), defaultValue: false);
 
-    public static ISetting<string> UninformativeRepoNameRegex { get; } = Setting.Create(DetailedSettingsPath, nameof(UninformativeRepoNameRegex), "app|(repo(sitory)?)");
+    public static ISetting<string> UninformativeRepoNameRegex { get; } = Setting.Create(DetailedSettingsPath, nameof(UninformativeRepoNameRegex), defaultValue: "app|(repo(sitory)?)");
 
     private static IEnumerable<(string name, string? value)> GetSettingsFromRegistry()
     {
@@ -2160,31 +1311,47 @@ public static partial class AppSettings
 
     #region Save in settings file
 
+    private const string ObsoleteGetSetMessage = "Use ISetting<T> via Setting.Create() instead. See existing ISetting properties in this class for examples.";
+
     // String
+    [Obsolete(ObsoleteGetSetMessage)]
     [return: NotNullIfNotNull(nameof(defaultValue))]
     public static string? GetString(string name, string? defaultValue) => SettingsContainer.GetString(name, defaultValue);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static void SetString(string name, string value) => SettingsContainer.SetString(name, value);
 
     // Bool
+    [Obsolete(ObsoleteGetSetMessage)]
     public static bool? GetBool(string name) => SettingsContainer.GetBool(name);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static bool GetBool(string name, bool defaultValue) => SettingsContainer.GetBool(name, defaultValue);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static void SetBool(string name, bool? value) => SettingsContainer.SetBool(name, value);
 
     // Int
+    [Obsolete(ObsoleteGetSetMessage)]
     public static int? GetInt(string name) => SettingsContainer.GetInt(name);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static int GetInt(string name, int defaultValue) => SettingsContainer.GetInt(name, defaultValue);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static void SetInt(string name, int? value) => SettingsContainer.SetInt(name, value);
 
     // Float
+    [Obsolete(ObsoleteGetSetMessage)]
     public static float GetFloat(string name, float defaultValue) => SettingsContainer.GetFloat(name, defaultValue);
 
     // Date
+    [Obsolete(ObsoleteGetSetMessage)]
     public static DateTime? GetDate(string name) => SettingsContainer.GetDate(name);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static DateTime GetDate(string name, DateTime defaultValue) => SettingsContainer.GetDate(name, defaultValue);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static void SetDate(string name, DateTime? value) => SettingsContainer.SetDate(name, value);
 
     // Font
+    [Obsolete(ObsoleteGetSetMessage)]
     public static Font GetFont(string name, Font defaultValue) => SettingsContainer.GetFont(name, defaultValue);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static void SetFont(string name, Font value) => SettingsContainer.SetFont(name, value);
 
     [Obsolete("AppSettings is no longer responsible for colors, ThemeModule is. Only used by ThemeMigration.")]
@@ -2194,10 +1361,14 @@ public static partial class AppSettings
     }
 
     // Enum
+    [Obsolete(ObsoleteGetSetMessage)]
     public static T GetEnum<T>(string name, T defaultValue) where T : struct, Enum => SettingsContainer.GetEnum(name, defaultValue);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static void SetEnum<T>(string name, T value) where T : Enum => SettingsContainer.SetEnum(name, value);
 
+    [Obsolete(ObsoleteGetSetMessage)]
     public static T? GetNullableEnum<T>(string name) where T : struct, Enum => ((ISettingsValueGetter)SettingsContainer).GetValue<T>(name);
+    [Obsolete(ObsoleteGetSetMessage)]
     public static void SetNullableEnum<T>(string name, T? value) where T : struct, Enum => SettingsContainer.SetValue(name, value?.ToString());
     #endregion
 

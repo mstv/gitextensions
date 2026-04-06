@@ -48,7 +48,7 @@ public sealed class IndexWatcher : IDisposable
         {
             try
             {
-                _enabled = AppSettings.ShowGitStatusInBrowseToolbar;
+                _enabled = AppSettings.ShowGitStatusInBrowseToolbar.Value;
 
                 _gitDirPath = Module.WorkingDirGitDir;
 
@@ -134,7 +134,7 @@ public sealed class IndexWatcher : IDisposable
 
     private void RefreshWatcher()
     {
-        if (_gitDirPath != Module.WorkingDirGitDir || _enabled != AppSettings.ShowGitStatusInBrowseToolbar)
+        if (_gitDirPath != Module.WorkingDirGitDir || _enabled != AppSettings.ShowGitStatusInBrowseToolbar.Value)
         {
             SetFileSystemWatcher();
         }

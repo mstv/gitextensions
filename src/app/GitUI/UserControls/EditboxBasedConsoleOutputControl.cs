@@ -131,7 +131,7 @@ public sealed class EditboxBasedConsoleOutputControl : ConsoleOutputControl
             {
                 UseShellExecute = false,
                 ErrorDialog = false,
-                CreateNoWindow = !AppSettings.ShowGitCommandLine,
+                CreateNoWindow = !AppSettings.ShowGitCommandLine.Value,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,

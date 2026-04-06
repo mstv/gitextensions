@@ -22,6 +22,28 @@ public static class Setting
         return new SettingOf<T?>(settingsSource, name);
     }
 
+    /// <summary>
+    ///  Creates a setting that transforms values between storage and the public API.
+    /// </summary>
+    /// <typeparam name="TStored">The type used for storage (via <see cref="SettingOf{T}"/>).</typeparam>
+    /// <typeparam name="TExposed">The type exposed to callers via <see cref="ISetting{T}.Value"/>.</typeparam>
+    /// <param name="settingsSource">The settings path to store the value under.</param>
+    /// <param name="name">The settings key name.</param>
+    /// <param name="defaultValue">The default value in <typeparamref name="TExposed"/> form.</param>
+    /// <param name="read">Converts from stored to exposed form.</param>
+    /// <param name="store">Converts from exposed to stored form.</param>
+    /// <returns>An <see cref="ISetting{T}"/> of <typeparamref name="TExposed"/>.</returns>
+    public static ISetting<TExposed> CreateIntercepted<TStored, TExposed>(
+        SettingsPath settingsSource,
+        string name,
+        TExposed defaultValue,
+        Func<TStored, TExposed> read,
+        Func<TExposed, TStored> store)
+    {
+        ISetting<TStored> inner = new SettingOf<TStored>(settingsSource, name, store(defaultValue));
+        return new InterceptedSetting<TStored, TExposed>(inner, defaultValue, read, store);
+    }
+
     private sealed class SettingOf<T> : ISetting<T>
     {
         /// <inheritdoc />
@@ -190,5 +212,41 @@ public static class Setting
 
             SettingsSource.SetValue(name, stringValue);
         }
+    }
+
+    private sealed class InterceptedSetting<TStored, TExposed>(
+        ISetting<TStored> inner,
+        TExposed defaultValue,
+        Func<TStored, TExposed> read,
+        Func<TExposed, TStored> store) : ISetting<TExposed>
+    {
+        /// <inheritdoc />
+        public event EventHandler? Updated
+        {
+            add => inner.Updated += value;
+            remove => inner.Updated -= value;
+        }
+
+        /// <inheritdoc />
+        public SettingsPath SettingsSource => inner.SettingsSource;
+
+        /// <inheritdoc />
+        public string Name => inner.Name;
+
+        /// <inheritdoc />
+        public TExposed? Default => defaultValue;
+
+        /// <inheritdoc />
+        public TExposed? Value
+        {
+            get => inner.IsUnset ? defaultValue : read(inner.Value!);
+            set => inner.Value = value is not null ? store(value) : default;
+        }
+
+        /// <inheritdoc />
+        public bool IsUnset => inner.IsUnset;
+
+        /// <inheritdoc />
+        public string FullPath => inner.FullPath;
     }
 }

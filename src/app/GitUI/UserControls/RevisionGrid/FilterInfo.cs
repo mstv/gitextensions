@@ -77,7 +77,7 @@ public record FilterInfo
 
     public bool ByCommitsLimit { get; set; } = false;
 
-    public int CommitsLimitDefault => AppSettings.MaxRevisionGraphCommits;
+    public int CommitsLimitDefault => AppSettings.MaxRevisionGraphCommits.Value;
 
     public int CommitsLimit
     {
@@ -132,8 +132,8 @@ public record FilterInfo
 
     public bool ShowOnlyFirstParent
     {
-        get => AppSettings.ShowOnlyFirstParent;
-        set => AppSettings.ShowOnlyFirstParent = value;
+        get => AppSettings.ShowOnlyFirstParent.Value;
+        set => AppSettings.ShowOnlyFirstParent.Value = value;
     }
 
     public bool ShowReflogReferences
@@ -144,26 +144,26 @@ public record FilterInfo
 
     public bool ShowSimplifyByDecoration
     {
-        get => AppSettings.ShowSimplifyByDecoration;
-        set => AppSettings.ShowSimplifyByDecoration = value;
+        get => AppSettings.ShowSimplifyByDecoration.Value;
+        set => AppSettings.ShowSimplifyByDecoration.Value = value;
     }
 
     public bool HideMergeCommits
     {
-        get => AppSettings.HideMergeCommits;
-        set => AppSettings.HideMergeCommits = value;
+        get => AppSettings.HideMergeCommits.Value;
+        set => AppSettings.HideMergeCommits.Value = value;
     }
 
     public bool ShowFullHistory
     {
-        get => AppSettings.FullHistoryInFileHistory;
-        set => AppSettings.FullHistoryInFileHistory = value;
+        get => AppSettings.FullHistoryInFileHistory.Value;
+        set => AppSettings.FullHistoryInFileHistory.Value = value;
     }
 
     public bool ShowSimplifyMerges
     {
-        get => AppSettings.SimplifyMergesInFileHistory;
-        set => AppSettings.SimplifyMergesInFileHistory = value;
+        get => AppSettings.SimplifyMergesInFileHistory.Value;
+        set => AppSettings.SimplifyMergesInFileHistory.Value = value;
     }
 
     /// <summary>
@@ -468,17 +468,17 @@ public record FilterInfo
             // (so included for --reflog/--all, not explicitly added for other)
             // --exclude is ignored for --reflog, notes/stash below only applicable with --all
             // Similar but unhandled refs include Gerrit refs like refs/for/ and refs/changes/
-            if (!AppSettings.ShowGitNotes)
+            if (!AppSettings.ShowGitNotes.Value)
             {
                 filter.Add($"--exclude={GitRefName.RefsNotesPrefix}");
             }
 
-            if (!AppSettings.ShowStashes)
+            if (!AppSettings.ShowStashes.Value)
             {
                 filter.Add($"--exclude={GitRefName.RefsStashPrefix}");
             }
 
-            if (!AppSettings.ShowSessionRefs)
+            if (!AppSettings.ShowSessionRefs.Value)
             {
                 filter.Add($"--exclude={GitRefName.RefsSessionsPrefix}**");
             }
@@ -511,7 +511,7 @@ public record FilterInfo
         // Add the most recent stash to the grid
         void AddFirstStashRef()
         {
-            if (!AppSettings.ShowStashes)
+            if (!AppSettings.ShowStashes.Value)
             {
                 return;
             }

@@ -20,7 +20,7 @@ public class ToolStripPushButton : ToolStripButton
     public void DisplayAheadBehindInformation(IDictionary<string, AheadBehindData>? aheadBehindData, string branchName, string shortcut)
     {
         if (string.IsNullOrWhiteSpace(branchName)
-            || !AppSettings.ShowAheadBehindData
+            || !AppSettings.ShowAheadBehindData.Value
             || aheadBehindData?.TryGetValue(branchName, out AheadBehindData data) is not true)
         {
             ResetToDefaultState();

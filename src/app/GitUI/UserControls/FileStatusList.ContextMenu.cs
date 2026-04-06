@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using GitCommands;
 using GitCommands.Git;
 using GitCommands.Git.Extended;
@@ -1163,7 +1163,7 @@ partial class FileStatusList
         foreach (string name in submodules)
         {
             IGitUICommands uiCmds = UICommands.WithGitModule(Module.GetSubmodule(name));
-            uiCmds.StashSave(this, AppSettings.IncludeUntrackedFilesInManualStash);
+            uiCmds.StashSave(this, AppSettings.IncludeUntrackedFilesInManualStash.Value);
         }
 
         RequestRefresh();
@@ -1208,7 +1208,7 @@ partial class FileStatusList
         // Hide the obviously no action options when single selected, handle them in actions if multi select
 
         // open submodule is added in FileStatusList
-        tsmiFileHistory.Font = ((SelectedItem?.Item.IsSubmodule ?? false) && AppSettings.OpenSubmoduleDiffInSeparateWindow) || _openInFileTreeTab_AsBlame is null
+        tsmiFileHistory.Font = ((SelectedItem?.Item.IsSubmodule ?? false) && AppSettings.OpenSubmoduleDiffInSeparateWindow.Value) || _openInFileTreeTab_AsBlame is null
             ? new Font(tsmiFileHistory.Font, FontStyle.Regular)
             : new Font(tsmiFileHistory.Font, FontStyle.Bold);
 

@@ -80,7 +80,7 @@ public partial class CommitInfoHeader : GitModuleControl
 
     private void LoadAuthorImage(GitRevision? revision)
     {
-        bool showAvatar = AppSettings.ShowAuthorAvatarInCommitInfo;
+        bool showAvatar = AppSettings.ShowAuthorAvatarInCommitInfo.Value;
         avatarControl.Visible = showAvatar;
 
         if (!showAvatar)

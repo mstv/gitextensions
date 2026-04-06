@@ -1,4 +1,4 @@
-using GitCommands;
+﻿using GitCommands;
 using GitCommands.Config;
 using GitCommands.Git;
 using GitCommands.UserRepositoryHistory;
@@ -61,7 +61,7 @@ public partial class FormClone : GitExtensionsDialog
                                               .Where(x => !string.IsNullOrEmpty(x))
                                               .Distinct(StringComparer.CurrentCultureIgnoreCase)];
         _NO_TRANSLATE_To.DataSource = historicPaths;
-        _NO_TRANSLATE_To.Text = AppSettings.DefaultCloneDestinationPath;
+        _NO_TRANSLATE_To.Text = AppSettings.DefaultCloneDestinationPath.Value;
 
         if (PathUtil.CanBeGitURL(_url))
         {

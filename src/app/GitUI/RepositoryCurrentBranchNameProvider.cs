@@ -23,7 +23,7 @@ internal sealed class RepositoryCurrentBranchNameProvider(IGitExecutorProvider e
 
     public string GetCurrentBranchName(string repositoryPath)
     {
-        if (!AppSettings.ShowRepoCurrentBranch)
+        if (!AppSettings.ShowRepoCurrentBranch.Value)
         {
             return string.Empty;
         }

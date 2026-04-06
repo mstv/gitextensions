@@ -67,12 +67,12 @@ public sealed partial class RepoObjectsTree : GitModuleControl
         toolTip.SetToolTip(btnSearch, _searchTooltip.Text);
         tsbCollapseAll.ToolTipText = mnubtnCollapse.ToolTipText;
 
-        tsbShowBranches.Checked = AppSettings.RepoObjectsTreeShowBranches;
-        tsbShowRemotes.Checked = AppSettings.RepoObjectsTreeShowRemotes;
-        tsbShowTags.Checked = AppSettings.RepoObjectsTreeShowTags;
-        tsbShowSubmodules.Checked = AppSettings.RepoObjectsTreeShowSubmodules;
-        tsbShowStashes.Checked = AppSettings.RepoObjectsTreeShowStashes;
-        tsbShowWorktrees.Checked = AppSettings.RepoObjectsTreeShowWorktrees;
+        tsbShowBranches.Checked = AppSettings.RepoObjectsTreeShowBranches.Value;
+        tsbShowRemotes.Checked = AppSettings.RepoObjectsTreeShowRemotes.Value;
+        tsbShowTags.Checked = AppSettings.RepoObjectsTreeShowTags.Value;
+        tsbShowSubmodules.Checked = AppSettings.RepoObjectsTreeShowSubmodules.Value;
+        tsbShowStashes.Checked = AppSettings.RepoObjectsTreeShowStashes.Value;
+        tsbShowWorktrees.Checked = AppSettings.RepoObjectsTreeShowWorktrees.Value;
 
         _doubleClickDecorator = new NativeTreeViewDoubleClickDecorator(treeMain);
         _doubleClickDecorator.BeforeDoubleClickExpandCollapse += BeforeDoubleClickExpandCollapse;

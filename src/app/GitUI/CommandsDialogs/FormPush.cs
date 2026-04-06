@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Text.RegularExpressions;
 using GitCommands;
 using GitCommands.Config;
@@ -114,7 +114,7 @@ public partial class FormPush : GitModuleForm
         void Init()
         {
             _gitRefs = Module.GetRefs(RefsFilter.Heads | RefsFilter.Remotes);
-            RecursiveSubmodules.SelectedIndex = AppSettings.RecursiveSubmodules;
+            RecursiveSubmodules.SelectedIndex = AppSettings.RecursiveSubmodules.Value;
 
             _currentBranchName = Module.GetSelectedBranch();
             branchName ??= _currentBranchName;
@@ -130,7 +130,7 @@ public partial class FormPush : GitModuleForm
 
             Push.Focus();
 
-            if (AppSettings.AlwaysShowAdvOpt)
+            if (AppSettings.AlwaysShowAdvOpt.Value)
             {
                 ShowOptions_LinkClicked(this, null!);
             }
@@ -301,7 +301,7 @@ public partial class FormPush : GitModuleForm
                 !IsBranchKnownToRemote(selectedRemoteName, RemoteBranch.Text))
             {
                 // Ask if this is really what the user wants
-                if (!AppSettings.DontConfirmPushNewBranch &&
+                if (!AppSettings.DontConfirmPushNewBranch.Value &&
                     MessageBoxes.Show(owner, _branchNewForRemote.Text, _pushCaption.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                 {
                     return false;
@@ -315,7 +315,7 @@ public partial class FormPush : GitModuleForm
             ThreadHelper.JoinableTaskFactory.Run(() => RepositoryHistoryManager.Remotes.AddAsMostRecentAsync(path));
         }
 
-        AppSettings.RecursiveSubmodules = RecursiveSubmodules.SelectedIndex;
+        AppSettings.RecursiveSubmodules.Value = RecursiveSubmodules.SelectedIndex;
 
         string remote = "";
         string destination;
@@ -347,7 +347,7 @@ public partial class FormPush : GitModuleForm
                     track = false;
                 }
 
-                if (track && !AppSettings.DontConfirmAddTrackingRef)
+                if (track && !AppSettings.DontConfirmAddTrackingRef.Value)
                 {
                     Validates.NotNull(selectedLocalBranch);
                     DialogResult result = MessageBoxes.Show(owner,
@@ -498,7 +498,7 @@ public partial class FormPush : GitModuleForm
 
     private bool IsRebasingMergeCommit()
     {
-        if (AppSettings.DefaultPullAction == GitPullAction.Rebase &&
+        if (AppSettings.DefaultPullAction.Value == GitPullAction.Rebase &&
             _candidateForRebasingMergeCommit &&
             _selectedBranch == _currentBranchName &&
             _selectedRemote == _currentBranchRemote)
@@ -556,7 +556,7 @@ public partial class FormPush : GitModuleForm
 
             if (onRejectedPullAction == GitPullAction.Default)
             {
-                onRejectedPullAction = AppSettings.DefaultPullAction;
+                onRejectedPullAction = AppSettings.DefaultPullAction.Value;
             }
 
             if (onRejectedPullAction == GitPullAction.None)
@@ -604,12 +604,12 @@ public partial class FormPush : GitModuleForm
     private (GitPullAction pullAction, bool forcePush) AskForAutoPullOnPushRejectedAction(IWin32Window owner, bool allOptions)
     {
         bool forcePush = false;
-        GitPullAction? onRejectedPullAction = AppSettings.AutoPullOnPushRejectedAction;
+        GitPullAction? onRejectedPullAction = AppSettings.AutoPullOnPushRejectedAction.Value;
         if (onRejectedPullAction is null)
         {
             string destination = _NO_TRANSLATE_Remotes.Text;
             string pullDefaultButtonText;
-            switch (AppSettings.DefaultPullAction)
+            switch (AppSettings.DefaultPullAction.Value)
             {
                 case GitPullAction.Fetch:
                 case GitPullAction.FetchAll:
@@ -679,7 +679,7 @@ public partial class FormPush : GitModuleForm
 
             if (page.Verification.Checked)
             {
-                AppSettings.AutoPullOnPushRejectedAction = onRejectedPullAction;
+                AppSettings.AutoPullOnPushRejectedAction.Value = onRejectedPullAction;
             }
         }
 

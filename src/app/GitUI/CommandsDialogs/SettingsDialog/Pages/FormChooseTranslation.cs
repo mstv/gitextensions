@@ -56,9 +56,9 @@ public partial class FormChooseTranslation : GitExtensionsForm
 
     private void FormChooseTranslation_FormClosing(object sender, FormClosingEventArgs e)
     {
-        if (string.IsNullOrEmpty(AppSettings.Translation))
+        if (string.IsNullOrEmpty(AppSettings.Translation.Value))
         {
-            AppSettings.Translation = "English";
+            AppSettings.Translation.Value = "English";
         }
     }
 
@@ -68,7 +68,7 @@ public partial class FormChooseTranslation : GitExtensionsForm
         ListView.SelectedListViewItemCollection selectedItems = ((ListView)sender).SelectedItems;
         if (selectedItems.Count > 0)
         {
-            AppSettings.Translation = selectedItems[0].Tag!.ToString()!;
+            AppSettings.Translation.Value = selectedItems[0].Tag!.ToString()!;
         }
 
         Close();
