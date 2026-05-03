@@ -468,8 +468,8 @@ internal sealed class MessageColumnProvider : ColumnProvider
             fill: _settings.FillRefLabels,
             highlight: isRemoteHighlighted);
 
-        // Draw the branch on top so its right cap covers the seam between branch and remote.
-        Rectangle branchRect = DrawRef(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, gitRef.Name);
+        // Draw the branch with a '>' right edge that meets the remote's matching left indent.
+        Rectangle branchRect = DrawRef(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, gitRef.Name, nestledRight: true);
 
         // Advance offset past the remote's right edge (or just past the branch if the remote was not drawn).
         offset = (remoteRect != Rectangle.Empty ? remoteRect.Right : branchRight) - messageBounds.X + DpiUtil.Scale(5);
@@ -578,7 +578,8 @@ internal sealed class MessageColumnProvider : ColumnProvider
         Rectangle messageBounds,
         ref int offset,
         bool highlight,
-        string name)
+        string name,
+        bool nestledRight = false)
     {
         if (gitRef.IsBisect)
         {
@@ -628,7 +629,8 @@ internal sealed class MessageColumnProvider : ColumnProvider
             e.Graphics!,
             dashedLine: superprojectRef is not null,
             fill: _settings.FillRefLabels,
-            highlight: highlight);
+            highlight: highlight,
+            nestledRight: nestledRight);
     }
 
     private static void DrawImage(
