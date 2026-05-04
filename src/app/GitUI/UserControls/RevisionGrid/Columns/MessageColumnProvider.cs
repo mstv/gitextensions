@@ -461,7 +461,6 @@ internal sealed class MessageColumnProvider : ColumnProvider
             remoteName,
             remoteColor,
             branchRight,
-            branchWidth,
             capsuleTop,
             backgroundHeight,
             e.Graphics!,
@@ -486,10 +485,12 @@ internal sealed class MessageColumnProvider : ColumnProvider
             return;
         }
 
-        // The branch is drawn on top of the overlap region, so the visible (hittable) remote area starts at branchRight.
+        // No overlap: the visible remote area starts at the notch tip (remoteRect.X + chevronWidth).
+        int remoteChevronWidth = backgroundHeight / 2;
+        int remoteVisibleLeft = remoteRect.X + remoteChevronWidth;
         hitInfos ??= RentHitInfoList();
         hitInfos.Add(new RefLabelHitInfo(
-            remoteRect with { X = branchRight, Width = remoteRect.Right - branchRight },
+            remoteRect with { X = remoteVisibleLeft, Width = remoteRect.Right - remoteVisibleLeft },
             remote,
             StashReflogSelector: null));
     }

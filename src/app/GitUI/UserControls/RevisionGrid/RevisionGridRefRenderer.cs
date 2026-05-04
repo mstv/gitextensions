@@ -12,14 +12,37 @@ internal static class RevisionGridRefRenderer
     private static readonly float[] _dashPattern = [4, 4];
     private static readonly PointF[] _arrowPoints = new PointF[4];
 
-    // Unscaled pixel radius for the rounded corners of ref label capsules.
-    private const int _refLabelCornerRadius = 5;
+    // Pixel radius for the rounded corners of ref label capsules.
+    private static int RefLabelCornerRadius => DpiUtil.Scale(6);
 
-    // Unscaled pixel width of the highlight frame drawn around a hovered ref label,
-    // and the left-side inset used when drawing the highlight frame for a nestled remote label.
-    private const int _refLabelHighlightWidth = 1;
+    // Pixel width of the highlight frame drawn around a hovered ref label,
+    // and the left-side offset used when drawing the nestled remote label.
+    private static int RefLabelHighlightWidth => DpiUtil.Scale(1);
 
     private static int ChevronWidth(int height) => height / 2;
+
+    /// <summary>
+    ///  Creates a closed path for a remote capsule whose left edge is a concave '>' notch
+    ///  that exactly fits the convex chevron tip of a preceding branch capsule.
+    /// </summary>
+    private static GraphicsPath CreateChevronLeftRoundRectPath(Rectangle rect, int radius, int chevronWidth)
+    {
+        int left = rect.X;
+        int top = rect.Y;
+        int right = rect.Right;
+        int bottom = rect.Bottom;
+        int midY = top + (rect.Height / 2);
+
+        // The notch corners are at the leftmost pixels; the notch tip is indented by chevronWidth.
+        GraphicsPath path = new();
+        path.AddLine(left, top, left + chevronWidth, midY);                      // top notch corner → indented tip
+        path.AddLine(left + chevronWidth, midY, left, bottom);                   // indented tip → bottom notch corner
+        path.AddArc(right - radius, bottom - radius, radius, radius, 90, -90);   // bottom-right arc
+        path.AddArc(right - radius, top, radius, radius, 0, -90);                // top-right arc
+        path.CloseFigure();
+
+        return path;
+    }
 
     /// <summary>
     ///  Creates a closed path for a branch capsule whose right edge is a '&gt;' chevron point
@@ -78,7 +101,6 @@ internal static class RevisionGridRefRenderer
         string name,
         Color headColor,
         int precedingRight,
-        int branchWidth,
         int capsuleTop,
         int backgroundHeight,
         Graphics graphics,
@@ -92,13 +114,13 @@ internal static class RevisionGridRefRenderer
             ? TextRenderer.MeasureText(graphics, name, font, Size.Empty, TextFormatFlags.NoPadding)
             : new(0, TextRenderer.MeasureText(graphics, " ", font, Size.Empty, TextFormatFlags.NoPadding).Height);
 
-        // The rect extends left by chevronWidth (covered by the branch chevron) and right by an
-        // extra paddingLeftRight so the visible portion has equal padding on both sides.
+        // rect.X is at the notch corners (= branch ankle corners);
+        // the notch tip is chevronWidth to the right, so visible content starts at rect.X + chevronWidth.
         int chevronWidth = ChevronWidth(backgroundHeight);
         Rectangle rect = new(
-            precedingRight - chevronWidth,
+            precedingRight - (chevronWidth / 2),
             capsuleTop,
-            chevronWidth + textSize.Width + (paddingLeftRight * 3) - 1,
+            chevronWidth + textSize.Width + (paddingLeftRight * 2) - 1,
             backgroundHeight);
 
         if (rect.Width <= 0 || rect.Height <= 0)
@@ -106,34 +128,8 @@ internal static class RevisionGridRefRenderer
             return Rectangle.Empty;
         }
 
-        int scaledRefLabelCornerRadius = DpiUtil.Scale(_refLabelCornerRadius);
-        using GraphicsPath remotePath = CreateRoundRectPath(rect, scaledRefLabelCornerRadius);
+        using GraphicsPath remotePath = CreateChevronLeftRoundRectPath(rect, RefLabelCornerRadius, chevronWidth);
         DrawRefBackground(isRowSelected, graphics, headColor, rect, remotePath, RefArrowType.None, dashedLine: false, fill, highlight);
-
-        if (highlight)
-        {
-            // Additionally draw the local-label chevron shifted right by scaledRefLabelHighlightWidth.
-            // Its tip peeks past precedingRight, forming the left-side frame of the remote highlight.
-            // Its left portion (to the left of precedingRight) is covered by the branch label drawn on top.
-            int scaledRefLabelHighlightWidth = DpiUtil.Scale(_refLabelHighlightWidth);
-            Rectangle shiftedBranchRect = new(
-                precedingRight - branchWidth + (chevronWidth / 2) + scaledRefLabelHighlightWidth,
-                capsuleTop,
-                branchWidth,
-                backgroundHeight);
-            SmoothingMode oldHighlightMode = graphics.SmoothingMode;
-            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            try
-            {
-                using GraphicsPath shiftedBranchPath = CreateChevronRightRoundRectPath(shiftedBranchRect, scaledRefLabelCornerRadius, chevronWidth);
-                using Pen highlightPen = new(headColor, scaledRefLabelHighlightWidth);
-                graphics.DrawPath(highlightPen, shiftedBranchPath);
-            }
-            finally
-            {
-                graphics.SmoothingMode = oldHighlightMode;
-            }
-        }
 
         // Text is right-aligned within the visible portion (right of precedingRight), keeping paddingLeftRight from the right edge.
         Rectangle textBounds = new(
@@ -180,7 +176,7 @@ internal static class RevisionGridRefRenderer
             return Rectangle.Empty;
         }
 
-        int scaledRadius = DpiUtil.Scale(_refLabelCornerRadius);
+        int scaledRadius = RefLabelCornerRadius;
         if (nestledRight)
         {
             int chevronWidth = ChevronWidth(backgroundHeight);
@@ -236,7 +232,7 @@ internal static class RevisionGridRefRenderer
 
             if (highlight)
             {
-                using Pen highlightPen = new(color, DpiUtil.Scale(_refLabelHighlightWidth));
+                using Pen highlightPen = new(color, RefLabelHighlightWidth);
                 graphics.DrawPath(highlightPen, path);
             }
 
