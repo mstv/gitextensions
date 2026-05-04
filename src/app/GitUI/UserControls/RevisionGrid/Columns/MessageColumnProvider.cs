@@ -221,29 +221,31 @@ internal sealed class MessageColumnProvider : ColumnProvider
         // Builds a map of local branch name → remote ref that tracks it. No I/O is performed.
         static Dictionary<string, IGitRef> BuildTrackedRemoteMap(IReadOnlyList<IGitRef> refs)
         {
-            FrozenDictionary<string, IGitRef> remoteBranchesByName = refs.Where(r => r.IsRemote).ToFrozenDictionary(r => r.LocalName, r => r);
-            if (remoteBranchesByName.Count == 0)
+            IReadOnlyList<IGitRef> localBranches = [.. refs.Where(r => r.IsHead)];
+            if (localBranches.Count == 0)
             {
                 return [];
             }
 
             Dictionary<string, IGitRef> remoteByLocal = [];
-            foreach (IGitRef local in refs)
+            foreach (IGitRef remote in refs)
             {
-                if (!local.IsHead)
+                if (!remote.IsRemote)
                 {
                     continue;
                 }
 
-                if (!remoteBranchesByName.TryGetValue(local.MergeWith, out IGitRef? remote) || local.TrackingRemote != remote.Remote)
+                foreach (IGitRef local in localBranches)
                 {
-                    continue;
-                }
+                    if (local.MergeWith != remote.LocalName || local.TrackingRemote != remote.Remote)
+                    {
+                        continue;
+                    }
 
-                string localName = local.LocalName;
-                if (!remoteByLocal.TryAdd(localName, remote))
-                {
-                    throw new InvalidOperationException($"Multiple remote refs {remote.Name} and {remoteByLocal[localName].Name} claim they were tracked by local branch '{localName}'.");
+                    if (!remoteByLocal.TryAdd(local.LocalName, remote))
+                    {
+                        throw new InvalidOperationException($"Multiple remote refs {remote.Name} and {remoteByLocal[local.LocalName].Name} claim they were tracked by local branch '{local.LocalName}'.");
+                    }
                 }
             }
 
