@@ -12,14 +12,18 @@ internal static class RevisionGridRefRenderer
     private static readonly float[] _dashPattern = [4, 4];
     private static readonly PointF[] _arrowPoints = new PointF[4];
 
+    private static int PaddingTopBottom => DpiUtil.Scale(2);
+
     // Pixel radius for the rounded corners of ref label capsules.
-    private static int RefLabelCornerRadius => DpiUtil.Scale(6);
+    private static int RefLabelCornerRadius => DpiUtil.Scale(5);
 
     // Pixel width of the highlight frame drawn around a hovered ref label,
     // and the left-side offset used when drawing the nestled remote label.
     private static int RefLabelHighlightWidth => DpiUtil.Scale(1);
 
     private static int ChevronWidth(int height) => height / 2;
+
+    private static int PaddingLeftRight(string name) => string.IsNullOrEmpty(name) ? DpiUtil.Scale(1) : DpiUtil.Scale(4);
 
     /// <summary>
     ///  Creates a closed path for a remote capsule whose left edge is a concave '>' notch
@@ -94,8 +98,12 @@ internal static class RevisionGridRefRenderer
     /// <param name="precedingRight">Absolute x-coordinate of the right edge of the preceding capsule.</param>
     /// <param name="capsuleTop">Absolute y-coordinate of the top edge shared with the preceding capsule.</param>
     /// <param name="backgroundHeight">Height of the capsule, matching the preceding branch capsule.</param>
-    /// <returns>The bounding rectangle of the drawn label, or <see cref="Rectangle.Empty"/> if nothing was drawn.</returns>
-    public static Rectangle DrawNestledRemoteRef(
+    /// <returns>
+    ///  The bounding rectangle of the drawn label (or <see cref="Rectangle.Empty"/> if nothing was drawn),
+    ///  and a deferred action that paints the highlight frame — or <see langword="null"/> when <paramref name="highlight"/> is <see langword="false"/>.
+    ///  The caller is responsible for invoking the action at the appropriate time (typically after all adjacent labels are drawn).
+    /// </returns>
+    public static (Rectangle Rect, Action? DrawHighlight) DrawNestledRemoteRef(
         bool isRowSelected,
         Font font,
         string name,
@@ -107,8 +115,7 @@ internal static class RevisionGridRefRenderer
         bool fill,
         bool highlight)
     {
-        int paddingLeftRight = !string.IsNullOrEmpty(name) ? DpiUtil.Scale(4) : DpiUtil.Scale(1);
-        int paddingTopBottom = DpiUtil.Scale(2);
+        int paddingLeftRight = PaddingLeftRight(name);
 
         Size textSize = !string.IsNullOrEmpty(name)
             ? TextRenderer.MeasureText(graphics, name, font, Size.Empty, TextFormatFlags.NoPadding)
@@ -125,23 +132,45 @@ internal static class RevisionGridRefRenderer
 
         if (rect.Width <= 0 || rect.Height <= 0)
         {
-            return Rectangle.Empty;
+            return (Rectangle.Empty, DrawHighlight: null);
         }
 
-        using GraphicsPath remotePath = CreateChevronLeftRoundRectPath(rect, RefLabelCornerRadius, chevronWidth);
-        DrawRefBackground(isRowSelected, graphics, headColor, rect, remotePath, RefArrowType.None, dashedLine: false, fill, highlight);
+        GraphicsPath remotePath = CreateChevronLeftRoundRectPath(rect, RefLabelCornerRadius, chevronWidth);
+        DrawRefBackground(isRowSelected, graphics, headColor, rect, remotePath, RefArrowType.None, dashedLine: false, fill, highlight: false);
 
         // Text is right-aligned within the visible portion (right of precedingRight), keeping paddingLeftRight from the right edge.
         Rectangle textBounds = new(
             rect.Right - paddingLeftRight - textSize.Width,
-            rect.Y + paddingTopBottom - 1,
+            rect.Y + PaddingTopBottom - 1,
             textSize.Width,
             textSize.Height);
 
         Color textColor = fill ? headColor : ColorHelper.Lerp(headColor, Color.Black, 0.25F);
         TextRenderer.DrawText(graphics, name, font, textBounds, textColor, TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
 
-        return rect;
+        if (!highlight)
+        {
+            remotePath.Dispose();
+            return (rect, DrawHighlight: null);
+        }
+
+        return (rect, DrawHighlight: () =>
+            {
+                using (remotePath)
+                {
+                    SmoothingMode oldMode = graphics.SmoothingMode;
+                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    try
+                    {
+                        using Pen highlightPen = new(headColor, RefLabelHighlightWidth);
+                        graphics.DrawPath(highlightPen, remotePath);
+                    }
+                    finally
+                    {
+                        graphics.SmoothingMode = oldMode;
+                    }
+                }
+            });
     }
 
     /// <summary>
@@ -150,8 +179,8 @@ internal static class RevisionGridRefRenderer
     /// <returns>The bounding rectangle of the drawn ref label in DataGridView client coordinates, or <see cref="Rectangle.Empty"/> if nothing was drawn.</returns>
     public static Rectangle DrawRef(bool isRowSelected, Font font, ref int offset, string name, Color headColor, RefArrowType arrowType, in Rectangle bounds, Graphics graphics, bool dashedLine = false, bool fill = false, bool highlight = false, bool nestledRight = false)
     {
-        int paddingLeftRight = !string.IsNullOrEmpty(name) ? DpiUtil.Scale(4) : DpiUtil.Scale(1);
-        int paddingTopBottom = DpiUtil.Scale(2);
+        int paddingLeftRight = PaddingLeftRight(name);
+        int paddingTopBottom = PaddingTopBottom;
         int marginRight = DpiUtil.Scale(5);
 
         Color textColor = fill ? headColor : ColorHelper.Lerp(headColor, Color.Black, 0.25F);
@@ -307,16 +336,13 @@ internal static class RevisionGridRefRenderer
     /// </remarks>
     public static (int idealWidth, int backgroundHeight) MeasureRef(Font font, string name, RefArrowType arrowType, int rowHeight, Graphics graphics)
     {
-        int paddingLeftRight = !string.IsNullOrEmpty(name) ? DpiUtil.Scale(4) : DpiUtil.Scale(1);
-        int paddingTopBottom = DpiUtil.Scale(2);
-
         Size textSize = !string.IsNullOrEmpty(name)
             ? TextRenderer.MeasureText(graphics, name, font, Size.Empty, TextFormatFlags.NoPadding)
             : new(0, TextRenderer.MeasureText(graphics, " ", font, Size.Empty, TextFormatFlags.NoPadding).Height);
 
-        int backgroundHeight = textSize.Height + (paddingTopBottom * 2) - 1;
+        int backgroundHeight = textSize.Height + (PaddingTopBottom * 2) - 1;
         int arrowWidth = arrowType == RefArrowType.None ? 0 : rowHeight / 2;
-        int idealWidth = textSize.Width + arrowWidth + (paddingLeftRight * 2) - 1;
+        int idealWidth = textSize.Width + arrowWidth + (PaddingLeftRight(name) * 2) - 1;
 
         return (idealWidth, backgroundHeight);
     }

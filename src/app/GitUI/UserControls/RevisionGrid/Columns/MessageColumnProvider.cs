@@ -457,7 +457,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
         // accounting for an optional prefix configured for the remote.
         string remoteName = remote.LocalName == GetRemotePrefix(remote.Module, remote.Remote) + gitRef.Name ? remote.Remote : remote.Name;
 
-        Rectangle remoteRect = RevisionGridRefRenderer.DrawNestledRemoteRef(
+        (Rectangle remoteRect, Action? drawRemoteHighlight) = RevisionGridRefRenderer.DrawNestledRemoteRef(
             e.State.HasFlag(DataGridViewElementStates.Selected),
             style.NormalFont,
             remoteName,
@@ -471,6 +471,9 @@ internal sealed class MessageColumnProvider : ColumnProvider
 
         // Draw the branch with a '>' right edge that meets the remote's matching left indent.
         Rectangle branchRect = DrawRef(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, gitRef.Name, nestledRight: true);
+
+        // Draw the remote highlight last so the branch capsule drawn on top cannot overwrite its highlight edge.
+        drawRemoteHighlight?.Invoke();
 
         // Advance offset past the remote's right edge (or just past the branch if the remote was not drawn).
         offset = (remoteRect != Rectangle.Empty ? remoteRect.Right : branchRight) - messageBounds.X + DpiUtil.Scale(5);
@@ -489,7 +492,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
 
         // No overlap: the visible remote area starts at the notch tip (remoteRect.X + chevronWidth).
         int remoteChevronWidth = backgroundHeight / 2;
-        int remoteVisibleLeft = remoteRect.X + remoteChevronWidth;
+        int remoteVisibleLeft = remoteRect.X + remoteChevronWidth - 1;
         hitInfos ??= RentHitInfoList();
         hitInfos.Add(new RefLabelHitInfo(
             remoteRect with { X = remoteVisibleLeft, Width = remoteRect.Right - remoteVisibleLeft },
