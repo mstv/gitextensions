@@ -3,9 +3,8 @@ using GitExtensions.Extensibility.Git;
 using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
 using GitUI.Theming;
-using GitUI.UserControls.RevisionGrid;
 
-namespace GitUI;
+namespace GitUI.UserControls.RevisionGrid;
 
 internal static class RevisionGridRefRenderer
 {

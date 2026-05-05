@@ -1,5 +1,4 @@
-﻿using System.Collections.Frozen;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using GitCommands;
 using GitCommands.Config;
@@ -405,18 +404,6 @@ internal sealed class MessageColumnProvider : ColumnProvider
     ///  Draws a local branch capsule with its tracked remote capsule nestled against it,
     ///  appearing as a single visual group.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    ///  The remote is a D-shape (neck + right semicircle) drawn behind the branch.
-    ///  Drawing order is back-to-front: remote first, then the branch on top.
-    ///  This way each shape's right rounded cap covers the left neck of the shape in front of it,
-    ///  revealing only the remote's semicircle as a "right-half-capsule".
-    /// </para>
-    /// <para>
-    ///  The combined outer outline — branch left cap + shared straight top/bottom edges
-    ///  + remote's right cap — is itself a capsule shape.
-    /// </para>
-    /// </remarks>
     private void DrawBranchWithNestledRemote(
         DataGridViewCellPaintingEventArgs e,
         IGitRef gitRef,
@@ -445,7 +432,6 @@ internal sealed class MessageColumnProvider : ColumnProvider
         int outerMarginTopBottom = (messageBounds.Height - backgroundHeight) / 2;
         int capsuleTop = messageBounds.Y + outerMarginTopBottom;
 
-        // Draw remote first so local branch covers the neck of the remote behind it.
         bool isRemoteHighlighted = _highlightedRowIndex == e.RowIndex && ReferenceEquals(_highlightedRef, remote);
 
         if (!style.RemoteColors.TryGetValue(remote.Remote, out Color remoteColor))
