@@ -267,7 +267,8 @@ partial class RepoObjectsTree : IMenuItemFactory
 
         EnableRemoteBranchContextMenu(hasSingleSelection, selectedNode);
         EnableMenuItems(_tagNodeMenuItems, _ => hasSingleSelection && selectedNode is TagNode);
-        EnableMenuItems(hasSingleSelection && selectedNode is RemoteBranchTree, mnuBtnManageRemotesFromRootNode, mnuBtnFetchAllRemotes, mnuBtnPruneAllRemotes);
+        EnableMenuItems(hasSingleSelection && selectedNode is RemoteBranchTree, mnuBtnManageRemotesFromRootNode, mnuBtnPruneAllRemotes);
+        EnableMenuItems(hasSingleSelection && selectedNode is RemoteBranchTree && Module.GetRemoteNames().Count > 1, mnuBtnFetchAllRemotes);
         EnableRemoteRepoContextMenu(hasSingleSelection, selectedNode);
         EnableMenuItems(hasSingleSelection && selectedNode is StashTree, mnubtnStashAllFromRootNode, mnubtnStashStagedFromRootNode, mnubtnManageStashFromRootNode);
         EnableStashContextMenu(hasSingleSelection, selectedNode);
