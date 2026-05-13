@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using GitCommands.Logging;
 using Windows.Win32.Foundation;
 
@@ -16,6 +17,8 @@ internal sealed class MinttySession
     public Process? MinttyProcess { get; private set; }
 
     public int? ExitCode { get; private set; }
+
+    public StringBuilder CollectedOutput { get; } = new StringBuilder();
 
     private MinttySession()
     {
@@ -66,7 +69,11 @@ internal sealed class MinttySession
         {
             MinttyConsoleRuntime.StartOutputReader(
                 minttyProcess,
-                _lineCallback,
+                lineCallback: line =>
+                {
+                    CollectedOutput.AppendLine(line);
+                    _lineCallback?.Invoke(line);
+                },
                 exitCallback: exitCode =>
                 {
                     ExitCode = exitCode;

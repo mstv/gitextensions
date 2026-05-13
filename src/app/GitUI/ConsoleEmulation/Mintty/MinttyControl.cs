@@ -323,6 +323,14 @@ internal sealed class MinttyControl : Panel
             _sessionCts?.Cancel();
             _sessionCts?.Dispose();
             _sessionCts = null;
+
+            if (_runningSession != null && _runningSession.ExitCode == null)
+            {
+                _runningSession.ProcessOperation?.SetProcessId(-1);
+                _runningSession.ProcessOperation?.LogProcessEnd(-999999999, $"Dispose while running. Mintty process alive: {!_runningSession.IsExited}, Job handle available: {!_jobHandle.IsNull}. Output: {_runningSession.CollectedOutput.ToString().ReplaceLineEndings(" ")}");
+                _runningSession.ProcessOperation?._entry.CallStack = new StackTrace();
+            }
+
             _runningSession?.Kill();
             _runningSession = null;
 
