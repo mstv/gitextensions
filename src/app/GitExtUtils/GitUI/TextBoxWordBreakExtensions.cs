@@ -7,6 +7,7 @@ namespace GitUI;
 /// Makes Ctrl+Left/Right, Ctrl+Shift+Left/Right and double-click word selection treat
 /// punctuation such as '/', ':', '.', '(' and ')' as word boundaries in plain text boxes
 /// and editable combo boxes, matching the behavior of the commit message rich text box.
+/// Triple-click selects the whole text.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -68,12 +69,20 @@ public static class TextBoxWordBreakExtensions
         }
     }
 
-    // Tracks the fixed end (anchor) of the selection so Ctrl+Shift+Left/Right can extend
-    // from the correct side. WinForms does not expose which end the caret is on.
-    private static readonly ConditionalWeakTable<Control, StrongBox<int>> _anchors = new();
+    // Per-control state: the fixed end (anchor) of the selection so Ctrl+Shift+Left/Right can
+    // extend from the correct side (WinForms does not expose which end the caret is on), plus
+    // the time and location of the last double-click used to detect a triple-click.
+    private static readonly ConditionalWeakTable<Control, WordSelectionState> _state = new();
 
     // Keeps the native subclass of each editable ComboBox's child edit control alive.
     private static readonly ConditionalWeakTable<ComboBox, ComboBoxEditWindow> _comboBoxEditWindows = new();
+
+    private sealed class WordSelectionState
+    {
+        public int Anchor { get; set; }
+        public long LastDoubleClickTicks { get; set; }
+        public Point LastDoubleClickLocation { get; set; }
+    }
 
     private static void HandleDisposed(object? sender, EventArgs e)
     {
@@ -82,7 +91,7 @@ public static class TextBoxWordBreakExtensions
         control.KeyDown -= HandleKeyDown;
         control.MouseDown -= HandleMouseDown;
         control.MouseUp -= HandleMouseUp;
-        _anchors.Remove(control);
+        _state.Remove(control);
 
         if (control is ComboBox comboBox)
         {
@@ -147,11 +156,22 @@ public static class TextBoxWordBreakExtensions
         // TextBoxBase suppresses the MouseDoubleClick event (StandardDoubleClick style is off),
         // but MouseDown still fires with Clicks == 2 for the second click. ComboBox is handled
         // separately via its child edit control (see ComboBoxEditWindow).
-        if (e.Clicks == 2 && sender is TextBoxBase textBox)
+        if (sender is not TextBoxBase textBox)
+        {
+            return;
+        }
+
+        if (e.Clicks == 2)
         {
             // The base class has already applied its default whitespace-only word selection,
             // so this replaces it with one that respects punctuation boundaries.
             SelectWordAt(textBox, textBox.Text, textBox.GetCharIndexFromPosition(e.Location));
+            RecordDoubleClick(textBox, e.Location);
+        }
+        else if (e.Clicks == 1 && IsTripleClick(textBox, e.Location))
+        {
+            textBox.SelectAll();
+            SetAnchor(textBox, 0);
         }
     }
 
@@ -327,18 +347,43 @@ public static class TextBoxWordBreakExtensions
     }
 
     private static int GetAnchor(Control control)
-        => _anchors.TryGetValue(control, out StrongBox<int>? box) ? box.Value : -1;
+        => _state.TryGetValue(control, out WordSelectionState? state) ? state.Anchor : -1;
 
     private static void SetAnchor(Control control, int value)
+        => _state.GetOrCreateValue(control).Anchor = value;
+
+    private static void RecordDoubleClick(Control control, Point location)
     {
-        if (_anchors.TryGetValue(control, out StrongBox<int>? box))
+        WordSelectionState state = _state.GetOrCreateValue(control);
+        state.LastDoubleClickTicks = Environment.TickCount64;
+        state.LastDoubleClickLocation = location;
+    }
+
+    /// <summary>
+    /// Windows has no triple-click message, so a click that lands shortly after a double-click
+    /// and near the same spot is treated as the third click. The recorded double-click is
+    /// consumed so a further click does not re-trigger.
+    /// </summary>
+    private static bool IsTripleClick(Control control, Point location)
+    {
+        if (!_state.TryGetValue(control, out WordSelectionState? state) || state.LastDoubleClickTicks == 0)
         {
-            box.Value = value;
+            return false;
         }
-        else
+
+        long elapsed = Environment.TickCount64 - state.LastDoubleClickTicks;
+        Size slop = SystemInformation.DoubleClickSize;
+        bool isTripleClick = elapsed >= 0
+            && elapsed <= SystemInformation.DoubleClickTime
+            && Math.Abs(location.X - state.LastDoubleClickLocation.X) <= slop.Width
+            && Math.Abs(location.Y - state.LastDoubleClickLocation.Y) <= slop.Height;
+
+        if (isTripleClick)
         {
-            _anchors.Add(control, new StrongBox<int>(value));
+            state.LastDoubleClickTicks = 0;
         }
+
+        return isTripleClick;
     }
 
     private static int GetSelectionStart(Control control)
@@ -408,12 +453,23 @@ public static class TextBoxWordBreakExtensions
             // Let the edit control apply its default selection first, then refine it.
             base.WndProc(ref m);
 
-            if (m.Msg == NativeMethods.WM_LBUTTONDBLCLK)
+            switch (m.Msg)
             {
-                // m.LParam holds the click position in the edit control's client coordinates.
-                int charPos = NativeMethods.SendMessageW(Handle, NativeMethods.EM_CHARFROMPOS, IntPtr.Zero, m.LParam).ToInt32();
-                int index = unchecked((short)(charPos & 0xFFFF));
-                SelectWordAt(_comboBox, _comboBox.Text, index);
+                case NativeMethods.WM_LBUTTONDBLCLK:
+                {
+                    // m.LParam holds the click position in the edit control's client coordinates.
+                    int charPos = NativeMethods.SendMessageW(Handle, NativeMethods.EM_CHARFROMPOS, IntPtr.Zero, m.LParam).ToInt32();
+                    SelectWordAt(_comboBox, _comboBox.Text, unchecked((short)(charPos & 0xFFFF)));
+                    RecordDoubleClick(_comboBox, m.LParam.ToPoint());
+                    break;
+                }
+
+                case NativeMethods.WM_LBUTTONDOWN when IsTripleClick(_comboBox, m.LParam.ToPoint()):
+                {
+                    _comboBox.SelectAll();
+                    SetAnchor(_comboBox, 0);
+                    break;
+                }
             }
         }
     }
