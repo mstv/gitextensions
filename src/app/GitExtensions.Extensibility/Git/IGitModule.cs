@@ -338,6 +338,7 @@ public interface IGitModule
     string ApplyPatch(string dirText, ArgumentString arguments);
     bool InTheMiddleOfRebase();
     bool InTheMiddleOfMerge();
+    bool CanContinueAction(string commandOutput);
     IReadOnlyList<GitItemStatus> GetDiffFilesWithSubmodulesStatus(ObjectId? firstId,
         ObjectId? secondId,
         ObjectId? parentToSecond,

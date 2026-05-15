@@ -1962,6 +1962,14 @@ public sealed partial class GitModule : IGitModule
         return InTheMiddleOfConflictedMerge() || InTheMiddleOfRebase();
     }
 
+    public bool CanContinueAction(string commandOutput)
+    {
+        return commandOutput.Contains("using previous resolution")
+            && !commandOutput.TrimEnd().EndsWith("Aborted")
+            && (InTheMiddleOfMerge() || InTheMiddleOfPatch() || InTheMiddleOfRebase())
+            && !InTheMiddleOfConflictedMerge();
+    }
+
     public void RemoveConfigSection(string section, string? subsection)
     {
         GitExecutable.RemoveConfigSection(GitSettingLevel.Local, section, subsection);
