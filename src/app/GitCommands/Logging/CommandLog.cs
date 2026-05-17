@@ -13,7 +13,7 @@ namespace GitCommands.Logging;
 
 public sealed class ProcessOperation
 {
-    private readonly CommandLogEntry _entry;
+    public readonly CommandLogEntry _entry;
     private readonly Stopwatch _stopwatch;
     private readonly Action _raiseCommandsChanged;
 
@@ -220,7 +220,7 @@ public static class CommandLog
 
     public static ProcessOperation LogProcessStart(string fileName, string arguments = "", string workDir = "")
     {
-        const int MaxEntryCount = 500;
+        const int MaxEntryCount = 5000;
 
         CommandLogEntry entry = new(fileName, arguments, workDir, DateTime.Now, ThreadHelper.JoinableTaskContext.IsOnMainThread);
 

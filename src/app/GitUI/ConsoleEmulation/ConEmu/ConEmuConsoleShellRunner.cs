@@ -1,6 +1,7 @@
 using System.Globalization;
 using ConEmu.WinForms;
 using GitCommands;
+using GitUI.ConsoleEmulation;
 using GitUI.Shells;
 
 namespace GitUI.ConsoleEmulation.ConEmu;
@@ -10,11 +11,13 @@ namespace GitUI.ConsoleEmulation.ConEmu;
 /// </summary>
 internal sealed class ConEmuConsoleShellRunner : IConsoleShellRunner
 {
+    private readonly ConsoleEmulatorSettings _settings;
     private readonly ConEmuControl _conEmu;
     private readonly ShellProvider _shellProvider = new();
 
-    internal ConEmuConsoleShellRunner()
+    internal ConEmuConsoleShellRunner(ConsoleEmulatorSettings settings)
     {
+        _settings = settings;
         _conEmu = new ConEmuControl
         {
             Dock = DockStyle.Fill,
@@ -69,9 +72,9 @@ internal sealed class ConEmuConsoleShellRunner : IConsoleShellRunner
             _conEmu.Start(
                 startInfo,
                 ThreadHelper.JoinableTaskFactory,
-                AppSettings.GetEffectiveConEmuStyle(),
-                AppSettings.ConEmuConsoleFont.Name,
-                AppSettings.ConEmuConsoleFont.Size.ToString("F0", CultureInfo.InvariantCulture));
+                _settings.Theme,
+                _settings.Font!.Name,
+                _settings.Font.Size.ToString("F0", CultureInfo.InvariantCulture));
         }
         catch (InvalidOperationException)
         {
