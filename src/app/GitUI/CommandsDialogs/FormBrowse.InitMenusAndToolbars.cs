@@ -333,21 +333,9 @@ partial class FormBrowse
     {
         bool hasMultipleRemotes = Module.IsValidGitWorkingDir() && Module.GetRemoteNames().Count > 1;
 
+        // Toolbar button drop down menu
         fetchAllToolStripMenuItem.Visible = hasMultipleRemotes;
         fetchPruneAllToolStripMenuItem.Visible = hasMultipleRemotes;
-
-        // Update the corresponding toolbar shortcut buttons
-        string fetchAllButtonName = FetchPullToolbarShortcutsPrefix + fetchAllToolStripMenuItem.Name;
-        string fetchPruneAllButtonName = FetchPullToolbarShortcutsPrefix + fetchPruneAllToolStripMenuItem.Name;
-        if (ToolStripMain.Items[fetchAllButtonName] is ToolStripItem fetchAllButton)
-        {
-            fetchAllButton.Visible = hasMultipleRemotes;
-        }
-
-        if (ToolStripMain.Items[fetchPruneAllButtonName] is ToolStripItem fetchPruneAllButton)
-        {
-            fetchPruneAllButton.Visible = hasMultipleRemotes;
-        }
 
         // Update the "set default pull action" submenu items
         if (setDefaultPullButtonActionToolStripMenuItem.DropDown is ToolStripDropDownMenu setDefaultMenu)
@@ -359,6 +347,20 @@ partial class FormBrowse
                     item.Visible = hasMultipleRemotes;
                 }
             }
+        }
+
+        // Update the corresponding toolbar shortcut buttons
+        // As the Visible property is set from xml, only disable the button
+        string fetchAllButtonName = FetchPullToolbarShortcutsPrefix + fetchAllToolStripMenuItem.Name;
+        string fetchPruneAllButtonName = FetchPullToolbarShortcutsPrefix + fetchPruneAllToolStripMenuItem.Name;
+        if (ToolStripMain.Items[fetchAllButtonName] is ToolStripItem fetchAllButton)
+        {
+            fetchAllButton.Enabled = hasMultipleRemotes;
+        }
+
+        if (ToolStripMain.Items[fetchPruneAllButtonName] is ToolStripItem fetchPruneAllButton)
+        {
+            fetchPruneAllButton.Enabled = hasMultipleRemotes;
         }
     }
 
