@@ -328,6 +328,7 @@ partial class FormBrowse
     /// <summary>
     ///  Hides "Fetch all" and "Fetch and prune all" items when there is only one remote,
     ///  since they are redundant with the single-remote "Fetch" command.
+    ///  Note that the customizable toolbar buttons are not changed.
     /// </summary>
     private void UpdateFetchAllVisibility()
     {
@@ -347,20 +348,6 @@ partial class FormBrowse
                     item.Visible = hasMultipleRemotes;
                 }
             }
-        }
-
-        // Update the corresponding toolbar shortcut buttons
-        // As the Visible property is set from xml, only disable the button
-        string fetchAllButtonName = FetchPullToolbarShortcutsPrefix + fetchAllToolStripMenuItem.Name;
-        string fetchPruneAllButtonName = FetchPullToolbarShortcutsPrefix + fetchPruneAllToolStripMenuItem.Name;
-        if (ToolStripMain.Items[fetchAllButtonName] is ToolStripItem fetchAllButton)
-        {
-            fetchAllButton.Enabled = hasMultipleRemotes;
-        }
-
-        if (ToolStripMain.Items[fetchPruneAllButtonName] is ToolStripItem fetchPruneAllButton)
-        {
-            fetchPruneAllButton.Enabled = hasMultipleRemotes;
         }
     }
 
