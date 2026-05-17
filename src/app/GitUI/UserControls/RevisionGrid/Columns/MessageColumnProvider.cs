@@ -150,21 +150,11 @@ internal sealed class MessageColumnProvider : ColumnProvider
                 // If this branch is at its tracked remote, draw them condensed.
                 if (gitRef.IsHead && trackedRemotes.TryGetValue(gitRef.Name, out IGitRef? remote))
                 {
-                    DrawBranchWithNestledRemote(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, remote, ref hitInfos);
+                    DrawBranchWithNestledRemote(gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, remote, ref hitInfos);
                     continue;
                 }
 
-                string label = !isHighlighted
-                                && singleLocalBranchName is not null
-                                && gitRef.IsRemote
-                                && gitRef.LocalName == GetRemotePrefix(gitRef.Module, gitRef.Remote) + singleLocalBranchName
-                    ? gitRef.Remote : gitRef.Name;
-                Rectangle refRect = DrawRef(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, label);
-                if (refRect != Rectangle.Empty)
-                {
-                    hitInfos ??= RentHitInfoList();
-                    hitInfos.Add(new RefLabelHitInfo(refRect, gitRef, StashReflogSelector: null));
-                }
+                DrawSeparateRef(gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, singleLocalBranchName, ref hitInfos);
             }
         }
 
@@ -249,6 +239,111 @@ internal sealed class MessageColumnProvider : ColumnProvider
             }
 
             return remoteByLocal;
+        }
+
+        // Draws a local branch capsule with its tracked remote capsule nestled against it, appearing as a single visual group.
+        void DrawBranchWithNestledRemote(
+            IGitRef gitRef,
+            IGitRef? superprojectRef,
+            CellStyle style,
+            Rectangle messageBounds,
+            ref int offset,
+            bool isHighlighted,
+            IGitRef remote,
+            ref List<RefLabelHitInfo>? hitInfos)
+        {
+            RefArrowType arrowType = gitRef.IsSelected ? RefArrowType.Filled : RefArrowType.None;
+            Font branchFont = gitRef.IsSelected ? style.BoldFont : style.NormalFont;
+            (int branchIdealWidth, int backgroundHeight) = RevisionGridRefRenderer.MeasureRef(branchFont, gitRef.Name, arrowType, messageBounds.Height, e.Graphics!);
+
+            int branchWidth = Math.Min(messageBounds.Width - offset, branchIdealWidth);
+            if (branchWidth <= 0)
+            {
+                return;
+            }
+
+            // Absolute x where the branch capsule's right edge will be.
+            int branchRight = messageBounds.X + offset + branchWidth;
+
+            // capsuleTop: y-coordinate of the capsule top edge (same formula as DrawRef uses).
+            int outerMarginTopBottom = (messageBounds.Height - backgroundHeight) / 2;
+            int capsuleTop = messageBounds.Y + outerMarginTopBottom;
+
+            bool isRemoteHighlighted = _highlightedRowIndex == e.RowIndex && ReferenceEquals(_highlightedRef, remote);
+
+            if (!style.RemoteColors.TryGetValue(remote.Remote, out Color remoteColor))
+            {
+                remoteColor = RevisionGridRefRenderer.GetHeadColor(remote);
+            }
+
+            // Show only the remote name when the tracked branch has the same local name,
+            // accounting for an optional prefix configured for the remote.
+            string remoteName = remote.LocalName == GetRemotePrefix(remote.Module, remote.Remote) + gitRef.Name ? remote.Remote : remote.Name;
+
+            (Rectangle remoteRect, Action? drawRemoteHighlight) = RevisionGridRefRenderer.DrawNestledRemoteRef(
+                e.State.HasFlag(DataGridViewElementStates.Selected),
+                style.NormalFont,
+                remoteName,
+                remoteColor,
+                branchRight,
+                capsuleTop,
+                backgroundHeight,
+                e.Graphics!,
+                fill: _settings.FillRefLabels,
+                highlight: isRemoteHighlighted);
+
+            // Draw the branch with a '>' right edge that meets the remote's matching left indent.
+            Rectangle branchRect = DrawRef(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, gitRef.Name, nestledRight: true);
+
+            // Draw the remote highlight last so the branch capsule drawn on top cannot overwrite its highlight edge.
+            drawRemoteHighlight?.Invoke();
+
+            // Advance offset past the remote's right edge (or just past the branch if the remote was not drawn).
+            offset = (remoteRect != Rectangle.Empty ? remoteRect.Right : branchRight) - messageBounds.X + DpiUtil.Scale(5);
+
+            // Register hit-boxes.
+            if (branchRect != Rectangle.Empty)
+            {
+                hitInfos ??= RentHitInfoList();
+                hitInfos.Add(new RefLabelHitInfo(branchRect, gitRef, StashReflogSelector: null));
+            }
+
+            if (remoteRect == Rectangle.Empty)
+            {
+                return;
+            }
+
+            // No overlap: the visible remote area starts at the notch tip (remoteRect.X + chevronWidth).
+            int remoteChevronWidth = backgroundHeight / 2;
+            int remoteVisibleLeft = remoteRect.X + remoteChevronWidth - 1;
+            hitInfos ??= RentHitInfoList();
+            hitInfos.Add(new RefLabelHitInfo(
+                remoteRect with { X = remoteVisibleLeft, Width = remoteRect.Right - remoteVisibleLeft },
+                remote,
+                StashReflogSelector: null));
+        }
+
+        void DrawSeparateRef(
+            IGitRef gitRef,
+            IGitRef? superprojectRef,
+            CellStyle style,
+            Rectangle messageBounds,
+            ref int offset,
+            bool isHighlighted,
+            string? singleLocalBranchName,
+            ref List<RefLabelHitInfo>? hitInfos)
+        {
+            string label = !isHighlighted
+                            && singleLocalBranchName is not null
+                            && gitRef.IsRemote
+                            && gitRef.LocalName == GetRemotePrefix(gitRef.Module, gitRef.Remote) + singleLocalBranchName
+                ? gitRef.Remote : gitRef.Name;
+            Rectangle refRect = DrawRef(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, label);
+            if (refRect != Rectangle.Empty)
+            {
+                hitInfos ??= RentHitInfoList();
+                hitInfos.Add(new RefLabelHitInfo(refRect, gitRef, StashReflogSelector: null));
+            }
         }
     }
 
@@ -398,92 +493,6 @@ internal sealed class MessageColumnProvider : ColumnProvider
                 TextRenderer.MeasureText("88", style.NormalFont).Width);
             offset += textWidth + textHorizontalPadding;
         }
-    }
-
-    /// <summary>
-    ///  Draws a local branch capsule with its tracked remote capsule nestled against it,
-    ///  appearing as a single visual group.
-    /// </summary>
-    private void DrawBranchWithNestledRemote(
-        DataGridViewCellPaintingEventArgs e,
-        IGitRef gitRef,
-        IGitRef? superprojectRef,
-        CellStyle style,
-        Rectangle messageBounds,
-        ref int offset,
-        bool isHighlighted,
-        IGitRef remote,
-        ref List<RefLabelHitInfo>? hitInfos)
-    {
-        RefArrowType arrowType = gitRef.IsSelected ? RefArrowType.Filled : RefArrowType.None;
-        Font branchFont = gitRef.IsSelected ? style.BoldFont : style.NormalFont;
-        (int branchIdealWidth, int backgroundHeight) = RevisionGridRefRenderer.MeasureRef(branchFont, gitRef.Name, arrowType, messageBounds.Height, e.Graphics!);
-
-        int branchWidth = Math.Min(messageBounds.Width - offset, branchIdealWidth);
-        if (branchWidth <= 0)
-        {
-            return;
-        }
-
-        // Absolute x where the branch capsule's right edge will be.
-        int branchRight = messageBounds.X + offset + branchWidth;
-
-        // capsuleTop: y-coordinate of the capsule top edge (same formula as DrawRef uses).
-        int outerMarginTopBottom = (messageBounds.Height - backgroundHeight) / 2;
-        int capsuleTop = messageBounds.Y + outerMarginTopBottom;
-
-        bool isRemoteHighlighted = _highlightedRowIndex == e.RowIndex && ReferenceEquals(_highlightedRef, remote);
-
-        if (!style.RemoteColors.TryGetValue(remote.Remote, out Color remoteColor))
-        {
-            remoteColor = RevisionGridRefRenderer.GetHeadColor(remote);
-        }
-
-        // Show only the remote name when the tracked branch has the same local name,
-        // accounting for an optional prefix configured for the remote.
-        string remoteName = remote.LocalName == GetRemotePrefix(remote.Module, remote.Remote) + gitRef.Name ? remote.Remote : remote.Name;
-
-        (Rectangle remoteRect, Action? drawRemoteHighlight) = RevisionGridRefRenderer.DrawNestledRemoteRef(
-            e.State.HasFlag(DataGridViewElementStates.Selected),
-            style.NormalFont,
-            remoteName,
-            remoteColor,
-            branchRight,
-            capsuleTop,
-            backgroundHeight,
-            e.Graphics!,
-            fill: _settings.FillRefLabels,
-            highlight: isRemoteHighlighted);
-
-        // Draw the branch with a '>' right edge that meets the remote's matching left indent.
-        Rectangle branchRect = DrawRef(e, gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, gitRef.Name, nestledRight: true);
-
-        // Draw the remote highlight last so the branch capsule drawn on top cannot overwrite its highlight edge.
-        drawRemoteHighlight?.Invoke();
-
-        // Advance offset past the remote's right edge (or just past the branch if the remote was not drawn).
-        offset = (remoteRect != Rectangle.Empty ? remoteRect.Right : branchRight) - messageBounds.X + DpiUtil.Scale(5);
-
-        // Register hit-boxes.
-        if (branchRect != Rectangle.Empty)
-        {
-            hitInfos ??= RentHitInfoList();
-            hitInfos.Add(new RefLabelHitInfo(branchRect, gitRef, StashReflogSelector: null));
-        }
-
-        if (remoteRect == Rectangle.Empty)
-        {
-            return;
-        }
-
-        // No overlap: the visible remote area starts at the notch tip (remoteRect.X + chevronWidth).
-        int remoteChevronWidth = backgroundHeight / 2;
-        int remoteVisibleLeft = remoteRect.X + remoteChevronWidth - 1;
-        hitInfos ??= RentHitInfoList();
-        hitInfos.Add(new RefLabelHitInfo(
-            remoteRect with { X = remoteVisibleLeft, Width = remoteRect.Right - remoteVisibleLeft },
-            remote,
-            StashReflogSelector: null));
     }
 
     private static void DrawSuperprojectRefs(
