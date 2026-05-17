@@ -1,4 +1,4 @@
-using GitCommands;
+﻿using GitCommands;
 using GitCommands.Config;
 using GitCommands.Git;
 using GitCommands.UserRepositoryHistory;
@@ -332,8 +332,8 @@ public partial class FormClone : GitExtensionsDialog
 
     private void ToTextUpdate(object sender, EventArgs e)
     {
-        bool destinationUnfilled = string.IsNullOrEmpty(_NO_TRANSLATE_To.Text) || _NO_TRANSLATE_To.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0;
-        bool subDirectoryUnfilled = string.IsNullOrEmpty(_NO_TRANSLATE_NewDirectory.Text) || _NO_TRANSLATE_NewDirectory.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0;
+        bool destinationUnfilled = string.IsNullOrEmpty(_NO_TRANSLATE_To.Text) || _NO_TRANSLATE_To.Text.IndexOfAny(Delimiters.InvalidPathCharsSearchValues) >= 0;
+        bool subDirectoryUnfilled = string.IsNullOrEmpty(_NO_TRANSLATE_NewDirectory.Text) || _NO_TRANSLATE_NewDirectory.Text.IndexOfAny(Delimiters.InvalidPathCharsSearchValues) >= 0;
 
         string destinationDirectory = destinationUnfilled ? $@"[{destinationLabel.Text}]" : _NO_TRANSLATE_To.Text;
         string destinationSubDirectory = subDirectoryUnfilled ? $@"[{subdirectoryLabel.Text}]" : _NO_TRANSLATE_NewDirectory.Text;
@@ -345,14 +345,14 @@ public partial class FormClone : GitExtensionsDialog
         if (destinationUnfilled || subDirectoryUnfilled)
         {
             Info.Text = newRepositoryLocationInfo;
-            Info.ForeColor = Color.Red.AdaptTextColor();
+            Info.ForeColor = Color.Red.AdaptForeColor(Info.BackColor);
             return;
         }
 
         if (Directory.Exists(destinationPath) && Directory.EnumerateFileSystemEntries(destinationPath).Any())
         {
             Info.Text = $@"{newRepositoryLocationInfo} {_infoDirectoryExists.Text}";
-            Info.ForeColor = Color.Red.AdaptTextColor();
+            Info.ForeColor = Color.Red.AdaptForeColor(Info.BackColor);
             return;
         }
 

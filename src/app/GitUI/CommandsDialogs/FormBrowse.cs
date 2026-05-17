@@ -1,8 +1,6 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Drawing2D;
-using System.Globalization;
-using ConEmu.WinForms;
 using GitCommands;
 using GitCommands.Config;
 using GitCommands.Git;
@@ -21,6 +19,7 @@ using GitUI.Avatars;
 using GitUI.CommandsDialogs.BrowseDialog;
 using GitUI.CommandsDialogs.BrowseDialog.DashboardControl;
 using GitUI.CommandsDialogs.WorktreeDialog;
+using GitUI.ConsoleEmulation;
 using GitUI.HelperDialogs;
 using GitUI.Infrastructure.Telemetry;
 using GitUI.LeftPanel;
@@ -215,11 +214,12 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     private readonly ISubmoduleStatusProvider _submoduleStatusProvider;
     private readonly IScriptsManager _scriptsManager;
     private readonly IRepositoryHistoryUIService _repositoryHistoryUIService;
+    private readonly IConsoleEmulatorsRegistry _consoleEmulatorsRegistry;
     private List<ToolStripItem>? _currentSubmoduleMenuItems;
     private readonly FormBrowseDiagnosticsReporter _formBrowseDiagnosticsReporter;
     private BuildReportTabPageExtension? _buildReportTabPageExtension;
     private readonly ShellProvider _shellProvider = new();
-    private ConEmuControl? _terminal;
+    private IConsoleShellRunner? _terminal;
     private Dashboard? _dashboard;
     private bool _isFileHistoryMode;
     private bool _fileBlameHistoryLeftPanelStartupState;
@@ -260,6 +260,8 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         InitializeComponent();
 
         _repositoryHistoryUIService = commands.GetRequiredService<IRepositoryHistoryUIService>();
+
+        _consoleEmulatorsRegistry = commands.GetRequiredService<IConsoleEmulatorsRegistry>();
 
         fileToolStripMenuItem.Initialize(() => UICommands);
         helpToolStripMenuItem.Initialize(() => UICommands);
@@ -1686,7 +1688,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         UICommands.StartCleanupRepositoryDialog(this);
     }
 
-    public void SetWorkingDir(string? path, ObjectId? selectedId = null, ObjectId? firstId = null)
+    public void SetWorkingDir(string? path, ObjectId selectedId = default, ObjectId firstId = default)
     {
         RevisionGrid.SelectedId = selectedId;
         RevisionGrid.FirstId = firstId;
@@ -1777,7 +1779,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void CreateBranchToolStripMenuItemClick(object sender, EventArgs e)
     {
-        UICommands.StartCreateBranchDialog(this, RevisionGrid.LatestSelectedRevision?.ObjectId);
+        UICommands.StartCreateBranchDialog(this, RevisionGrid.LatestSelectedRevision?.ObjectId ?? default);
     }
 
     private void editGitAttributesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1835,11 +1837,18 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         {
             foreach (IGitRef branch in GetBranches())
             {
-                Validates.NotNull(branch.ObjectId);
+                if (branch.ObjectId.IsZero)
+                {
+                    throw new InvalidOperationException($"Branch '{branch.Name}' has no ObjectId.");
+                }
+
                 bool isBranchVisible = ((ICheckRefs)RevisionGridControl).Contains(branch.ObjectId);
 
                 ToolStripItem toolStripItem = branchSelect.DropDownItems.Add(branch.Name);
-                toolStripItem.ForeColor = isBranchVisible ? branchSelect.ForeColor : Color.Silver.AdaptTextColor();
+                Color effectiveBackColor = toolStripItem.BackColor.IsEmpty
+                    ? toolStripItem.GetCurrentParent()?.BackColor ?? branchSelect.DropDown.BackColor
+                    : toolStripItem.BackColor;
+                toolStripItem.ForeColor = isBranchVisible ? branchSelect.ForeColor : Color.Silver.AdaptForeColor(effectiveBackColor);
                 toolStripItem.Image = (isBranchVisible ? Images.Branch : Images.EyeClosed).AdaptLightness();
                 toolStripItem.Click += (s, e) => UICommands.StartCheckoutBranch(this, toolStripItem.Text!);
             }
@@ -2010,7 +2019,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         if (selectedRevisions.Count > 1 || (selectedRevisions.Count == 1 && selectedRevisions[0].IsArtificial))
         {
             GitRevision potentialRevision = selectedRevisions[0];
-            ObjectId? targetCommit = potentialRevision.IsArtificial ? RevisionGrid.CurrentCheckout : potentialRevision.ObjectId;
+            ObjectId targetCommit = potentialRevision.IsArtificial ? RevisionGrid.CurrentCheckout : potentialRevision.ObjectId;
             RevisionGrid.SetSelectedRevision(targetCommit);
         }
 
@@ -2148,7 +2157,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
             case Command.GoToParent: RestoreFileStatusListFocus(() => RevisionGrid?.ExecuteCommand(RevisionGridControl.Command.GoToParent)); break;
             case Command.PullOrFetch: DoPull(pullAction: AppSettings.FormPullAction, isSilent: false); break;
             case Command.Push: UICommands.StartPushDialog(this, pushOnShow: ModifierKeys.HasFlag(Keys.Shift)); break;
-            case Command.CreateBranch: UICommands.StartCreateBranchDialog(this, RevisionGrid.LatestSelectedRevision?.ObjectId); break;
+            case Command.CreateBranch: UICommands.StartCreateBranchDialog(this, RevisionGrid.LatestSelectedRevision?.ObjectId ?? default); break;
             case Command.MergeBranches: UICommands.StartMergeBranchDialog(this, null); break;
             case Command.CreateTag: UICommands.StartCreateTagDialog(this, RevisionGrid.LatestSelectedRevision); break;
             case Command.Rebase: rebaseToolStripMenuItem.PerformClick(); break;
@@ -2464,9 +2473,9 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         {
             case "gotocommit":
                 Validates.NotNull(e.Data);
-                if (!Module.TryResolvePartialCommitId(e.Data, out ObjectId? commitId) || !RevisionGrid.SetSelectedRevision(commitId))
+                if (!Module.TryResolvePartialCommitId(e.Data, out ObjectId commitId) || !RevisionGrid.SetSelectedRevision(commitId))
                 {
-                    if (commitId is null)
+                    if (commitId.IsZero)
                     {
                         return;
                     }
@@ -2728,25 +2737,31 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     /// <summary>
     /// Adds a tab with console interface to Git over the current working copy. Recreates the terminal on tab activation if user exits the shell.
+    /// Uses the configured console emulator (plugin or ConEmu).
     /// </summary>
     private void FillTerminalTab()
     {
-        if (!OperatingSystem.IsWindows() || !AppSettings.ShowConEmuTab.Value)
+        if (!AppSettings.ShowConEmuTab.Value)
         {
-            // ConEmu only works on WinNT
             return;
         }
 
+        // If terminal control already exists, just focus it
         if (_terminal is not null)
         {
-            // Terminal already created; give it focus
-            _terminal.Focus();
+            _terminal.FocusTerminal();
             return;
         }
 
         if (_consoleTabPage is not null)
         {
             // Tab page already created
+            return;
+        }
+
+        // Check if there are available console emulators
+        if (_consoleEmulatorsRegistry.AvailableConsoleEmulators.Count == 0)
+        {
             return;
         }
 
@@ -2770,62 +2785,34 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
             if (_terminal is null)
             {
-                // Lazy-create on first opening the tab
-                _consoleTabPage.Controls.Clear();
-                _consoleTabPage.Controls.Add(
-                    _terminal = new ConEmuControl
-                    {
-                        Dock = DockStyle.Fill,
-                        IsStatusbarVisible = false
-                    });
+                _terminal = _consoleEmulatorsRegistry.CreateShellRunner();
+                if (_terminal is null)
+                {
+                    return;
+                }
+
+                _terminal.Control.Dock = DockStyle.Fill;
+                _consoleTabPage!.Controls.Add(_terminal.Control);
             }
 
-            // If user has typed "exit" in there, restart the shell; otherwise just return
-            if (_terminal.IsConsoleEmulatorOpen)
+            if (_terminal.IsShellRunning)
             {
+                _terminal.FocusTerminal();
                 return;
             }
 
-            // Create the terminal
-            ConEmuStartInfo startInfo = new()
-            {
-                StartupDirectory = Module.WorkingDir,
-                WhenConsoleProcessExits = WhenConsoleProcessExits.CloseConsoleEmulator
-            };
-
-            string? shellType = AppSettings.ConEmuTerminal.Value;
-            startInfo.ConsoleProcessCommandLine = _shellProvider.GetShellCommandLine(shellType);
-
-            // Set path to git in this window (actually, effective with CMD only)
-            if (!string.IsNullOrEmpty(AppSettings.GitCommandValue))
-            {
-                string? dirGit = Path.GetDirectoryName(AppSettings.GitCommandValue);
-                if (!string.IsNullOrEmpty(dirGit))
-                {
-                    startInfo.SetEnv("PATH", dirGit + ";" + "%PATH%");
-                }
-            }
-
-            try
-            {
-                _terminal.Start(startInfo, ThreadHelper.JoinableTaskFactory, AppSettings.GetEffectiveConEmuStyle(), AppSettings.ConEmuConsoleFont.Name, AppSettings.ConEmuConsoleFont.Size.ToString(CultureInfo.InvariantCulture));
-            }
-            catch (InvalidOperationException)
-            {
-#if DEBUG
-                MessageBoxes.Show(@"ConEmu appears to be missing. Please perform a full rebuild and try again.", TranslatedStrings.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
-#else
-                throw;
-#endif
-            }
+            _terminal.StartShell(Module.WorkingDir);
         };
     }
 
     public void ChangeTerminalActiveFolder(string path)
     {
-        string? shellType = AppSettings.ConEmuTerminal.Value;
-        IShellDescriptor shell = _shellProvider.GetShell(shellType);
-        _terminal?.ChangeFolder(shell, path);
+        if (_terminal?.IsShellRunning is not true)
+        {
+            return;
+        }
+
+        _terminal.ChangeWorkingDirectory(path);
     }
 
     private void menuitemSparseWorkingCopy_Click(object sender, EventArgs e)
@@ -3086,7 +3073,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         if (AppSettings.DontConfirmUndoLastCommit || MessageBoxes.Show(this, _undoLastCommitText.Text, _undoLastCommitCaption.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
         {
             ArgumentString args = Commands.Reset(ResetMode.Soft, "HEAD~1");
-            Module.GitExecutable.GetOutput(args);
+            Module.GitExecutable.RunCommand(args);
             refreshToolStripMenuItem.PerformClick();
             RefreshGitStatusMonitor();
         }

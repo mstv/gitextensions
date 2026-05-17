@@ -142,7 +142,7 @@ public partial class FileViewerInternal : GitModuleControl, IFileViewer
 
                 TextMarker textMarker = new(indexMatch,
                     word.Length, TextMarkerType.SolidBlock, highlightColor,
-                    ColorHelper.GetForeColorForBackColor(highlightColor));
+                    highlightColor.GetTextColor());
 
                 selectionMarkers.Add(textMarker);
             }
@@ -770,6 +770,24 @@ public partial class FileViewerInternal : GitModuleControl, IFileViewer
 
     private void TextArea_MouseWheel(object? sender, MouseEventArgs e)
     {
+        if (ModifierKeys.HasFlag(Keys.Shift))
+        {
+            int scrollAmount = DpiUtil.Scale(8);
+            HScrollPosition = e.Delta switch
+            {
+                > 0 => Math.Max(0, HScrollPosition - scrollAmount),
+                < 0 => HScrollPosition + scrollAmount,
+                _ => HScrollPosition
+            };
+
+            if (e is HandledMouseEventArgs handled)
+            {
+                handled.Handled = true;
+            }
+
+            return;
+        }
+
         bool isScrollingTowardTop = e.Delta > 0;
         bool isScrollingTowardBottom = e.Delta < 0;
         VScrollBar scrollBar = TextEditor.ActiveTextAreaControl.VScrollBar;

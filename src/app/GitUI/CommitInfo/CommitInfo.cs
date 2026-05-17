@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Net;
 using System.Reactive.Linq;
 using System.Text;
@@ -104,7 +104,7 @@ public partial class CommitInfo : GitModuleControl
         _gitRevisionExternalLinksParser = new GitRevisionExternalLinksParser(_effectiveLinkDefinitionsProvider, _externalLinkRevisionParser);
         _gitDescribeProvider = new GitDescribeProvider(() => Module);
 
-        Color messageBackground = SystemColors.Window.MakeBackgroundDarkerBy(0.04);
+        Color messageBackground = SystemColors.Window.MakeDarkerBy(0.04);
         pnlCommitMessage.BackColor = messageBackground;
         rtbxCommitMessage.BackColor = messageBackground;
 
@@ -273,13 +273,10 @@ public partial class CommitInfo : GitModuleControl
         Dictionary<string, int> dict = [];
         foreach (string entry in tree.LazySplit('\n'))
         {
-            if (dict.ContainsKey(entry))
+            if (dict.TryAdd(entry, i))
             {
-                continue;
+                ++i;
             }
-
-            dict.Add(entry, i);
-            i++;
         }
 
         return dict;
@@ -540,7 +537,7 @@ public partial class CommitInfo : GitModuleControl
                 _tags = tags;
             }
 
-            async Task LoadBranchInfoAsync(ObjectId revision)
+            async Task LoadBranchInfoAsync(ObjectId objectId)
             {
                 await TaskScheduler.Default;
 
@@ -551,7 +548,7 @@ public partial class CommitInfo : GitModuleControl
                 // Include remote branches if requested
                 bool getRemote = AppSettings.CommitInfoShowContainedInBranchesRemote ||
                                  AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal;
-                List<string> branches = [.. Module.GetAllBranchesWhichContainGivenCommit(revision, getLocal, getRemote, cancellationToken)];
+                List<string> branches = [.. Module.GetAllBranchesWhichContainGivenCommit(objectId, getLocal, getRemote, cancellationToken)];
 
                 await this.SwitchToMainThreadAsync(cancellationToken);
                 _branches = branches;

@@ -54,7 +54,7 @@ partial class FormVerify
         /// <summary>
         /// Id (SHA-1 hash) of parent commit to the lost object.
         /// </summary>
-        public ObjectId? Parent { get; private set; }
+        public ObjectId Parent { get; private set; }
 
         /// <summary>
         /// Diagnostics and object type.
@@ -75,7 +75,12 @@ partial class FormVerify
             // TODO use enum for RawType
             ObjectType = objectType;
             RawType = rawType;
-            ObjectId = objectId ?? throw new ArgumentNullException(nameof(objectId));
+            if (objectId.IsZero)
+            {
+                throw new ArgumentNullException(nameof(objectId));
+            }
+
+            ObjectId = objectId;
         }
 
         /// <summary>
@@ -154,7 +159,7 @@ partial class FormVerify
             else if (objectType == LostObjectType.Blob)
             {
                 string hash = objectId.ToString();
-                string blobPath = Path.Combine(module.WorkingDirGitDir, "objects", hash[..2], hash[2..ObjectId.Sha1CharCount]);
+                string blobPath = Path.Join(module.WorkingDirGitDir, "objects", hash[..2], hash[2..ObjectId.Sha1CharCount]);
                 result.Date = new FileInfo(blobPath).CreationTime;
             }
 

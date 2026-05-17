@@ -72,13 +72,13 @@ public static partial class Commands
         };
     }
 
-    public static ArgumentString Branch(string branchName, string revision, bool checkout)
+    public static ArgumentString Branch(string branchName, ObjectId objectId, bool checkout)
     {
         return new GitArgumentBuilder(checkout ? "checkout" : "branch")
         {
             { checkout, "-b" },
             branchName.Trim().Quote(),
-            revision?.Trim().QuoteNE()
+            objectId
         };
     }
 
@@ -211,12 +211,12 @@ public static partial class Commands
         };
     }
 
-    public static ArgumentString ContinueBisect(GitBisectOption bisectOption, params ObjectId[] revisions)
+    public static ArgumentString ContinueBisect(GitBisectOption bisectOption, params ObjectId[] objectIds)
     {
         return new GitArgumentBuilder("bisect")
         {
             bisectOption,
-            revisions
+            objectIds
         };
     }
 
@@ -231,7 +231,7 @@ public static partial class Commands
     }
 
     /// <summary>Create a new orphan branch from <paramref name="startPoint"/> and switch to it.</summary>
-    public static ArgumentString CreateOrphan(string newBranchName, ObjectId? startPoint = null)
+    public static ArgumentString CreateOrphan(string newBranchName, ObjectId startPoint = default)
     {
         return new GitArgumentBuilder("checkout")
         {
@@ -594,7 +594,7 @@ public static partial class Commands
     /// <param name="commit">Optional commit-ish (for reset-index this is tree-ish and mandatory).</param>
     /// <param name="file">Optional file to reset.</param>
     /// <returns>Argument string.</returns>
-    public static ArgumentString Reset(ResetMode mode, string? commit = null, string? file = null)
+    public static ArgumentString Reset(ResetMode mode, string? commit = null, string? file = null, bool quiet = true)
     {
         if (mode == ResetMode.ResetIndex && string.IsNullOrWhiteSpace(commit))
         {
@@ -604,6 +604,7 @@ public static partial class Commands
         return new GitArgumentBuilder("reset")
         {
             mode,
+            { quiet,  "--quiet" },
             commit.QuoteNE(),
             "--",
             file?.ToPosixPath().QuoteNE()

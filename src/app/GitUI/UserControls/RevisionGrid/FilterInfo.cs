@@ -296,7 +296,7 @@ public record FilterInfo
         return searchParametersChanged;
     }
 
-    public ArgumentString GetRevisionFilter(Lazy<ObjectId?> currentCheckout)
+    public ArgumentString GetRevisionFilter(Lazy<ObjectId> currentCheckout)
     {
         if (IsRaw)
         {
@@ -418,7 +418,7 @@ public record FilterInfo
     /// </summary>
     /// <param name="filter">ArgumentBuilder arg</param>
     /// <param name="currentCheckout">Commit currently checked out</param>
-    private void GetBranchRevisionFilter(ArgumentBuilder filter, Lazy<ObjectId?> currentCheckout)
+    private void GetBranchRevisionFilter(ArgumentBuilder filter, Lazy<ObjectId> currentCheckout)
     {
         if (ShowOnlyFirstParent)
         {
@@ -431,7 +431,7 @@ public record FilterInfo
             filter.Add("--reflog");
         }
 
-        if (IsShowCurrentBranchOnlyChecked && currentCheckout.Value is not null)
+        if (IsShowCurrentBranchOnlyChecked && !currentCheckout.Value.IsZero)
         {
             // Git default with no options
 
@@ -456,7 +456,7 @@ public record FilterInfo
             // Ignore quouting, Git revisions do not allow spaces.
             foreach (string branch in BranchFilter.Split((char[]?)null, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             {
-                bool wildcardBranchFilter = branch.IndexOfAny(['?', '*', '[']) >= 0;
+                bool wildcardBranchFilter = branch.IndexOfAny(Delimiters.WildcardBranchSearchValues) >= 0;
                 filter.Add(wildcardBranchFilter && !branch.StartsWith("--") && !branch.Contains("..")
                     ? $"--branches={branch}"
                     : branch);

@@ -52,7 +52,7 @@ public partial class GourceStart : ResourceManager.GitExtensionsFormBase
         }
         catch (Exception e)
         {
-            MessageBoxes.Show(this, e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBoxes.ShowError(this, e.Message);
         }
     }
 
@@ -62,7 +62,7 @@ public partial class GourceStart : ResourceManager.GitExtensionsFormBase
 
         if (!File.Exists(GourcePath.Text))
         {
-            MessageBoxes.Show(this, "Cannot find Gource.\nPlease download Gource and set the correct path.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBoxes.ShowError(this, "Cannot find Gource.\nPlease download Gource and set the correct path.");
             return;
         }
 
@@ -80,7 +80,7 @@ public partial class GourceStart : ResourceManager.GitExtensionsFormBase
 
     private async Task<string> LoadAvatarsAsync()
     {
-        string gourceAvatarsDir = Path.Combine(Path.GetTempPath(), "GitAvatars");
+        string gourceAvatarsDir = Path.Join(Path.GetTempPath(), "GitAvatars");
 
         Directory.CreateDirectory(gourceAvatarsDir);
 
@@ -118,7 +118,7 @@ public partial class GourceStart : ResourceManager.GitExtensionsFormBase
                     return;
                 }
 
-                string filePath = Path.Combine(gourceAvatarsDir, filename);
+                string filePath = Path.Join(gourceAvatarsDir, filename);
                 image.Save(filePath, ImageFormat.Png);
             }
             catch

@@ -1,13 +1,10 @@
-﻿using AwesomeAssertions;
-using CommonTestUtils;
+﻿using CommonTestUtils;
 using GitCommands;
 using GitCommands.Git;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 
 namespace GitCommandsTests.Git;
-
-[TestFixture]
 public sealed class GitModuleWorktreeTests
 {
     private GitModule _gitModule = null!;
@@ -16,7 +13,10 @@ public sealed class GitModuleWorktreeTests
     [SetUp]
     public void SetUp()
     {
+        // Clear the static GitVersion cache so the mock executable is always queried for --version.
+        GitVersion.ResetVersion();
         _executable = new MockExecutable();
+        _executable.StageOutput("--version", $"git version {GitVersion.LastRecommendedVersion}");
         _gitModule = GetGitModuleWithExecutable(_executable);
     }
 

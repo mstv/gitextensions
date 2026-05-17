@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using GitCommands;
 using GitCommands.Settings;
 using GitExtensions.Extensibility.BuildServerIntegration;
@@ -6,7 +6,6 @@ using GitExtensions.Extensibility.Git;
 using GitExtUtils.GitUI;
 using GitExtUtils.GitUI.Theming;
 using GitUIPluginInterfaces;
-using GitUIPluginInterfaces.BuildServerIntegration;
 
 namespace GitUI.UserControls.RevisionGrid.Columns;
 
@@ -44,8 +43,7 @@ internal sealed class BuildStatusColumnProvider : ColumnProvider
         bool showIcon = AppSettings.ShowBuildStatusIconColumn;
         bool showText = AppSettings.ShowBuildStatusTextColumn;
 
-        IBuildServerSettings buildServerSettings = _module().GetEffectiveSettings().GetBuildServerSettings();
-        bool columnVisible = buildServerSettings.IntegrationEnabledOrDefault && (showIcon || showText);
+        bool columnVisible = BuildServerSettings.IntegrationEnabled.ValueOrDefault(_module().GetEffectiveSettings()) && (showIcon || showText);
 
         Column.Visible = columnVisible;
 
@@ -91,6 +89,8 @@ internal sealed class BuildStatusColumnProvider : ColumnProvider
 
         _grid.DrawColumnText(e, text, _fontWithUnicodeCache, GetColor(style.ForeColor), bounds: e.CellBounds);
 
+        return;
+
         Color GetColor(Color foreColor)
         {
             bool isSelected = _gridView.Rows[e.RowIndex].Selected;
@@ -119,7 +119,18 @@ internal sealed class BuildStatusColumnProvider : ColumnProvider
                     break;
             }
 
-            return customColor.AdaptTextColor();
+            return customColor.AdaptForeColor(GetResolvedBackColor());
+        }
+
+        Color GetResolvedBackColor()
+        {
+            Color backColor = e?.CellStyle?.BackColor ?? Theme.Default.GetColor(AppColor.PanelBackground);
+            if (backColor == Color.Empty && e is not null)
+            {
+                return _gridView.Rows[e.RowIndex].Cells[e.ColumnIndex].InheritedStyle.BackColor;
+            }
+
+            return backColor;
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Frozen;
+﻿using System.Buffers;
+using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -29,6 +30,7 @@ public sealed partial class GitModule : IGitModule
     private const string GitError = "Git Error";
 
     private static readonly Encoding _defaultEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    private static readonly SearchValues<char> _spaceAndTabSearchValues = SearchValues.Create(' ', '\t');
 
     // the amount of lines we must skip in order to get to an annotated tag's message when doing git cat-file -p <tag_name>
     private static readonly int StandardCatFileTagHeaderLength = 5;
@@ -102,7 +104,7 @@ public sealed partial class GitModule : IGitModule
 
             // If we didn't find it, but there's a .git file in the current folder, look for a gitdir:
             // line in that file that points to the location of the .git folder
-            string gitDir = Path.Combine(WorkingDir, ".git");
+            string gitDir = Path.Join(WorkingDir, ".git");
             if (superprojectPath is null && File.Exists(gitDir))
             {
                 IEnumerable<string> lines;
@@ -145,7 +147,7 @@ public sealed partial class GitModule : IGitModule
             }
 
             string submodulePath = currentPath[superprojectPath.Length..].ToPosixPath();
-            ConfigFile configFile = new(Path.Combine(superprojectPath, ".gitmodules"));
+            ConfigFile configFile = new(Path.Join(superprojectPath, ".gitmodules"));
 
             foreach (IConfigSection configSection in configFile.ConfigSections)
             {
@@ -160,7 +162,7 @@ public sealed partial class GitModule : IGitModule
             return (null, submodulePath);
 
             static bool HasGitModulesFile(string path)
-                => File.Exists(Path.Combine(path, ".gitmodules")) && IsValidGitWorkingDir(path);
+                => File.Exists(Path.Join(path, ".gitmodules")) && IsValidGitWorkingDir(path);
         }
     }
 
@@ -739,10 +741,10 @@ public sealed partial class GitModule : IGitModule
 
         foreach (string line in unmerged)
         {
-            int findSecondWhitespace = line.IndexOfAny([' ', '\t']);
+            int findSecondWhitespace = line.IndexOfAny(_spaceAndTabSearchValues);
             string fileStage = findSecondWhitespace >= 0 ? line[findSecondWhitespace..].Trim() : "";
 
-            findSecondWhitespace = fileStage.IndexOfAny([' ', '\t']);
+            findSecondWhitespace = fileStage.IndexOfAny(_spaceAndTabSearchValues);
 
             string hash = findSecondWhitespace >= 0 ? fileStage[..findSecondWhitespace].Trim() : "";
             fileStage = findSecondWhitespace >= 0 ? fileStage[findSecondWhitespace..].Trim() : "";
@@ -866,7 +868,7 @@ public sealed partial class GitModule : IGitModule
 
     public string GetCommitCountString(ObjectId fromId, string to)
     {
-        bool cache = !fromId.IsArtificial && ObjectId.TryParse(to, out ObjectId? toId) && !toId.IsArtificial;
+        bool cache = !fromId.IsArtificial && ObjectId.TryParse(to, out ObjectId toId) && !toId.IsArtificial;
         (int? added, int? removed) = GetRevListLeftRightCount(fromId, to, cache);
 
         if (removed is null || added is null)
@@ -959,9 +961,9 @@ public sealed partial class GitModule : IGitModule
         return GetParents(objectId).Count > 1;
     }
 
-    public GitRevision GetRevision(ObjectId? objectId = null, bool shortFormat = false, bool loadRefs = false)
+    public GitRevision GetRevision(ObjectId objectId = default, bool shortFormat = false, bool loadRefs = false)
     {
-        GitRevision revision = new RevisionReader(this, allBodies: true).GetRevision(objectId?.ToString()!, hasNotes: !shortFormat, throwOnError: true, cancellationToken: default)!;
+        GitRevision revision = new RevisionReader(this, allBodies: true).GetRevision(objectId.IsZero ? null! : objectId.ToString(), hasNotes: !shortFormat, throwOnError: true, cancellationToken: default)!;
 
         if (loadRefs)
         {
@@ -1039,19 +1041,19 @@ public sealed partial class GitModule : IGitModule
 
     /// <summary>
     /// Gets the commit ID of the currently checked out commit.
-    /// If the repo is bare, has no commits, detached head or is corrupt, <c>null</c> is returned.
+    /// If the repo is bare, has no commits, detached head or is corrupt, a zero <see cref="ObjectId"/> is returned.
     /// </summary>
-    public ObjectId? GetCurrentCheckout()
+    public ObjectId GetCurrentCheckout()
     {
         GitArgumentBuilder args = new("rev-parse") { "HEAD" };
         ExecutionResult result = GitExecutable.Execute(args, throwOnErrorExit: false);
 
-        return result.ExitedSuccessfully && ObjectId.TryParse(result.StandardOutput, offset: 0, out ObjectId? objectId)
+        return result.ExitedSuccessfully && ObjectId.TryParse(result.StandardOutput, offset: 0, out ObjectId objectId)
             ? objectId
-            : null;
+            : default;
     }
 
-    public bool TryResolvePartialCommitId(string objectIdPrefix, [NotNullWhen(returnValue: true)] out ObjectId? objectId)
+    public bool TryResolvePartialCommitId(string objectIdPrefix, out ObjectId objectId)
     {
         // If the prefix is already a full SHA1 then return immediately without invoking a git process.
         if (ObjectId.TryParse(objectIdPrefix, out objectId))
@@ -1077,11 +1079,11 @@ public sealed partial class GitModule : IGitModule
         return false;
     }
 
-    public async Task<(char Code, ObjectId? CommitId)> GetSuperprojectCurrentCheckoutAsync()
+    public async Task<(char Code, ObjectId CommitId)> GetSuperprojectCurrentCheckoutAsync()
     {
         if (string.IsNullOrEmpty(SuperprojectModule?.WorkingDir))
         {
-            return (' ', null);
+            return (' ', default);
         }
 
         GitArgumentBuilder args = new("submodule")
@@ -1095,15 +1097,15 @@ public sealed partial class GitModule : IGitModule
 
         if (lines.Length == 0)
         {
-            return (' ', null);
+            return (' ', default);
         }
 
         string submodule = lines[0];
 
         if (submodule.Length < ObjectId.Sha1CharCount + 3
-            || !ObjectId.TryParse(submodule, 1, out ObjectId? commitId))
+            || !ObjectId.TryParse(submodule, 1, out ObjectId commitId))
         {
-            return (' ', null);
+            return (' ', default);
         }
 
         return (submodule[0], commitId);
@@ -1239,7 +1241,7 @@ public sealed partial class GitModule : IGitModule
             string localPath = match.Groups["path"].Value;
             string branch = match.Groups["branch"].Value;
 
-            if (!ObjectId.TryParse(match.Groups["sha"].Value, out ObjectId? currentCommitId))
+            if (!ObjectId.TryParse(match.Groups["sha"].Value, out ObjectId currentCommitId))
             {
                 info = default;
                 return false;
@@ -1340,9 +1342,9 @@ public sealed partial class GitModule : IGitModule
     /// <param name="output">Error messages from the reset.</param>
     /// <param name="progressAction">Action when unstaging files (to update a progress bar).</param>
     /// <returns><see langword="true"/> if successfully executed</returns>
-    public bool ResetChanges(ObjectId? resetId, IReadOnlyList<GitItemStatus> selectedItems, bool resetAndDelete, IFullPathResolver fullPathResolver, out StringBuilder output, Action<BatchProgressEventArgs>? progressAction = null)
+    public bool ResetChanges(ObjectId resetId, IReadOnlyList<GitItemStatus> selectedItems, bool resetAndDelete, IFullPathResolver fullPathResolver, out StringBuilder output, Action<BatchProgressEventArgs>? progressAction = null)
     {
-        if (resetId?.IsArtificial is true && resetId != ObjectId.IndexId)
+        if (resetId.IsArtificial && resetId != ObjectId.IndexId)
         {
             throw new InvalidOperationException(nameof(resetId));
         }
@@ -1421,7 +1423,7 @@ public sealed partial class GitModule : IGitModule
             }
             else if (!item.IsNew && !postUnstageStatus.Value.Any(i => i.IsNew && i.Name == item.Name))
             {
-                if (resetId is not null || UnmergedNotIndex(item, postUnstageStatus))
+                if (!resetId.IsZero || UnmergedNotIndex(item, postUnstageStatus))
                 {
                     filesToCheckout.Add(item.IsRenamed ? item.OldName! : item.Name);
                 }
@@ -1489,15 +1491,33 @@ public sealed partial class GitModule : IGitModule
             });
     }
 
-    public string CheckoutFiles(IReadOnlyList<string> files, ObjectId? revision, bool force)
+    public string CheckoutFiles(IReadOnlyList<string> files, ObjectId objectId, bool force)
     {
-        if (files.Count == 0 || (revision?.IsArtificial is true && revision != ObjectId.IndexId))
+        if (files.Count == 0 || (objectId.IsArtificial && objectId != ObjectId.IndexId))
         {
             return "";
         }
 
-        // Reset to index has no revision string
-        string revStr = revision == ObjectId.IndexId ? "" : revision?.ToString() ?? RevParse("HEAD")!.ToString();
+        // Reset to index has no objectId string
+        string revStr;
+        if (objectId == ObjectId.IndexId)
+        {
+            revStr = "";
+        }
+        else if (objectId.IsZero)
+        {
+            ObjectId headObjectId = RevParse("HEAD");
+            if (headObjectId.IsZero)
+            {
+                throw new InvalidOperationException("Cannot checkout files because HEAD could not be resolved.");
+            }
+
+            revStr = headObjectId.ToString();
+        }
+        else
+        {
+            revStr = objectId.ToString();
+        }
 
         // Run batch arguments to work around max command line length on Windows. Fix #6593
         // 3: double quotes + ' '
@@ -1879,7 +1899,7 @@ public sealed partial class GitModule : IGitModule
 
         if (filesToRemove.Count > 0)
         {
-            ArgumentString args = Commands.Reset(ResetMode.ResetIndex, "HEAD");
+            ArgumentString args = Commands.Reset(ResetMode.ResetIndex, "HEAD", quiet: progressCallback is null);
             GitExecutable.RunBatchCommand(new ArgumentBuilder() { args }
                 .BuildBatchArgumentsForFiles(filesToRemove),
                 progressCallback);
@@ -1939,7 +1959,7 @@ public sealed partial class GitModule : IGitModule
 
     public bool InTheMiddleOfBisect()
     {
-        return File.Exists(Path.Combine(_executor.GetGitDirectory(), "BISECT_START"));
+        return File.Exists(Path.Join(_executor.GetGitDirectory(), "BISECT_START"));
     }
 
     public bool InTheMiddleOfRebase() => InTheMiddleOfGitOperation("applying");
@@ -1954,7 +1974,7 @@ public sealed partial class GitModule : IGitModule
 
     public bool InTheMiddleOfMerge()
     {
-        return File.Exists(Path.Combine(_executor.GetGitDirectory(), "MERGE_HEAD"));
+        return File.Exists(Path.Join(_executor.GetGitDirectory(), "MERGE_HEAD"));
     }
 
     public bool InTheMiddleOfAction()
@@ -2180,7 +2200,7 @@ public sealed partial class GitModule : IGitModule
         {
             "list",
             "--porcelain",
-            "-z"
+            { GitVersion.SupportWorktreeZ, "-z" },
         };
 
         string output = GitExecutable.GetOutput(args);
@@ -2191,7 +2211,11 @@ public sealed partial class GitModule : IGitModule
         string? branch = null;
         GitWorktreeHeadType headType = GitWorktreeHeadType.Branch;
 
-        foreach (string field in output.LazySplit('\0'))
+        // Note: -z for separator is not configurable before Git 2.36 so paths with \n will fail
+        // Just ignore this case, require Git update (no user feedback other than NBug).
+        char sep = GitVersion.SupportWorktreeZ ? '\0' : '\n';
+
+        foreach (string field in output.LazySplit(sep))
         {
             // Double \0 (empty field) marks the boundary between worktree records
             if (field.Length == 0)
@@ -2244,8 +2268,8 @@ public sealed partial class GitModule : IGitModule
     }
 
     public async Task<ExecutionResult> GetSingleDifftoolAsync(
-        ObjectId? firstId,
-        ObjectId? secondId,
+        ObjectId firstId,
+        ObjectId secondId,
         string? fileName,
         string? oldFileName,
         ArgumentString extraDiffArguments,
@@ -2258,8 +2282,8 @@ public sealed partial class GitModule : IGitModule
         // fix refs slashes
         fileName = fileName.ToPosixPath();
         oldFileName = oldFileName.ToPosixPath();
-        string? firstRevision = firstId?.ToString();
-        string? secondRevision = secondId?.ToString();
+        string? firstRevision = firstId.IsZero ? null : firstId.ToString();
+        string? secondRevision = secondId.IsZero ? null : secondId.ToString();
 
         string? diffOptions = _revisionDiffProvider.Get(firstRevision, secondRevision, fileName, oldFileName, isTracked);
 
@@ -2294,8 +2318,8 @@ public sealed partial class GitModule : IGitModule
     }
 
     public async Task<(Patch? Patch, string? ErrorMessage)> GetSingleDiffAsync(
-        ObjectId? firstId,
-        ObjectId? secondId,
+        ObjectId firstId,
+        ObjectId secondId,
         string? fileName,
         string? oldFileName,
         string extraDiffArguments,
@@ -2309,8 +2333,8 @@ public sealed partial class GitModule : IGitModule
         // fix refs slashes
         fileName = fileName.ToPosixPath();
         oldFileName = oldFileName.ToPosixPath();
-        string? firstRevision = firstId?.ToString();
-        string? secondRevision = secondId?.ToString();
+        string? firstRevision = firstId.IsZero ? null : firstId.ToString();
+        string? secondRevision = secondId.IsZero ? null : secondId.ToString();
 
         string? diffOptions = _revisionDiffProvider.Get(firstRevision, secondRevision, fileName, oldFileName, isTracked);
 
@@ -2354,8 +2378,8 @@ public sealed partial class GitModule : IGitModule
     public async Task<ExecutionResult> GetRangeDiffAsync(
         ObjectId firstId,
         ObjectId secondId,
-        ObjectId? firstBase,
-        ObjectId? secondBase,
+        ObjectId firstBase,
+        ObjectId secondBase,
         string extraDiffArguments,
         string? pathFilter,
         bool useGitColoring,
@@ -2366,7 +2390,7 @@ public sealed partial class GitModule : IGitModule
         string first = firstId.IsArtificial ? "HEAD" : firstId.ToString();
         string second = secondId.IsArtificial ? "HEAD" : secondId.ToString();
 
-        if ((firstBase?.IsArtificial is true) || (secondBase?.IsArtificial is true))
+        if (firstBase.IsArtificial || secondBase.IsArtificial)
         {
             throw new ArgumentException($"Cannot get range diff for artificial commit base of A: {firstBase} or base of B: {secondBase}.");
         }
@@ -2379,7 +2403,7 @@ public sealed partial class GitModule : IGitModule
             { AppSettings.UseHistogramDiffAlgorithm, "--histogram" },
             { useGitColoring, "--color=always" },
             extraDiffArguments,
-            { firstBase is null || secondBase is null,  $"{first}...{second}", $"{firstBase}..{first} {secondBase}..{second}" },
+            { firstBase.IsZero || secondBase.IsZero,  $"{first}...{second}", $"{firstBase}..{first} {secondBase}..{second}" },
             { GitVersion.SupportRangeDiffPath && !string.IsNullOrWhiteSpace(pathFilter), "--" },
             { GitVersion.SupportRangeDiffPath && !string.IsNullOrWhiteSpace(pathFilter), pathFilter }
         };
@@ -2529,15 +2553,15 @@ public sealed partial class GitModule : IGitModule
             cancellationToken: cancellationToken);
     }
 
-    public IReadOnlyList<GitItemStatus> GetDiffFilesWithSubmodulesStatus(ObjectId? firstId,
-        ObjectId? secondId,
-        ObjectId? parentToSecond,
+    public IReadOnlyList<GitItemStatus> GetDiffFilesWithSubmodulesStatus(ObjectId firstId,
+        ObjectId secondId,
+        ObjectId parentToSecond,
         bool excludeSkipWorktreeFiles,
         UntrackedFilesMode untrackedFilesMode,
         CancellationToken cancellationToken)
     {
         StagedStatus stagedStatus = GetStagedStatus(firstId, secondId, parentToSecond);
-        IReadOnlyList<GitItemStatus> status = GetDiffFilesWithUntracked(firstId?.ToString(), secondId?.ToString(), stagedStatus, excludeSkipWorktreeFiles, untrackedFilesMode, cancellationToken: cancellationToken);
+        IReadOnlyList<GitItemStatus> status = GetDiffFilesWithUntracked(firstId.IsZero ? null : firstId.ToString(), secondId.IsZero ? null : secondId.ToString(), stagedStatus, excludeSkipWorktreeFiles, untrackedFilesMode, cancellationToken: cancellationToken);
         GetSubmoduleDiffStatus(status, firstId, secondId, cancellationToken);
         return status;
     }
@@ -2545,11 +2569,11 @@ public sealed partial class GitModule : IGitModule
     /// <summary>
     /// If possible, find if files in a diff are index or worktree.
     /// </summary>
-    /// <param name="firstId">from revision string.</param>
-    /// <param name="secondId">to revision.</param>
-    /// <param name="parentToSecond">The parent for the second revision.</param>
+    /// <param name="firstId">from objectId string.</param>
+    /// <param name="secondId">to objectId.</param>
+    /// <param name="parentToSecond">The parent for the second objectId.</param>
     /// <remarks>Git revisions are required to determine if <see cref="StagedStatus"/> allows stage/unstage.</remarks>
-    public static StagedStatus GetStagedStatus(ObjectId? firstId, ObjectId? secondId, ObjectId? parentToSecond)
+    public static StagedStatus GetStagedStatus(ObjectId firstId, ObjectId secondId, ObjectId parentToSecond)
     {
         StagedStatus staged;
         if (firstId == ObjectId.IndexId && secondId == ObjectId.WorkTreeId)
@@ -2560,8 +2584,7 @@ public sealed partial class GitModule : IGitModule
         {
             staged = StagedStatus.Index;
         }
-        else if (firstId is not null && !firstId.IsArtificial &&
-                 secondId is not null && !secondId.IsArtificial)
+        else if (!firstId.IsZeroOrArtificial && !secondId.IsZeroOrArtificial)
         {
             // This cannot be a worktree/index file
             staged = StagedStatus.None;
@@ -2603,7 +2626,7 @@ public sealed partial class GitModule : IGitModule
                 ((x.Staged == StagedStatus.WorkTree && x.IsNew) || x.IsStatusOnly))];
             if (firstRevision == GitRevision.WorkTreeGuid)
             {
-                // The file is seen as "deleted" in 'to' revision
+                // The file is seen as "deleted" in 'to' objectId
                 foreach (GitItemStatus item in files)
                 {
                     item.IsNew = false;
@@ -2632,7 +2655,7 @@ public sealed partial class GitModule : IGitModule
             "--max-count=1"
         };
         ExecutionResult executionResult = GitExecutable.Execute(args, throwOnErrorExit: false);
-        if (executionResult.ExitedSuccessfully && ObjectId.TryParse(executionResult.StandardOutput, out ObjectId? treeId))
+        if (executionResult.ExitedSuccessfully && ObjectId.TryParse(executionResult.StandardOutput, out ObjectId treeId))
         {
             IEnumerable<GitItemStatus> files = GetTreeFiles(treeId, full: true)
                 .Select(i =>
@@ -2653,14 +2676,14 @@ public sealed partial class GitModule : IGitModule
             {
                 // IsTracked is always true, only tracked are reported
                 // (all with TreeId are tracked)
-                // TreeGuid for worktree reflects Index, just for reference
+                // TreeId for worktree reflects Index, just for reference
                 // New/Changed/Deleted are are just set
                 IsTracked = true,
                 IsNew = false,
                 IsChanged = false,
                 IsDeleted = false,
                 Staged = StagedStatus.Unset,
-                TreeGuid = file.ObjectId,
+                TreeId = file.ObjectId,
                 IsSubmodule = file.ObjectType == GitObjectType.Commit
             })
             .ToList();
@@ -2772,7 +2795,7 @@ public sealed partial class GitModule : IGitModule
         }
     }
 
-    private void GetSubmoduleDiffStatus(IReadOnlyList<GitItemStatus> status, ObjectId? firstId, ObjectId? secondId, CancellationToken cancellationToken)
+    private void GetSubmoduleDiffStatus(IReadOnlyList<GitItemStatus> status, ObjectId firstId, ObjectId secondId, CancellationToken cancellationToken)
     {
         foreach (GitItemStatus item in status.Where(i => i.IsSubmodule))
         {
@@ -3204,9 +3227,9 @@ public sealed partial class GitModule : IGitModule
             .Split(Delimiters.NullAndLineFeed);
     }
 
-    public IEnumerable<IObjectGitItem> GetTree(ObjectId? commitId, bool full, string fileName = "", CancellationToken cancellationToken = default)
+    public IEnumerable<IObjectGitItem> GetTree(ObjectId commitId, bool full, string fileName = "", CancellationToken cancellationToken = default)
     {
-        bool isArtificial = commitId?.IsArtificial is true;
+        bool isArtificial = commitId.IsArtificial;
         if (isArtificial && !full)
         {
             throw new ArgumentOutOfRangeException(nameof(full), "Artificial commit requires 'full'.");
@@ -3232,7 +3255,7 @@ public sealed partial class GitModule : IGitModule
                 // optimized codepath, default is "--format={_gitTreeParser.GitTreeFormat}"
                 "-z",
                 { full, "-r" },
-                { commitId?.ToString() ?? "HEAD" },
+                { commitId.IsZero ? "HEAD" : commitId.ToString() },
                 "--",
                 fileName.QuoteNE()
             };
@@ -3352,7 +3375,7 @@ public sealed partial class GitModule : IGitModule
         List<GitBlameLine> lines = new(capacity: Math.Min(Math.Max(256, output.Length / GitBlameLengthPerLineHeuristicValue), 5000));
 
         bool hasCommitHeader;
-        ObjectId? objectId;
+        ObjectId objectId;
         int finalLineNumber;
         int originLineNumber;
         string? author;
@@ -3383,15 +3406,18 @@ public sealed partial class GitModule : IGitModule
                 // The contents of the actual line is output after the above header, prefixed by a TAB. This is to allow adding more header elements later.
                 string text = ReEncodeStringFromLossless(line[1..], encoding);
 
+                // objectId is guaranteed to be set by the preceding git blame header line
+                ObjectId oid = objectId.IsZero ? throw new InvalidOperationException("Invalid git blame output: missing object ID header before content line.") : objectId;
+
                 GitBlameCommit commit;
                 if (hasCommitHeader)
                 {
                     // TODO quite a few nullable suppressions here (via ! character) which should be addressed as they hint at a design flaw
 
-                    if (!commitByObjectId.TryGetValue(objectId!, out GitBlameCommit? commitData))
+                    if (!commitByObjectId.TryGetValue(oid, out GitBlameCommit? commitData))
                     {
                         commit = new GitBlameCommit(
-                            objectId!,
+                            oid,
                             author!,
                             authorMail!,
                             authorTime,
@@ -3402,7 +3428,7 @@ public sealed partial class GitModule : IGitModule
                             committerTimeZone!,
                             summary!,
                             filename!);
-                        commitByObjectId[objectId!] = commit;
+                        commitByObjectId[oid] = commit;
                     }
                     else
                     {
@@ -3429,7 +3455,7 @@ public sealed partial class GitModule : IGitModule
                 }
                 else
                 {
-                    commit = commitByObjectId[objectId!];
+                    commit = commitByObjectId[oid];
                 }
 
                 lines.Add(new GitBlameLine(commit, finalLineNumber, originLineNumber, text));
@@ -3494,7 +3520,7 @@ public sealed partial class GitModule : IGitModule
         void Reset()
         {
             hasCommitHeader = false;
-            objectId = null;
+            objectId = default;
             finalLineNumber = -1;
             originLineNumber = -1;
             author = null;
@@ -3528,12 +3554,12 @@ public sealed partial class GitModule : IGitModule
         return exec.StandardOutput;
     }
 
-    public ObjectId? GetFileBlobHash(string fileName, ObjectId objectId)
+    public ObjectId GetFileBlobHash(string fileName, ObjectId objectId)
     {
         IObjectGitItem[] items = [.. GetTree(objectId, full: true, fileName)];
         return items.Length == 1 && items[0].ObjectType is GitObjectType.Blob
             ? items[0].ObjectId
-            : null;
+            : default;
     }
 
     public Task<MemoryStream?> GetFileStreamAsync(string blob, CancellationToken cancellationToken)
@@ -3617,14 +3643,14 @@ public sealed partial class GitModule : IGitModule
         });
     }
 
-    public ObjectId? RevParse(string? revisionExpression)
+    public ObjectId RevParse(string? revisionExpression)
     {
         if (string.IsNullOrWhiteSpace(revisionExpression) || revisionExpression.Length > 260)
         {
-            return null;
+            return default;
         }
 
-        if (ObjectId.TryParse(revisionExpression, out ObjectId? objectId))
+        if (ObjectId.TryParse(revisionExpression, out ObjectId objectId))
         {
             return objectId;
         }
@@ -3639,10 +3665,10 @@ public sealed partial class GitModule : IGitModule
 
         return result.ExitedSuccessfully && ObjectId.TryParse(result.StandardOutput, offset: 0, out objectId)
             ? objectId
-            : null;
+            : default;
     }
 
-    public ObjectId? GetMergeBase(ObjectId a, ObjectId b)
+    public ObjectId GetMergeBase(ObjectId a, ObjectId b)
     {
         if (a == b)
         {
@@ -3657,9 +3683,9 @@ public sealed partial class GitModule : IGitModule
         ExecutionResult result = GitExecutable.Execute(args, cache: GitCommandCache, throwOnErrorExit: false);
         string output = result.StandardOutput;
 
-        return ObjectId.TryParse(output, offset: 0, out ObjectId? objectId)
+        return ObjectId.TryParse(output, offset: 0, out ObjectId objectId)
             ? objectId
-            : null;
+            : default;
     }
 
     public bool CheckBranchFormat(string branchName)
@@ -3685,7 +3711,7 @@ public sealed partial class GitModule : IGitModule
 
         string fullBranchName = GitRefName.GetFullBranchName(branchName);
 
-        if (RevParse(fullBranchName) is null)
+        if (RevParse(fullBranchName).IsZero)
         {
             return branchName;
         }
@@ -3706,7 +3732,7 @@ public sealed partial class GitModule : IGitModule
         }
 
         // Get processes by "ps" command.
-        string cmd = Path.Combine(AppSettings.LinuxToolsDir, "ps");
+        string cmd = Path.Join(AppSettings.LinuxToolsDir, "ps");
         string[] lines = new Executable(cmd).GetOutput("x").Split(Delimiters.LineFeed);
 
         if (lines.Length <= 2)
@@ -3922,7 +3948,7 @@ public sealed partial class GitModule : IGitModule
     }
 
     public bool GetCombinedDiffContent(
-        ObjectId revisionOfMergeCommit,
+        ObjectId objectIdOfMergeCommit,
         string filePath,
         string extraArgs,
         Encoding encoding,
@@ -3938,7 +3964,7 @@ public sealed partial class GitModule : IGitModule
             { AppSettings.UseHistogramDiffAlgorithm, "--histogram" },
             { useGitColoring, "--color=always" },
             extraArgs,
-            revisionOfMergeCommit,
+            objectIdOfMergeCommit,
             "--",
             filePath.ToPosixPath().Quote()
         };
@@ -4098,7 +4124,7 @@ public sealed partial class GitModule : IGitModule
         public List<GitItemStatus> GetDiffChangedFilesFromString(string statusString, StagedStatus staged)
             => _gitModule.GetDiffChangedFilesFromString(statusString, staged);
 
-        public StagedStatus GetStagedStatus(ObjectId? firstId, ObjectId? secondId, ObjectId? parentToSecond)
+        public StagedStatus GetStagedStatus(ObjectId firstId, ObjectId secondId, ObjectId parentToSecond)
             => GitModule.GetStagedStatus(firstId, secondId, parentToSecond);
     }
 }

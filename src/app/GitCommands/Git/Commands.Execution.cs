@@ -90,7 +90,7 @@ public static partial class Commands
         }
         catch (Exception ex)
         {
-            Trace.WriteLine(ex);
+            Trace.WriteLine($"Failed to read repo '{gitExecutor.WorkingDir}': {ex.Message}");
         }
 
         return DetachedHeadParser.UnknownBranchName;
@@ -103,7 +103,7 @@ public static partial class Commands
             try
             {
                 // eg. "/path/to/repo/.git/HEAD"
-                string headFileName = Path.Combine(gitDirectory, "HEAD");
+                string headFileName = Path.Join(gitDirectory, "HEAD");
 
                 if (!File.Exists(headFileName))
                 {

@@ -1341,6 +1341,24 @@ Please make sure that Git for Windows is installed or set the correct command ma
         <source>Diff viewer</source>
         <target />
       </trans-unit>
+      <trans-unit id="_saveCurrentViewSettingsAsDefaultTooltip.Text">
+        <source>Saves all current view settings as the default for future sessions.
+Note: The checkboxes 'Remember the "xyz" preference' only affect the running instance
+as long as the default has not been saved. These preference values are held in memory
+and must be explicitly saved to become persistent defaults.</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="btnSaveCurrentViewSettingsAsDefault.Text">
+        <source>Save current view settings as default</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="btnSaveCurrentViewSettingsAsDefault.toolTip">
+        <source>Saves all current view settings as the default for future sessions.
+Note: The checkboxes 'Remember the "xyz" preference' only affect the running instance
+as long as the default has not been saved. These preference values are held in memory
+and must be explicitly saved to become persistent defaults.</source>
+        <target />
+      </trans-unit>
       <trans-unit id="chkContScrollToNextFileOnlyWithAlt.Text">
         <source>Enable automatic continuous scroll (without ALT button)</source>
         <target />
@@ -3497,6 +3515,10 @@ Focus the output history and (when displayed as panel) toggle its visibility usi
         <source>General</source>
         <target />
       </trans-unit>
+      <trans-unit id="lblConsoleEmulatorChoice.Text">
+        <source>Console emulator</source>
+        <target />
+      </trans-unit>
       <trans-unit id="lblDefaultShell.Text">
         <source>Default shell</source>
         <target />
@@ -4604,6 +4626,19 @@ Examples on branch name: "feature/ABC-4587-commitMessageRegex"
       </trans-unit>
       <trans-unit id="Delete.Text">
         <source>&amp;Delete</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_branchUsedByWorktreeQuestion.Text">
+        <source>The following branches are checked out in worktrees and cannot be deleted directly:
+
+{0}
+
+Do you want to delete the worktrees and branches together?</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_cannotDeleteBranchInMainWorktree.Text">
+        <source>The branch “{0}” cannot be deleted because it is checked out in the main worktree at:
+{1}</source>
         <target />
       </trans-unit>
       <trans-unit id="_cannotDeleteCurrentBranchMessage.Text">
@@ -6753,6 +6788,10 @@ Value has been reset to empty value.</source>
         <source>Color</source>
         <target />
       </trans-unit>
+      <trans-unit id="lblRemotePrefix.Text">
+        <source>Prefix</source>
+        <target />
+      </trans-unit>
       <trans-unit id="pnlMgtDetails.Text">
         <source>Details</source>
         <target />
@@ -8541,34 +8580,6 @@ help</source>
       </trans-unit>
     </body>
   </file>
-  <file datatype="plaintext" original="LocalBranchContextMenuProvider" source-language="en">
-    <body>
-      <trans-unit id="_checkoutBranch.Text">
-        <source>&amp;Checkout this branch</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_deleteBranch.Text">
-        <source>&amp;Delete this branch</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_mergeIntoCurrent.Text">
-        <source>&amp;Merge into current branch</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_pushBranch.Text">
-        <source>&amp;Push this branch</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_rebaseOnto.Text">
-        <source>&amp;Rebase current branch onto this</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_renameBranch.Text">
-        <source>Re&amp;name this branch</source>
-        <target />
-      </trans-unit>
-    </body>
-  </file>
   <file datatype="plaintext" original="LocalBranchMenuItemsStrings" source-language="en">
     <body>
       <trans-unit id="DeleteTooltip.Text">
@@ -8807,34 +8818,6 @@ This will just checkout on the submodule the commit determined by the superproje
       </trans-unit>
     </body>
   </file>
-  <file datatype="plaintext" original="RefContextMenuComposer" source-language="en">
-    <body>
-      <trans-unit id="_copyName.Text">
-        <source>Cop&amp;y name to clipboard</source>
-        <target />
-      </trans-unit>
-    </body>
-  </file>
-  <file datatype="plaintext" original="RemoteBranchContextMenuProvider" source-language="en">
-    <body>
-      <trans-unit id="_checkoutBranch.Text">
-        <source>&amp;Checkout this branch</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_deleteBranch.Text">
-        <source>&amp;Delete this branch</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_mergeIntoCurrent.Text">
-        <source>&amp;Merge into current branch</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_rebaseOnto.Text">
-        <source>&amp;Rebase current branch onto this</source>
-        <target />
-      </trans-unit>
-    </body>
-  </file>
   <file datatype="plaintext" original="RemoteBranchMenuItemsStrings" source-language="en">
     <body>
       <trans-unit id="Checkout.Text">
@@ -8937,6 +8920,14 @@ Reset the filter via View &gt; Show all branches.</source>
       </trans-unit>
       <trans-unit id="mnubtnCommitSubmodule.ToolTipText">
         <source>Commit changes in selected submodule</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="mnubtnCopyWorktreePath.Text">
+        <source>Copy &amp;path</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="mnubtnCopyWorktreePath.ToolTipText">
+        <source>Copy the worktree path to clipboard</source>
         <target />
       </trans-unit>
       <trans-unit id="mnubtnCreateBranch.Text">
@@ -9129,6 +9120,14 @@ Reset the filter via View &gt; Show all branches.</source>
       </trans-unit>
       <trans-unit id="mnubtnResetSubmodule.ToolTipText">
         <source>Reset selected submodule</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="mnubtnShowWorktreeInFolder.Text">
+        <source>Show &amp;in folder</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="mnubtnShowWorktreeInFolder.ToolTipText">
+        <source>Show the worktree in File Explorer</source>
         <target />
       </trans-unit>
       <trans-unit id="mnubtnStashAllFromRootNode.Text">
@@ -9683,6 +9682,10 @@ Reset the filter via View &gt; Show all branches.</source>
         <source>Stop bisect</source>
         <target />
       </trans-unit>
+      <trans-unit id="tsmiOtherActions.Text">
+        <source>&amp;Other actions</source>
+        <target />
+      </trans-unit>
       <trans-unit id="tsmiPushBranch.Text">
         <source>Pus&amp;h branch...</source>
         <target />
@@ -9882,6 +9885,18 @@ Diff selection:
       </trans-unit>
     </body>
   </file>
+  <file datatype="plaintext" original="SettingsPageBase" source-language="en">
+    <body>
+      <trans-unit id="_numberSettingPlaceholder.Text">
+        <source>no value set</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_stringSettingPlaceholder.Text">
+        <source>no value set; for empty string, enter "{0}" without the double quotes</source>
+        <target />
+      </trans-unit>
+    </body>
+  </file>
   <file datatype="plaintext" original="SettingsPageHeader" source-language="en">
     <body>
       <trans-unit id="DistributedRB.Text">
@@ -10067,50 +10082,6 @@ Separate the priorities with ';'.</source>
 but requires the PuTTY authentication client to run  in the background.
 When OpenSSH is used, command line dialogs are shown!
 </source>
-        <target />
-      </trans-unit>
-    </body>
-  </file>
-  <file datatype="plaintext" original="StashRefContextMenuProvider" source-language="en">
-    <body>
-      <trans-unit id="_applyStash.Text">
-        <source>&amp;Apply stash</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_dropStash.Text">
-        <source>Dr&amp;op stash...</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_popStash.Text">
-        <source>P&amp;op stash</source>
-        <target />
-      </trans-unit>
-    </body>
-  </file>
-  <file datatype="plaintext" original="StashSelectorContextMenuProvider" source-language="en">
-    <body>
-      <trans-unit id="_applyStash.Text">
-        <source>&amp;Apply stash</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_dropStash.Text">
-        <source>Dr&amp;op stash...</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_popStash.Text">
-        <source>P&amp;op stash</source>
-        <target />
-      </trans-unit>
-    </body>
-  </file>
-  <file datatype="plaintext" original="TagContextMenuProvider" source-language="en">
-    <body>
-      <trans-unit id="_deleteTag.Text">
-        <source>&amp;Delete this tag</source>
-        <target />
-      </trans-unit>
-      <trans-unit id="_mergeIntoCurrent.Text">
-        <source>&amp;Merge into current branch</source>
         <target />
       </trans-unit>
     </body>

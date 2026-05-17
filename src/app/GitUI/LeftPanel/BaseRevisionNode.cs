@@ -50,7 +50,7 @@ internal abstract class BaseRevisionNode : Node
     /// <summary>
     /// ObjectId for nodes with a revision.
     /// </summary>
-    public ObjectId? ObjectId { get; init; }
+    public ObjectId ObjectId { get; init; }
 
     public override void ApplyStyle()
     {
@@ -111,15 +111,9 @@ internal abstract class BaseRevisionNode : Node
 
     protected virtual void SelectRevision()
     {
-        if (ObjectId is null)
+        if (!ObjectId.IsZero)
         {
-            return;
+            GoToRevision(ObjectId.ToString());
         }
-
-        TreeViewNode.TreeView?.BeginInvoke(() =>
-        {
-            UICommands.BrowseRepo?.GoToRef(ObjectId.ToString(), showNoRevisionMsg: true, toggleSelection: Control.ModifierKeys.HasFlag(Keys.Control));
-            TreeViewNode.TreeView?.Focus();
-        });
     }
 }

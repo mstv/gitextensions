@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using AwesomeAssertions;
 using GitExtUtils.GitUI.Theming;
 using GitUI.Editor.Diff;
 using GitUI.Theming;
@@ -9,7 +8,6 @@ using ICSharpCode.TextEditor.Document;
 namespace GitUITests.Editor.Diff;
 
 [Apartment(ApartmentState.STA)]
-[TestFixture]
 public class DiffHighlightServiceTests
 {
     [Test]
@@ -92,7 +90,7 @@ public class DiffHighlightServiceTests
     [Test]
     public async Task MarkInlineGap()
     {
-        TextEditorControl textEditor = new();
+        using TextEditorControl textEditor = new();
         DiffViewerLineNumberControl diffViewerLineNumber = new(textEditor.ActiveTextAreaControl.TextArea);
         string testDataDir = Path.Combine(TestContext.CurrentContext.TestDirectory, "Editor", "Diff");
         string text = File.ReadAllText(Path.Combine(testDataDir, "gaps.diff"));
@@ -136,8 +134,8 @@ public class DiffHighlightServiceTests
     private static TextMarker CreateDimmedMarker(int offset, int length, bool isAdded)
     {
         Color color = (isAdded ? AppColor.AnsiTerminalGreenBackNormal : AppColor.AnsiTerminalRedBackNormal).GetThemeColor();
-        Color dimmedColor = ColorHelper.DimColor(ColorHelper.DimColor(color));
-        return new TextMarker(offset, length, TextMarkerType.SolidBlock, dimmedColor, ColorHelper.GetForeColorForBackColor(dimmedColor));
+        Color dimmedColor = color.DimColor().DimColor();
+        return new TextMarker(offset, length, TextMarkerType.SolidBlock, dimmedColor, dimmedColor.GetTextColor());
     }
 
     private sealed class MarkerComparer : IComparer<TextMarker>

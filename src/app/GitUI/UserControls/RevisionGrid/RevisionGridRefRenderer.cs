@@ -95,7 +95,7 @@ internal static class RevisionGridRefRenderer
 
             if (highlight)
             {
-                using Pen highlightPen = new(color, 2f);
+                using Pen highlightPen = new(color, DpiUtil.Scale(1f));
                 graphics.DrawPath(highlightPen, path);
             }
 

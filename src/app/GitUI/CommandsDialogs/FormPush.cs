@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Text.RegularExpressions;
 using GitCommands;
 using GitCommands.Config;
@@ -467,12 +467,22 @@ public partial class FormPush : GitModuleForm
         form.ShowDialog(owner);
         ErrorOccurred = form.ErrorOccurred();
 
+        // Invalidate the cached git config so that tracking info written by git (e.g. via --set-upstream) is picked up on the next refresh.
+        Module.InvalidateGitSettings();
+
         if (!Module.InTheMiddleOfAction() && !form.ErrorOccurred())
         {
             ScriptsRunner.RunEventScripts(ScriptEvent.AfterPush, this);
             if (_createPullRequestCB.Checked)
             {
-                UICommands.StartCreatePullRequest(owner);
+                if (PluginRegistry.TryGetGitHosterForModule(Module) is not null)
+                {
+                    UICommands.StartCreatePullRequest(owner);
+                }
+                else
+                {
+                    TryOpenAzureDevOpsPullRequestInBrowser();
+                }
             }
 
             return true;
@@ -566,18 +576,14 @@ public partial class FormPush : GitModuleForm
 
             if (onRejectedPullAction is not (GitPullAction.Merge or GitPullAction.Rebase))
             {
-                form.AppendOutput(Environment.NewLine +
-                    "Automatical pull can only be performed, when the default pull action is either set to Merge or Rebase." +
-                    Environment.NewLine + Environment.NewLine);
+                MessageBoxes.ShowError(form, "Automatical pull can only be performed, when the default pull action is either set to Merge or Rebase.");
                 return false;
             }
 
             if (IsRebasingMergeCommit())
             {
-                form.AppendOutput(Environment.NewLine +
-                    "Can not perform automatical pull, when the pull action is set to Rebase " + Environment.NewLine +
-                    "and one of the commits that are about to be rebased is a merge commit." +
-                    Environment.NewLine + Environment.NewLine);
+                MessageBoxes.ShowError(form, "Can not perform automatical pull, when the pull action is set to Rebase " +
+                                             "and one of the commits that are about to be rebased is a merge commit.");
                 return false;
             }
 
@@ -808,12 +814,13 @@ public partial class FormPush : GitModuleForm
                 }
             }
 
-            if (!RemoteBranch.Items.Contains(_NO_TRANSLATE_Branch.Text))
+            string newRemoteBranchName = $"{_selectedRemote?.Prefix}{_NO_TRANSLATE_Branch.Text}";
+            if (!RemoteBranch.Items.Contains(newRemoteBranchName))
             {
-                RemoteBranch.Items.Add(_NO_TRANSLATE_Branch.Text);
+                RemoteBranch.Items.Add(newRemoteBranchName);
             }
 
-            RemoteBranch.Text = _NO_TRANSLATE_Branch.Text;
+            RemoteBranch.Text = newRemoteBranchName;
         }
     }
 
@@ -824,7 +831,7 @@ public partial class FormPush : GitModuleForm
         Text = string.Concat(_pushCaption.Text, " (", Module.WorkingDir, ")");
 
         IRepositoryHostPlugin? gitHoster = PluginRegistry.TryGetGitHosterForModule(Module);
-        _createPullRequestCB.Enabled = gitHoster is not null;
+        _createPullRequestCB.Enabled = gitHoster is not null || HasAzureDevOpsRemote();
     }
 
     private void AddRemoteClick(object sender, EventArgs e)
@@ -887,7 +894,7 @@ public partial class FormPush : GitModuleForm
             // Solution: when pushing a branch that doesn't exist on the remote, ask what to do
             Validates.NotNull(_currentBranchName);
             Validates.NotNull(_selectedRemote.Name);
-            GitRef currentBranch = new(Module, null, _currentBranchName, _selectedRemote.Name);
+            GitRef currentBranch = new(Module, default, _currentBranchName, _selectedRemote.Name);
             _NO_TRANSLATE_Branch.Items.Add(currentBranch);
             _NO_TRANSLATE_Branch.SelectedItem = currentBranch;
         }
@@ -971,10 +978,8 @@ public partial class FormPush : GitModuleForm
         using (WaitCursorScope.Enter(Cursors.AppStarting))
         {
             IReadOnlyList<IGitRef> remoteHeads;
-            IDetailedSettings detailedSettings = Module.GetEffectiveSettings()
-                .Detailed();
 
-            if (detailedSettings.GetRemoteBranchesDirectlyFromRemote)
+            if (DetailedSettings.GetRemoteBranchesDirectlyFromRemote.ValueOrDefault(Module.GetEffectiveSettings()))
             {
                 StartPageant(remote);
 
@@ -1043,25 +1048,26 @@ public partial class FormPush : GitModuleForm
                 string remoteName = head.Remote == remote
                     ? head.MergeWith ?? head.Name
                     : string.Empty;
-                bool isKnownAtRemote = remoteBranches.ContainsKey(head.Name);
+                bool isKnownAtRemote = remoteBranches.TryGetValue(head.Name, out IGitRef? remoteBranch);
                 DataRow row = _branchTable.NewRow();
 
                 // Check if aheadBehind is relevant for this branch
-                bool isAheadRemote = (aheadBehindData?.ContainsKey(head.Name) ?? false)
-                    && GitRefName.GetRemoteName(aheadBehindData[head.Name].RemoteRef) == remote;
+                AheadBehindData aheadBehind = default;
+                bool isAheadRemote = aheadBehindData?.TryGetValue(head.Name, out aheadBehind) is true
+                                     && GitRefName.GetRemoteName(aheadBehind.RemoteRef) == remote;
 
                 row[ForceColumnName] = false;
                 row[DeleteColumnName] = false;
                 row[LocalColumnName] = head.Name;
                 row[RemoteColumnName] = isAheadRemote
-                    ? GitRefName.GetRemoteBranch(aheadBehindData![head.Name].RemoteRef)
+                    ? GitRefName.GetRemoteBranch(aheadBehind.RemoteRef)
                     : remoteName;
 
                 row[AheadColumnName] = isAheadRemote
                     ? aheadBehindData![head.Name].ToDisplay()
                     : !isKnownAtRemote
                     ? string.Empty
-                    : head.ObjectId == remoteBranches[head.Name].ObjectId
+                    : head.ObjectId == remoteBranch!.ObjectId
                     ? "="
                     : "<>";
                 row[PushColumnName] = false;
@@ -1274,6 +1280,56 @@ public partial class FormPush : GitModuleForm
 
             pushCheckBox.Value = willPush(row);
         }
+    }
+
+    /// <summary>
+    ///  Checks whether any configured remote points to an Azure DevOps repository.
+    /// </summary>
+    private bool HasAzureDevOpsRemote()
+    {
+        AzureDevOpsRemoteParser parser = new();
+        foreach (string remoteName in Module.GetRemoteNames())
+        {
+            string remoteUrl = Module.GetSetting(string.Format(SettingKeyString.RemoteUrl, remoteName));
+            if (!string.IsNullOrWhiteSpace(remoteUrl) && parser.IsValidRemoteUrl(remoteUrl))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///  Opens the Azure DevOps "create pull request" page in the default browser
+    ///  for the currently selected remote and branch.
+    /// </summary>
+    private void TryOpenAzureDevOpsPullRequestInBrowser()
+    {
+        string? remoteUrl = _selectedRemote?.Url;
+        if (string.IsNullOrWhiteSpace(remoteUrl))
+        {
+            return;
+        }
+
+        AzureDevOpsRemoteParser parser = new();
+        if (!parser.TryExtractAzureDevopsDataFromRemoteUrl(remoteUrl, out string? owner, out string? project, out string? repo))
+        {
+            return;
+        }
+
+        string? repoWebUrl = AzureDevOpsRemoteParser.BuildRepositoryUrl(remoteUrl, owner, project, repo);
+        if (repoWebUrl is null)
+        {
+            return;
+        }
+
+        string branch = _selectedBranch is not null and not HeadText and not AllRefs
+            ? _selectedBranch
+            : Module.GetSelectedBranch();
+
+        string pullRequestUrl = $"{repoWebUrl}/pullrequestcreate?sourceRef={Uri.EscapeDataString(branch)}";
+        OsShellUtil.OpenUrlInDefaultBrowser(pullRequestUrl);
     }
 
     internal TestAccessor GetTestAccessor() => new(this);

@@ -1,8 +1,9 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using GitCommands;
 using GitCommands.Git;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
+using GitExtUtils;
 using GitUI.HelperDialogs;
 using GitUIPluginInterfaces;
 using ResourceManager;
@@ -15,14 +16,14 @@ public sealed partial class FormCreateBranch : GitExtensionsDialog
     private readonly TranslationString _branchNameIsEmpty = new("Enter branch name.");
     private readonly TranslationString _branchNameIsNotValid = new("“{0}” is not valid branch name.");
     private readonly TranslationString _creatingOrphanBranch = new("Creating orphan branch (repository has no commits)");
-    private readonly IGitBranchNameNormaliser _branchNameNormaliser = new GitBranchNameNormaliser();
     private readonly GitBranchNameOptions _gitBranchNameOptions = new(AppSettings.AutoNormaliseSymbol);
+    private readonly IGitBranchNameNormaliser _branchNameNormaliser;
 
     public bool CheckoutAfterCreation { get; set; } = true;
     public bool UserAbleToChangeRevision { get; set; } = true;
     public bool CouldBeOrphan { get; set; } = true;
 
-    public FormCreateBranch(IGitUICommands commands, ObjectId? objectId, string? newBranchNamePrefix = null)
+    public FormCreateBranch(IGitUICommands commands, ObjectId objectId, string? newBranchNamePrefix = null)
         : base(commands, enablePositionRestore: false)
     {
         InitializeComponent();
@@ -31,17 +32,23 @@ public sealed partial class FormCreateBranch : GitExtensionsDialog
 
         InitializeComplete();
 
+        _branchNameNormaliser = commands.GetRequiredService<IGitBranchNameNormaliser>();
+
         grpOrphan.AutoSize = true;
 
-        if (objectId?.IsArtificial is true)
+        if (objectId.IsArtificial)
         {
-            objectId = null;
+            objectId = default;
         }
 
         commitSummaryUserControl1.Revision = null;
 
-        objectId ??= Module.GetCurrentCheckout();
-        if (objectId is not null)
+        if (objectId.IsZero)
+        {
+            objectId = Module.GetCurrentCheckout();
+        }
+
+        if (!objectId.IsZero)
         {
             commitPicker.SetSelectedCommitHash(objectId.ToString());
 
@@ -82,7 +89,7 @@ public sealed partial class FormCreateBranch : GitExtensionsDialog
 
     private void BranchNameTextBox_Leave(object sender, EventArgs e)
     {
-        if (!AppSettings.AutoNormaliseBranchName || !BranchNameTextBox.Text.Any(GitBranchNameNormaliser.IsValidChar))
+        if (!AppSettings.AutoNormaliseBranchName || !BranchNameTextBox.Text.Any(PathUtil.IsValidPathChar))
         {
             return;
         }
@@ -117,12 +124,12 @@ public sealed partial class FormCreateBranch : GitExtensionsDialog
         // if the user hits [Enter] at any point, we need to trigger BranchNameTextBox Leave event
         cmdOk.Focus();
 
-        ObjectId? objectId = null;
+        ObjectId objectId = default;
 
         if (!chkCreateOrphan.Checked)
         {
             objectId = commitPicker.SelectedObjectId;
-            if (objectId is null)
+            if (objectId.IsZeroOrArtificial)
             {
                 MessageBoxes.Show(this, _noRevisionSelected.Text, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 DialogResult = DialogResult.None;
@@ -147,11 +154,11 @@ public sealed partial class FormCreateBranch : GitExtensionsDialog
 
         try
         {
-            ObjectId? originalHash = Module.GetCurrentCheckout();
+            ObjectId originalHash = Module.GetCurrentCheckout();
 
             ArgumentString command = chkCreateOrphan.Checked
                 ? Commands.CreateOrphan(branchName, objectId)
-                : Commands.Branch(branchName, objectId!.ToString(), chkCheckoutAfterCreate.Checked);
+                : Commands.Branch(branchName, objectId, chkCheckoutAfterCreate.Checked);
 
             bool success = FormProcess.ShowDialog(this, UICommands, arguments: command, Module.WorkingDir, input: null, useDialogSettings: true);
             if (chkCreateOrphan.Checked && success && chkClearOrphan.Checked)

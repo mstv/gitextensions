@@ -81,20 +81,20 @@ internal sealed class SubmoduleNode : Node
             return;
         }
 
-        ObjectId? selected;
-        ObjectId? first;
+        ObjectId selected;
+        ObjectId first;
         if (IsCurrent)
         {
             // Get the current (most likely) selections from the grid
             IReadOnlyList<GitRevision> revs = UICommands.BrowseRepo?.GetSelectedRevisions() ?? [];
-            selected = revs.Count > 0 ? revs[0].ObjectId : null;
-            first = revs.Count > 1 ? revs[^1].ObjectId : null;
+            selected = revs.Count > 0 ? revs[0].ObjectId : default;
+            first = revs.Count > 1 ? revs[^1].ObjectId : default;
         }
         else
         {
             // Try select a "diff" from the expected commit to worktree for a submodule
             selected = ObjectId.WorkTreeId;
-            first = Info?.Detailed?.RawStatus?.OldCommit;
+            first = Info?.Detailed?.RawStatus?.OldCommit ?? default;
         }
 
         GitUICommands.LaunchBrowse(workingDir: Info!.Path.EnsureTrailingPathSeparator(), selected, first);
@@ -162,11 +162,11 @@ internal sealed class SubmoduleNode : Node
 
     internal async Task SetStatusToolTipAsync(CancellationToken token)
     {
+        await TaskScheduler.Default;
         string toolTip;
         if (Info.Detailed?.RawStatus is not null)
         {
             // Prefer submodule status, shows ahead/behind
-            await TaskScheduler.Default;
             toolTip = SubmoduleResources.GetSubmoduleStatusText(
                 new GitModule(UICommands.GetRequiredService<IGitExecutorProvider>(), Info.Path),
                 Info.Detailed.RawStatus,
@@ -175,15 +175,16 @@ internal sealed class SubmoduleNode : Node
         }
         else if (GitStatus is not null)
         {
-            await TaskScheduler.Default;
             ArtificialCommitChangeCount changeCount = new();
             changeCount.Update(GitStatus);
             toolTip = changeCount.GetSummary();
         }
         else
         {
-            // No data need to be set
-            return;
+            toolTip = SubmoduleResources.GetSubmoduleText(
+                new GitModule(UICommands.GetRequiredService<IGitExecutorProvider>(), "."),
+                Info.Path,
+                hash: "");
         }
 
         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);

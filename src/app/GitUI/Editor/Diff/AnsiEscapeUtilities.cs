@@ -402,9 +402,9 @@ public partial class AnsiEscapeUtilities
             backColor = Get8bitColor(currentBack, fore: false, bold, dim);
         }
 
-        if (backColor is not null && foreColor is null)
+        if (backColor is Color back && foreColor is null)
         {
-            foreColor = ColorHelper.GetForeColorForBackColor((Color)backColor);
+            foreColor = back.GetTextColor();
         }
 
         // Set result if there are changes
@@ -508,12 +508,12 @@ public partial class AnsiEscapeUtilities
 
         if (extraBold)
         {
-            color = color.MakeBackgroundDarkerBy(-0.1);
+            color = color.MakeDarkerBy(-0.1);
         }
 
         if (dim)
         {
-            color = ColorHelper.DimColor(color);
+            color = color.DimColor();
         }
 
         return color;

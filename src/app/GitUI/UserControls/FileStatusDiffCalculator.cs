@@ -32,7 +32,7 @@ public sealed partial class FileStatusDiffCalculator
 
     public void SetDiff(
         IReadOnlyList<GitRevision> revisions,
-        ObjectId? headId,
+        ObjectId headId,
         bool allowMultiDiff,
         bool showSkipWorktreeFiles = false,
         bool showUntrackedFiles = true)
@@ -83,7 +83,7 @@ public sealed partial class FileStatusDiffCalculator
     private List<FileStatusWithDescription> CalculateDiffs(
         IReadOnlyList<GitRevision> revisions,
         GitRevision selectedRev,
-        ObjectId? headId,
+        ObjectId headId,
         bool allowMultiDiff,
         bool showSkipWorktreeFiles,
         UntrackedFilesMode untrackedFilesMode,
@@ -118,13 +118,13 @@ public sealed partial class FileStatusDiffCalculator
                     firstRev: null,
                     secondRev: selectedRev,
                     summary: GetDescriptionForRevision(selectedRev.ObjectId),
-                    statuses: selectedRev.TreeGuid is null
+                    statuses: selectedRev.TreeId.IsZero
 
                         // likely index commit without HEAD
-                        ? module.GetDiffFilesWithSubmodulesStatus(firstId: null, selectedRev.ObjectId, parentToSecond: null, cancellationToken: cancellationToken)
+                        ? module.GetDiffFilesWithSubmodulesStatus(firstId: default, selectedRev.ObjectId, parentToSecond: default, cancellationToken: cancellationToken)
 
                         // No parent for the initial commit, show files and explicitly set IsNew
-                        : module.GetTreeFiles(selectedRev.TreeGuid, full: true, cancellationToken)
+                        : module.GetTreeFiles(selectedRev.TreeId, full: true, cancellationToken)
                             .Select(i =>
                             {
                                 i.IsNew = true;
@@ -170,9 +170,9 @@ public sealed partial class FileStatusDiffCalculator
         }
 
         // Get merge base commit, use HEAD for artificial
-        ObjectId? firstRevHead = GetRevisionOrHead(firstRev, headId!);
-        ObjectId? selectedRevHead = GetRevisionOrHead(selectedRev, headId!);
-        ObjectId? baseRevId = null;
+        ObjectId firstRevHead = GetRevisionOrHead(firstRev, headId);
+        ObjectId selectedRevHead = GetRevisionOrHead(selectedRev, headId);
+        ObjectId baseRevId = default;
         if (revisions.Count != 3)
         {
             baseRevId = GetMergeBase(firstRevHead, selectedRevHead);
@@ -191,44 +191,44 @@ public sealed partial class FileStatusDiffCalculator
         }
 
         // If four selected: check if two ranges are selected
-        ObjectId? baseA = null;
-        ObjectId? baseB = null;
+        ObjectId baseA = default;
+        ObjectId baseB = default;
 
         // Check for separate branches (note that artificial commits both have HEAD as BASE)
-        if (baseRevId is not null)
+        if (!baseRevId.IsZero)
         {
             // Two/Three: Check that the selections are in separate branches
             if (revisions.Count < 4)
             {
                 if (baseRevId == firstRevHead || baseRevId == selectedRevHead)
                 {
-                    baseRevId = null;
+                    baseRevId = default;
                 }
             }
 
             // Four: Two ranges must be selected
             else
             {
-                baseA = GetMergeBase(GetRevisionOrHead(revisions[3], headId!), firstRevHead);
+                baseA = GetMergeBase(GetRevisionOrHead(revisions[3], headId), firstRevHead);
                 if (baseA == revisions[3].ObjectId)
                 {
-                    baseB = GetMergeBase(GetRevisionOrHead(revisions[1], headId!), selectedRevHead);
+                    baseB = GetMergeBase(GetRevisionOrHead(revisions[1], headId), selectedRevHead);
                     if (baseB != revisions[1].ObjectId)
                     {
-                        baseB = null;
+                        baseB = default;
                     }
                 }
 
-                if (baseB is null)
+                if (baseB.IsZero)
                 {
                     // baseA/baseB were not ranges, this is no merge base
-                    baseRevId = null;
-                    baseA = null;
+                    baseRevId = default;
+                    baseA = default;
                 }
             }
         }
 
-        if (baseRevId is null)
+        if (baseRevId.IsZero)
         {
             // No variant of range diff, show multi diff
             fileStatusDescs.AddRange(
@@ -308,11 +308,11 @@ public sealed partial class FileStatusDiffCalculator
 
         return fileStatusDescs;
 
-        ObjectId? GetMergeBase(ObjectId? a, ObjectId? b)
+        ObjectId GetMergeBase(ObjectId a, ObjectId b)
         {
-            if (a is null || b is null || a == b)
+            if (a.IsZero || b.IsZero || a == b)
             {
-                return null;
+                return default;
             }
 
             return module.GetMergeBase(a, b);

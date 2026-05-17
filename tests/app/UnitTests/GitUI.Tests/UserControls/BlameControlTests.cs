@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Text;
-using AwesomeAssertions;
 using CommonTestUtils;
 using GitCommands;
 using GitExtensions.Extensibility.Git;
@@ -13,7 +12,6 @@ namespace GitUITests.UserControls;
 
 [SetCulture("en-US")]
 [SetUICulture("en-US")]
-[TestFixture]
 [Apartment(ApartmentState.STA)]
 public class BlameControlTests
 {
@@ -193,7 +191,7 @@ public class BlameControlTests
         {
             DateTime lineDate = lineDates[index];
             yield return new GitBlameLine(
-                new GitBlameCommit(null!, "Author1", "@Author1", lineDate, string.Empty,
+                new GitBlameCommit(ObjectId.Random(), "Author1", "@Author1", lineDate, string.Empty,
                     "Commiter", "@Committer", lineDate, string.Empty, "Summary1", "file"),
                 index + 1, index + 1, "text");
         }
