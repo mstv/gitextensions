@@ -187,7 +187,7 @@ public class RevisionGraphColumnTests
         revisionGraph.Add(CreateRevision(parentId, []));
 
         RevisionGraphColumnProvider.TestAccessor testAccessor = CreateProvider(revisionGraph);
-        VisibleRowRange range = new(fromIndex: 0, visibleRowCount: 2);
+        VisibleRowRange range = new(fromIndex: 0, count: 2);
         testAccessor.RenderGraphToCache(range, toRowIndex: 1, _rowHeight);
 
         testAccessor.SetHoverHighlight(new HashSet<string> { "main" });
