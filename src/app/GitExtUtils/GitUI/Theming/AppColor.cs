@@ -22,7 +22,6 @@ public enum AppColor
     CommitInfoHeaderBackground,
     CommitInfoRevisionBackground,
 
-
     FormResetCurrentBranchSoftBackground,
     FormResetCurrentBranchMixedBackground,
     FormResetCurrentBranchHardBackground,
