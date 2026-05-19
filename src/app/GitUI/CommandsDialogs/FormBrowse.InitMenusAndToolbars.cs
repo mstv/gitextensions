@@ -336,14 +336,13 @@ partial class FormBrowse
 
         // Toolbar button drop down menu
         fetchAllToolStripMenuItem.Visible = hasMultipleRemotes;
-        fetchPruneAllToolStripMenuItem.Visible = hasMultipleRemotes;
 
         // Update the "set default pull action" submenu items
         if (setDefaultPullButtonActionToolStripMenuItem.DropDown is ToolStripDropDownMenu setDefaultMenu)
         {
             foreach (ToolStripItem item in setDefaultMenu.Items)
             {
-                if (item.Tag is GitPullAction.FetchAll or GitPullAction.FetchPruneAll)
+                if (item.Tag is GitPullAction.FetchAll)
                 {
                     item.Visible = hasMultipleRemotes;
                 }
