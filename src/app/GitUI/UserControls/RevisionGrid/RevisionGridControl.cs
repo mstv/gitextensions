@@ -194,6 +194,9 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
     internal Action<string>? SelectInLeftPanel { get;  set; } = null;
 
+    internal void SetAheadBehindDataProvider(IAheadBehindDataProvider? provider)
+        => _messageColumnProvider.SetAheadBehindDataProvider(provider);
+
     public RevisionGridControl()
         : this(commitDataManager: null)
     {
@@ -321,7 +324,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
         _gridView.KeyPress += (_, e) => _quickSearchProvider.OnKeyPress(e);
         _gridView.MouseDown += OnGridViewMouseDown;
         _gridView.CellMouseDown += OnGridViewCellMouseDown;
-        _gridView.MouseDoubleClick += OnGridViewDoubleClick;
+        _gridView.CellMouseDoubleClick += OnGridViewDoubleClick;
         _gridView.MouseClick += OnGridViewMouseClick;
         _gridView.CellMouseMove += OnGridViewCellMouseMove;
         _gridView.CellMouseEnter += _gridView_CellMouseEnter;
@@ -1862,11 +1865,23 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
         return spi is not null;
     }
 
-    private void OnGridViewDoubleClick(object? sender, MouseEventArgs e)
+    private void OnGridViewDoubleClick(object? sender, DataGridViewCellMouseEventArgs e)
     {
         if (e.Button != MouseButtons.Left)
         {
             return;
+        }
+
+        // If an ahead/behind virtual ref label was clicked in the message column, goto the tracking/tracked branch.
+        if (e.RowIndex >= 0 && e.ColumnIndex == _messageColumnProvider.Index)
+        {
+            Rectangle cellBounds = _gridView.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, cutOverflow: false);
+            Point clientPoint = new(cellBounds.X + e.X, cellBounds.Y + e.Y);
+            if (_messageColumnProvider.HitTest(e.RowIndex, clientPoint)?.GitRef is { Guid: null } aheadBehindRef)
+            {
+                GoToRef(aheadBehindRef.CompleteName, showNoRevisionMsg: true);
+                return;
+            }
         }
 
         DoubleClickRevision?.Invoke(this, new DoubleClickRevisionEventArgs(GetSelectedRevisionOrDefault()));
@@ -2158,13 +2173,18 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
         }
 
         IGitRef? clickedRef = _rightClickedHitInfo?.GitRef;
+        string? relatedBranch = clickedRef is { Guid: null }
+            ? clickedRef.MergeWith.StartsWith(GitRefName.RefsRemotesPrefix)
+                ? clickedRef.MergeWith[GitRefName.RefsRemotesPrefix.Length..]
+                : clickedRef.MergeWith[GitRefName.RefsHeadsPrefix.Length..]
+            : null;
         _rightClickedHitInfo = null;
         Func<IEnumerable<IGitRef>, IEnumerable<IGitRef>> filterRefs = clickedRef is null
             ? refs => refs
-            : refs => refs.Where(r => r == clickedRef);
+            : refs => refs.Where(r => r == clickedRef || r.Name == relatedBranch);
         copyToClipboardToolStripMenuItem.SetFilterRefsFunc(clickedRef is null
             ? refNames => refNames
-            : refNames => refNames.Where(r => r == clickedRef.Name));
+            : refNames => refNames.Where(r => r == clickedRef.Name || r == relatedBranch));
 
         bool inTheMiddleOfBisect = Module.InTheMiddleOfBisect();
         SetEnabled(markRevisionAsBadToolStripMenuItem, inTheMiddleOfBisect);
