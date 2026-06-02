@@ -9,6 +9,7 @@ using GitUI.Models;
 using GitUI.Properties;
 using GitUI.UserControls;
 using Microsoft.WindowsAPICodePack.Taskbar;
+using ResourceManager;
 
 namespace GitUI.HelperDialogs;
 
@@ -16,6 +17,7 @@ public partial class FormStatus : GitExtensionsDialog
 {
     private readonly bool _useDialogSettings;
     private bool _errorOccurred;
+    private IDisposable? _suppressActivatedScope;
 
     private protected Action<FormStatus>? ProcessCallback;
     private protected Action<FormStatus>? AbortCallback;
@@ -141,8 +143,19 @@ public partial class FormStatus : GitExtensionsDialog
         form.ShowDialog(owner);
     }
 
+    protected override void OnShown(EventArgs e)
+    {
+        // Suppress spurious WM_ACTIVATEAPP on owner forms while this dialog is open.
+        // The console emulator spawns a shell that briefly takes and returns focus,
+        // which would otherwise trigger unnecessary repo rescans in the owning form.
+        _suppressActivatedScope = GitExtensionsFormBase.SuppressApplicationActivated();
+        base.OnShown(e);
+    }
+
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        _suppressActivatedScope?.Dispose();
+        _suppressActivatedScope = null;
         TaskbarProgress.Clear();
         base.OnFormClosed(e);
     }

@@ -24,8 +24,38 @@ namespace ResourceManager;
 /// </remarks>
 public class GitExtensionsFormBase : Form, ITranslate
 {
+    private static int _suppressApplicationActivatedCount;
+
     private readonly GitExtensionsControlInitialiser _initialiser;
     private IReadOnlyList<HotkeyCommand>? _hotkeys;
+
+    /// <summary>
+    ///  Returns a scope that suppresses <see cref="OnApplicationActivated"/> on all open forms
+    ///  while the scope is alive. Scopes nest correctly; dispose the returned value to release.
+    /// </summary>
+    /// <remarks>
+    ///  Use this when showing a child process or dialog that temporarily steals and returns focus,
+    ///  which would otherwise cause spurious <c>WM_ACTIVATEAPP</c> notifications on the owner forms.
+    /// </remarks>
+    public static IDisposable SuppressApplicationActivated()
+    {
+        Interlocked.Increment(ref _suppressApplicationActivatedCount);
+        return new SuppressScope();
+    }
+
+    private sealed class SuppressScope : IDisposable
+    {
+        private bool _disposed;
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                Interlocked.Decrement(ref _suppressApplicationActivatedCount);
+            }
+        }
+    }
 
     /// <summary>Creates a new <see cref="GitExtensionsFormBase"/> indicating position restore.</summary>
     public GitExtensionsFormBase()
@@ -150,7 +180,11 @@ public class GitExtensionsFormBase : Form, ITranslate
         {
             if (m.Msg == NativeMethods.WM_ACTIVATEAPP && m.WParam != IntPtr.Zero)
             {
-                OnApplicationActivated();
+                if (_suppressApplicationActivatedCount == 0)
+                {
+                    OnApplicationActivated();
+                }
+
                 if (WindowState == FormWindowState.Minimized && Owner is null && AppSettings.WorkaroundActivateFromMinimize)
                 {
                     // Application occasionally requires explicit "restore" in Taskbar.
