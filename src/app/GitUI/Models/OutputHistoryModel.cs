@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 using GitUI.Editor.Diff;
 using ICSharpCode.TextEditor.Document;
@@ -53,7 +53,7 @@ internal sealed class OutputHistoryModel : IOutputHistoryProvider, IOutputHistor
 
     public void RecordHistory(in string message)
     {
-        string time = DateTime.Now.ToShortTimeString();
+        string time = DateTime.Now.ToLongTimeString();
         Add(new StringBuilder(time, capacity: time.Length + 1 + message.Length).Append(' ').AppendLine(message));
     }
 
