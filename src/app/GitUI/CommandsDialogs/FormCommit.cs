@@ -425,6 +425,7 @@ public sealed partial class FormCommit : GitModuleForm
 
     protected override void OnApplicationActivated()
     {
+        Trace.WriteLine("Application activated (no Exception)");
         if (!_bypassActivatedEventHandler && AppSettings.RefreshArtificialCommitOnApplicationActivated)
         {
             RescanChanges();
