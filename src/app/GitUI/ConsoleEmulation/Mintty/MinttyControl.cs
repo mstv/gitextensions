@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -143,7 +144,7 @@ internal sealed class MinttyControl : Panel
     {
         ProcessStartInfo psi = new()
         {
-            FileName = minttyPath,
+            FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"ConsoleEmulation\Mintty\mintty.exe"),
             Arguments = minttyArgs,
             WorkingDirectory = workDir ?? Environment.CurrentDirectory,
             UseShellExecute = false,
@@ -155,6 +156,8 @@ internal sealed class MinttyControl : Panel
         {
             psi.EnvironmentVariables[key] = value;
         }
+
+        psi.EnvironmentVariables["PATH"] = $"{Path.GetDirectoryName(minttyPath)};{Environment.GetEnvironmentVariable("PATH")}";
 
         Process minttyProcess = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start mintty.exe");

@@ -67,6 +67,10 @@
     <Compile Update="Properties\Resources.Designer.cs" AutoGen="True" DependentUpon="Resources.resx" DesignTime="True" />
 
     <None Include="Properties\DataSources\*.datasource" />
+
+    <None Update="ConsoleEmulation\Mintty\mintty.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
