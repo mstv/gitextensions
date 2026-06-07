@@ -895,8 +895,6 @@ internal sealed class MessageColumnProvider : ColumnProvider
     {
         _aheadBehindDataByLocalBranch ??= _aheadBehindDataProvider?.GetData() ?? FrozenDictionary<string, AheadBehindData>.Empty;
 
-        AheadBehindData aheadBehind;
-        string trackedCompleteName;
         if (gitRef.IsRemote)
         {
             // Match the remote ref via AheadBehindData.RemoteRef, which holds the full refs/remotes/… name
@@ -905,33 +903,22 @@ internal sealed class MessageColumnProvider : ColumnProvider
                 .DistinctBy(data => data.RemoteRef)
                 .ToFrozenDictionary(data => data.RemoteRef, data => data);
 
-            if (!_aheadBehindDataByRemoteBranch.TryGetValue(gitRef.CompleteName, out aheadBehind))
+            if (_aheadBehindDataByRemoteBranch.TryGetValue(gitRef.CompleteName, out AheadBehindData aheadBehind))
             {
-                return (string.Empty, string.Empty);
+               return (aheadBehind.ToDisplay(), GitRefName.RefsHeadsPrefix + aheadBehind.Branch);
             }
-
-            trackedCompleteName = GitRefName.RefsHeadsPrefix + aheadBehind.Branch;
         }
         else
         {
-            if (!_aheadBehindDataByLocalBranch.TryGetValue(gitRef.Name, out aheadBehind))
+            if (_aheadBehindDataByLocalBranch.TryGetValue(gitRef.Name, out AheadBehindData aheadBehind))
             {
-                return (string.Empty, string.Empty);
+                // This info is displayed in a virtual remote ref label.
+                // From the remote ref's perspective, ahead/behind are swapped relative to the local branch.
+                return (aheadBehind.ToDisplay(reverse: true), aheadBehind.RemoteRef);
             }
-
-            trackedCompleteName = aheadBehind.RemoteRef;
-
-            if (aheadBehind.AheadCount == AheadBehindData.Gone)
-            {
-                return ("✗", trackedCompleteName);
-            }
-
-            // This info is displayed in a virtual remote ref label.
-            // From the remote ref's perspective, ahead/behind are swapped relative to the local branch.
-            aheadBehind = aheadBehind with { AheadCount = aheadBehind.BehindCount, BehindCount = aheadBehind.AheadCount == "0" ? "" : aheadBehind.AheadCount };
         }
 
-        return (aheadBehind.ToDisplay(), trackedCompleteName);
+        return (string.Empty, string.Empty);
     }
 
     private List<RefLabelHitInfo> RentHitInfoList()
