@@ -1969,19 +1969,36 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
                 return;
             }
 
-            if (e.Button != MouseButtons.Right)
+            bool addRelatedRefToSelection = e.Button == MouseButtons.Left && ModifierKeys.HasFlag(Keys.Control);
+            if (e.Button != MouseButtons.Right && !addRelatedRefToSelection)
             {
                 return;
             }
 
-            // Check if a ref label was right-clicked in the message column
-            _rightClickedHitInfo = null;
+            // Check if a ref label was clicked in the message column
+            RefLabelHitInfo? hitInfo = null;
             if (e.RowIndex >= 0 && e.ColumnIndex == _messageColumnProvider.Index)
             {
                 Rectangle cellBounds = _gridView.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, cutOverflow: false);
                 Point clientPoint = new(cellBounds.X + e.X, cellBounds.Y + e.Y);
-                _rightClickedHitInfo = _messageColumnProvider.HitTest(e.RowIndex, clientPoint);
+                hitInfo = _messageColumnProvider.HitTest(e.RowIndex, clientPoint);
             }
+
+            if (addRelatedRefToSelection)
+            {
+                if (hitInfo?.GitRef is { Guid: null } aheadBehindRef)
+                {
+                    GoToRef(aheadBehindRef.CompleteName, showNoRevisionMsg: true);
+
+                    // The related revision is now selected. Return early so that the DataGridView's
+                    // native Ctrl+click processing adds the clicked row to the selection (instead of
+                    // toggling it off again, which would happen if we selected it here first).
+                }
+
+                return;
+            }
+
+            _rightClickedHitInfo = hitInfo;
 
             if (_latestSelectedRowIndex == e.RowIndex
                 && _latestSelectedRowIndex < _gridView.Rows.Count
