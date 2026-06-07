@@ -222,14 +222,12 @@ internal static class RevisionGridRefRenderer
         DrawRefBackground(isRowSelected, graphics, headColor, rect, refPath, icon, dashedLine, fill, highlight: false, iconXOffset);
 
         // For PointLeft, offset by half pointWidth so text starts inside the point.
-        int textX = shape is RefLabelShape.PointLeft
-            ? rect.X + iconXOffset + iconWidth + paddingLeftRight - (pointWidth / 2)
-            : rect.X + iconXOffset + iconWidth + paddingLeftRight;
-
+        int textX = rect.X + iconXOffset + iconWidth + paddingLeftRight - (shape is RefLabelShape.PointLeft ? pointWidth / 2 : 0);
+        int textWidth = Math.Min(bounds.Width - offset - paddingLeftRight - paddingLeftRight, textSize.Width);
         Rectangle textBounds = new(
             textX,
             rect.Y + paddingTopBottom - 1,
-            Math.Min(bounds.Width - offset - paddingLeftRight - paddingLeftRight, textSize.Width),
+            Math.Clamp(textWidth, 0, bounds.Right - textX),
             textSize.Height);
 
         TextRenderer.DrawText(graphics, name, font, textBounds, textColor, TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
