@@ -86,7 +86,11 @@ internal sealed class MessageColumnProvider : ColumnProvider
     }
 
     public void SetAheadBehindDataProvider(IAheadBehindDataProvider? provider)
-        => _aheadBehindDataProvider = provider;
+    {
+        _aheadBehindDataProvider = provider;
+        _aheadBehindDataByLocalBranch = null;
+        _aheadBehindDataByRemoteBranch = null;
+    }
 
     public override void ApplySettings()
     {
@@ -882,9 +886,9 @@ internal sealed class MessageColumnProvider : ColumnProvider
     /// </summary>
     /// <remarks>
     ///  Uses <see cref="AheadBehindData.ToDisplay"/> for consistent formatting with the push button and left panel.
-    ///  For a remote ref, the perspective is inverted: what the local branch is ahead of the remote appears as
-    ///  the remote being behind, and vice versa — so <see cref="AheadBehindData.BehindCount"/> and
-    ///  <see cref="AheadBehindData.AheadCount"/> are swapped before formatting.
+    ///  When rendering a local branch's tracked remote as a virtual label, the perspective is inverted: what the local branch
+    ///  is ahead of the remote appears as the remote being behind, and vice versa — so <see cref="AheadBehindData.BehindCount"/>
+    ///  and <see cref="AheadBehindData.AheadCount"/> are swapped before formatting.
     ///  Returns an empty display string for untracked refs or when the provider is unavailable.
     /// </remarks>
     private (string Display, string TrackedCompleteName) GetAheadBehind(IGitRef gitRef)
