@@ -1,6 +1,7 @@
 ﻿using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Text.RegularExpressions;
 using GitCommands;
 using GitCommands.Config;
 using GitCommands.Git;
@@ -171,6 +172,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
                 (string aheadBehind, string trackedCompleteName) = GetAheadBehind(gitRef);
                 if (aheadBehind.Length > 0)
                 {
+                    aheadBehind = Regex.Replace(aheadBehind, "[0-9 ]", "");
                     VirtualRef virtualRef = new(aheadBehind, trackedCompleteName, gitRef.TrackingRemote, mergeWith: gitRef.CompleteName, gitRef.Module)
                     { IsHead = gitRef.IsRemote, IsRemote = !gitRef.IsRemote };
                     DrawBranchWithNestledRemote(gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, virtualRef, ref hitInfos);
@@ -405,7 +407,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
                     }
                     else
                     {
-                        _toolTipBuilder.Append('[').Append(gitRef.Name).Append(']').AppendLine();
+                        _toolTipBuilder.Append('[').Append(gitRef.Name).Append("]   ").Append(GetAheadBehind(gitRef).Display).AppendLine();
                     }
                 }
             }
