@@ -172,7 +172,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
                 (string aheadBehind, string trackedCompleteName) = GetAheadBehind(gitRef);
                 if (aheadBehind.Length > 0)
                 {
-                    aheadBehind = Regex.Replace(aheadBehind, "[0-9 ]", "");
+                    aheadBehind = gitRef.IsRemote ? " " : "";
                     VirtualRef virtualRef = new(aheadBehind, trackedCompleteName, gitRef.TrackingRemote, mergeWith: gitRef.CompleteName, gitRef.Module)
                     { IsHead = gitRef.IsRemote, IsRemote = !gitRef.IsRemote };
                     DrawBranchWithNestledRemote(gitRef, superprojectRef, style, messageBounds, ref offset, isHighlighted, virtualRef, ref hitInfos);
@@ -306,7 +306,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
             string nestledName = nestledRef.LocalName == GetRemotePrefix(nestledRef.Module, nestledRef.Remote) + gitRef.Name ? nestledRef.Remote : nestledRef.Name;
 
             // Draw the nestled directly via DrawRefEx with RefLabelIcon.None — the nestled remote never shows a head indicator.
-            (Rectangle nestledRect, Action? drawNestledHighlight) = RevisionGridRefRenderer.DrawRefEx(
+            (Rectangle nestledRect, Action? drawNestledHighlight) = /*nestledName.Length == 0 ? (Rectangle.Empty, null) :*/ RevisionGridRefRenderer.DrawRefEx(
                 e.State.HasFlag(DataGridViewElementStates.Selected),
                 style.NormalFont,
                 ref offset,
