@@ -301,14 +301,14 @@ internal sealed class MessageColumnProvider : ColumnProvider
 
             // Show only the remote name when the tracked branch has the same local name,
             // accounting for an optional prefix configured for the remote.
-            string remoteName = nestledRef.LocalName == GetRemotePrefix(nestledRef.Module, nestledRef.Remote) + gitRef.Name ? nestledRef.Remote : nestledRef.Name;
+            string nestledName = nestledRef.LocalName == GetRemotePrefix(nestledRef.Module, nestledRef.Remote) + gitRef.Name ? nestledRef.Remote : nestledRef.Name;
 
             // Draw the nestled directly via DrawRefEx with RefLabelIcon.None — the nestled remote never shows a head indicator.
             (Rectangle nestledRect, Action? drawNestledHighlight) = RevisionGridRefRenderer.DrawRefEx(
                 e.State.HasFlag(DataGridViewElementStates.Selected),
                 style.NormalFont,
                 ref offset,
-                remoteName,
+                nestledName,
                 remoteColor,
                 RefLabelIcon.None,
                 messageBounds,
