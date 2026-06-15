@@ -24,6 +24,7 @@
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <EnableNUnitRunner>true</EnableNUnitRunner>
+    <EnableMicrosoftTestingExtensionsVSTestBridge>true</EnableMicrosoftTestingExtensionsVSTestBridge>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
