@@ -164,9 +164,10 @@ internal static class RevisionGridRefRenderer
         bool dashedLine = false,
         bool fill = false,
         bool highlight = false,
-        RefLabelShape shape = RefLabelShape.Rect)
+        RefLabelShape shape = RefLabelShape.Rect,
+        bool showRedundantIcon = false)
     {
-        icon = GetEffectiveIcon(icon);
+        icon = GetEffectiveIcon(icon, showRedundantIcon);
         int paddingLeftRight = PaddingLeftRight(name);
         int paddingTopBottom = PaddingTopBottom;
         int marginRight = DpiUtil.Scale(5);
@@ -177,10 +178,15 @@ internal static class RevisionGridRefRenderer
             ? TextRenderer.MeasureText(graphics, name, font, Size.Empty, TextFormatFlags.NoPadding)
             : new(0, TextRenderer.MeasureText(graphics, " ", font, Size.Empty, TextFormatFlags.NoPadding).Height);
 
-        int iconWidth = icon == RefLabelIcon.None ? 0 : bounds.Height / 2;
-
         int backgroundHeight = textSize.Height + paddingTopBottom + paddingTopBottom - 1;
         int outerMarginTopBottom = (bounds.Height - backgroundHeight) / 2;
+
+        int iconWidth = icon switch
+        {
+            RefLabelIcon.None => 0,
+            RefLabelIcon.Remote => textSize.Height + 1 + (2 * DpiUtil.Scale(3)),
+            _ => bounds.Height / 2
+        };
 
         int scaledRadius = RefLabelCornerRadius;
         int pointWidth = PointWidth(backgroundHeight);
@@ -219,7 +225,7 @@ internal static class RevisionGridRefRenderer
         // For NotchLeft and PointLeft the point/notch occupies the left portion of the rect,
         // so the icon and text must be shifted right by pointWidth.
         int iconXOffset = shape is RefLabelShape.NotchLeft or RefLabelShape.PointLeft ? pointWidth : 0;
-        DrawRefBackground(isRowSelected, graphics, headColor, rect, refPath, icon, dashedLine, fill, highlight: false, iconXOffset);
+        DrawRefBackground(isRowSelected, graphics, headColor, rect, refPath, icon, dashedLine, fill, highlight: false, iconXOffset, iconWidth);
 
         // For PointLeft, offset by half pointWidth so text starts inside the point.
         int textX = rect.X + iconXOffset + iconWidth + paddingLeftRight - (shape is RefLabelShape.PointLeft ? pointWidth / 2 : 0);
@@ -264,7 +270,7 @@ internal static class RevisionGridRefRenderer
             });
     }
 
-    private static void DrawRefBackground(bool isRowSelected, Graphics graphics, Color color, Rectangle bounds, GraphicsPath path, RefLabelIcon icon, bool dashedLine, bool fill, bool highlight, int iconXOffset)
+    private static void DrawRefBackground(bool isRowSelected, Graphics graphics, Color color, Rectangle bounds, GraphicsPath path, RefLabelIcon icon, bool dashedLine, bool fill, bool highlight, int iconXOffset, int iconWidth)
     {
         SmoothingMode oldMode = graphics.SmoothingMode;
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -298,8 +304,16 @@ internal static class RevisionGridRefRenderer
                 graphics.DrawPath(highlightPen, path);
             }
 
-            // arrow if the head is the current branch
-            if (icon != RefLabelIcon.None)
+            // draw icon
+            if (icon == RefLabelIcon.Remote)
+            {
+                int cloudPadding = DpiUtil.Scale(3);
+                float iconSize = iconWidth - (2 * cloudPadding);
+                float iconX = bounds.X + iconXOffset + cloudPadding;
+                float iconY = bounds.Bottom - PaddingTopBottom - iconSize;
+                DrawCloudIcon(graphics, color, iconX, iconY, iconSize);
+            }
+            else if (icon != RefLabelIcon.None)
             {
                 DrawArrow(graphics, bounds.X + iconXOffset, bounds.Y, bounds.Height, color, filled: icon == RefLabelIcon.Head);
             }
@@ -360,9 +374,90 @@ internal static class RevisionGridRefRenderer
         }
     }
 
-    private static RefLabelIcon GetEffectiveIcon(RefLabelIcon icon)
+    private static void DrawCloudIcon(Graphics graphics, Color color, float x, float y, float iconSize)
     {
-        return icon is RefLabelIcon.Head or RefLabelIcon.HeadMergeSource ? icon : RefLabelIcon.None;
+        using Pen pen = new(color, width: RefLabelHighlightWidth) { LineJoin = LineJoin.Round };
+        using GraphicsPath path = new();
+
+        float s = iconSize;
+
+        // Bezier curves traced from a cloud SVG (72x72 viewBox), normalized to 0..1.
+        // Three bumps: left (small), middle (medium), right (large).
+
+        // Left bump, descending left side
+        path.AddBezier(
+            x + (0.221f * s), y + (0.420f * s),
+            x + (0.139f * s), y + (0.439f * s),
+            x + (0.083f * s), y + (0.510f * s),
+            x + (0.083f * s), y + (0.596f * s));
+
+        // Bottom-left rounded corner
+        path.AddBezier(
+            x + (0.083f * s), y + (0.596f * s),
+            x + (0.083f * s), y + (0.687f * s),
+            x + (0.146f * s), y + (0.760f * s),
+            x + (0.224f * s), y + (0.760f * s));
+
+        // Flat bottom
+        path.AddLine(
+            x + (0.224f * s), y + (0.760f * s),
+            x + (0.762f * s), y + (0.760f * s));
+
+        // Bottom-right rounded corner
+        path.AddBezier(
+            x + (0.762f * s), y + (0.760f * s),
+            x + (0.847f * s), y + (0.760f * s),
+            x + (0.917f * s), y + (0.682f * s),
+            x + (0.917f * s), y + (0.586f * s));
+
+        // Right bump, ascending right side
+        path.AddBezier(
+            x + (0.917f * s), y + (0.586f * s),
+            x + (0.917f * s), y + (0.494f * s),
+            x + (0.853f * s), y + (0.419f * s),
+            x + (0.773f * s), y + (0.413f * s));
+
+        // Right bump top arc
+        path.AddBezier(
+            x + (0.773f * s), y + (0.413f * s),
+            x + (0.743f * s), y + (0.309f * s),
+            x + (0.660f * s), y + (0.240f * s),
+            x + (0.561f * s), y + (0.240f * s));
+
+        // Right bump descending to middle valley
+        path.AddBezier(
+            x + (0.561f * s), y + (0.240f * s),
+            x + (0.498f * s), y + (0.240f * s),
+            x + (0.441f * s), y + (0.269f * s),
+            x + (0.404f * s), y + (0.315f * s));
+
+        // Middle valley across to left bump top
+        path.AddLine(
+            x + (0.404f * s), y + (0.315f * s),
+            x + (0.343f * s), y + (0.310f * s));
+
+        // Left bump top arc, back to start
+        path.AddBezier(
+            x + (0.343f * s), y + (0.310f * s),
+            x + (0.280f * s), y + (0.310f * s),
+            x + (0.228f * s), y + (0.358f * s),
+            x + (0.221f * s), y + (0.420f * s));
+
+        SmoothingMode oldMode = graphics.SmoothingMode;
+        try
+        {
+            graphics.SmoothingMode = SmoothingMode.None;
+            graphics.DrawPath(pen, path);
+        }
+        finally
+        {
+            graphics.SmoothingMode = oldMode;
+        }
+    }
+
+    private static RefLabelIcon GetEffectiveIcon(RefLabelIcon icon, bool showRedundant)
+    {
+        return showRedundant || icon is RefLabelIcon.Head or RefLabelIcon.HeadMergeSource ? icon : RefLabelIcon.None;
     }
 
     /// <summary>

@@ -53,6 +53,9 @@ internal sealed class MessageColumnProvider : ColumnProvider
     // Caches the configured push prefix per remote name to avoid repeated git-config reads during painting.
     private readonly Dictionary<string, string> _remotePrefixCache = [];
 
+    // Caches the number of configured remotes; -1 means not yet loaded.
+    private int _cachedRemoteCount = -1;
+
     private IReadOnlyDictionary<string, AheadBehindData>? _aheadBehindDataByLocalBranch;
     private IReadOnlyDictionary<string, AheadBehindData>? _aheadBehindDataByRemoteBranch;
     private IAheadBehindDataProvider? _aheadBehindDataProvider;
@@ -302,20 +305,39 @@ internal sealed class MessageColumnProvider : ColumnProvider
             offset = Math.Max(initialOffset, branchRect.Right - messageBounds.X - pointWidth + 1);
 
             // Draw the nestled directly via DrawRefEx with RefLabelIcon.None — the nestled remote never shows a head indicator.
+            // When there is only one remote configured, replace the remote name with the remote icon.
             NestledVirtualRef? nestledVirtualRef = nestledRef as NestledVirtualRef;
+            bool replaceRemoteWithIcon = nestledVirtualRef is null && !isRemoteHighlighted; //// TODO: && GetRemoteCount(nestledRef.Module) == 1;
+            if (replaceRemoteWithIcon)
+            {
+                if (nestledName == nestledRef.Remote)
+                {
+                    nestledName = "";
+                }
+                else if (nestledName.StartsWith(nestledRef.Remote))
+                {
+                    nestledName = nestledName[(nestledRef.Remote.Length + 1)..];
+                }
+                else
+                {
+                    replaceRemoteWithIcon = false;
+                }
+            }
+
             (Rectangle nestledRect, Action? drawNestledHighlight) = RevisionGridRefRenderer.DrawRefEx(
                 e.State.HasFlag(DataGridViewElementStates.Selected),
                 nestledVirtualRef is { TrackingBranchIsGone: true } ? style.BoldFont : style.NormalFont,
                 ref offset,
                 nestledName,
                 remoteColor,
-                RefLabelIcon.None,
+                replaceRemoteWithIcon ? RefLabelIcon.Remote : RefLabelIcon.None,
                 messageBounds,
                 e.Graphics!,
                 dashedLine: nestledVirtualRef is not null,
                 fill: _settings.FillRefLabels,
                 highlight: isRemoteHighlighted,
-                shape2);
+                shape2,
+                showRedundantIcon: replaceRemoteWithIcon);
 
             // Draw highlight frames last so neither capsule overwrites the other's highlight edge.
             drawBranchHighlight?.Invoke();
@@ -921,6 +943,20 @@ internal sealed class MessageColumnProvider : ColumnProvider
         return prefix;
     }
 
+    private int GetRemoteCount(IGitModule module)
+    {
+        if (_cachedRemoteCount < 0)
+        {
+            _cachedRemoteCount = module.GetAllLocalSettings()
+                .Where(s => s.Setting.StartsWith("remote.", StringComparison.Ordinal) && s.Setting.EndsWith(".url", StringComparison.Ordinal))
+                .Select(s => s.Setting[7..^4])
+                .Distinct()
+                .Count();
+        }
+
+        return _cachedRemoteCount;
+    }
+
     /// <summary>
     ///  Performs a hit test to find which ref label (if any) contains the given point in the specified row.
     /// </summary>
@@ -975,6 +1011,7 @@ internal sealed class MessageColumnProvider : ColumnProvider
 
         _refLabelHitInfoByRow.Clear();
         _remotePrefixCache.Clear();
+        _cachedRemoteCount = -1;
         _highlightedRef = null;
         _highlightedRowIndex = -1;
         _highlightedStashRow = -1;
