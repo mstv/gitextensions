@@ -6,25 +6,27 @@ namespace GitCommands.ExternalLinks;
 
 public interface IExternalLinkRevisionParser
 {
-    IEnumerable<ExternalLink> Parse(GitRevision revision, ExternalLinkDefinition definition);
+    /// <summary>
+    ///  Parses a revision against a link definition using the provided pre-loaded remotes.
+    /// </summary>
+    /// <param name="revision">The revision to parse.</param>
+    /// <param name="definition">The link definition to apply.</param>
+    /// <param name="remotes">
+    ///  The remotes for the current repository, loaded before any async work to avoid
+    ///  reading a stale or switched module from a background thread.
+    /// </param>
+    IEnumerable<ExternalLink> Parse(GitRevision revision, ExternalLinkDefinition definition, IReadOnlyList<ConfigFileRemote> remotes);
 }
 
 public sealed class ExternalLinkRevisionParser : IExternalLinkRevisionParser
 {
-    private readonly IConfigFileRemoteSettingsManager _remotesManager;
-
-    public ExternalLinkRevisionParser(IConfigFileRemoteSettingsManager remotesManager)
+    public IEnumerable<ExternalLink> Parse(GitRevision revision, ExternalLinkDefinition definition, IReadOnlyList<ConfigFileRemote> remotes)
     {
-        _remotesManager = remotesManager;
-    }
-
-    public IEnumerable<ExternalLink> Parse(GitRevision revision, ExternalLinkDefinition definition)
-    {
-        IEnumerable<Match?> remoteMatches = ParseRemotes(definition);
+        IEnumerable<Match?> remoteMatches = ParseRemotes(definition, remotes);
         return remoteMatches.SelectMany(remoteMatch => ParseRevision(revision, definition, remoteMatch));
     }
 
-    private static IEnumerable<ConfigFileRemote> GetMatchingRemotes(ExternalLinkDefinition definition, IEnumerable<ConfigFileRemote> remotes)
+    private static IEnumerable<ConfigFileRemote> GetMatchingRemotes(ExternalLinkDefinition definition, IReadOnlyList<ConfigFileRemote> remotes)
     {
         if (string.IsNullOrWhiteSpace(definition.UseRemotesPattern) || definition.UseRemotesRegex?.Value is null)
         {
@@ -41,7 +43,7 @@ public sealed class ExternalLinkRevisionParser : IExternalLinkRevisionParser
         return matchingRemotes;
     }
 
-    private IEnumerable<Match?> ParseRemotes(ExternalLinkDefinition definition)
+    private static IEnumerable<Match?> ParseRemotes(ExternalLinkDefinition definition, IReadOnlyList<ConfigFileRemote> remotes)
     {
         List<Match?> allMatches = [];
 
@@ -53,7 +55,6 @@ public sealed class ExternalLinkRevisionParser : IExternalLinkRevisionParser
 
         List<string> remoteUrls = [];
 
-        IEnumerable<ConfigFileRemote> remotes = _remotesManager.LoadRemotes(false);
         IEnumerable<ConfigFileRemote> matchingRemotes = GetMatchingRemotes(definition, remotes);
 
         foreach (ConfigFileRemote remote in matchingRemotes)

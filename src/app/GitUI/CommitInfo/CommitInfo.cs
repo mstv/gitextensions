@@ -100,7 +100,7 @@ public partial class CommitInfo : GitModuleControl
         _externalLinksStorage = new ExternalLinksStorage();
         _effectiveLinkDefinitionsProvider = new ConfiguredLinkDefinitionsProvider(_externalLinksStorage);
         _remotesManager = new ConfigFileRemoteSettingsManager(() => Module);
-        _externalLinkRevisionParser = new ExternalLinkRevisionParser(_remotesManager);
+        _externalLinkRevisionParser = new ExternalLinkRevisionParser();
         _gitRevisionExternalLinksParser = new GitRevisionExternalLinksParser(_effectiveLinkDefinitionsProvider, _externalLinkRevisionParser);
         _gitDescribeProvider = new GitDescribeProvider(() => Module);
 
@@ -428,6 +428,12 @@ public partial class CommitInfo : GitModuleControl
 
             async Task LoadLinksForRevisionAsync(GitRevision revision, DistributedSettings settings)
             {
+                // Load remotes on the main thread before going async so that the correct
+                // module is captured for this parse cycle. If remotes were loaded later on
+                // the thread pool, a repo switch could have already updated Module to a
+                // different repository's module, producing mixed-repo URLs.
+                IReadOnlyList<ConfigFileRemote> remotes = _remotesManager.LoadRemotes(false).ToList();
+
                 await TaskScheduler.Default;
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -438,7 +444,7 @@ public partial class CommitInfo : GitModuleControl
                     return;
                 }
 
-                string linksInfo = GetLinksForRevision(settings);
+                string linksInfo = GetLinksForRevision(settings, remotes);
 
                 // Most commits do not have link; do not switch to main thread if nothing is changed
                 if (_linksInfo == linksInfo)
@@ -451,9 +457,9 @@ public partial class CommitInfo : GitModuleControl
 
                 return;
 
-                string GetLinksForRevision(DistributedSettings settings)
+                string GetLinksForRevision(DistributedSettings settings, IReadOnlyList<ConfigFileRemote> remotes)
                 {
-                    IEnumerable<ExternalLink> links = _gitRevisionExternalLinksParser.Parse(revision, settings);
+                    IEnumerable<ExternalLink> links = _gitRevisionExternalLinksParser.Parse(revision, settings, remotes);
                     cancellationToken.ThrowIfCancellationRequested();
                     string result = string.Join(", ", links.Distinct().Select(link => linkFactory.CreateLink(link.Caption, link.Uri)));
 
