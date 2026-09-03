@@ -25,7 +25,7 @@
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
     <WixVariable Id="WixUIDialogBmp" Value="dialog.bmp" />
     <WixVariable Id="WixUIBannerBmp" Value="banner.bmp" />
-    <WixVariable Id="WixUISupportPerUser" Value="1" Overridable="yes" />
+    <WixVariable Id="WixUISupportPerUser" Value="0" Overridable="yes" />
     <WixVariable Id="WixUISupportPerMachine" Value="1" Overridable="yes" />
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="$(var.PlatformProgramFilesFolder)">
@@ -310,6 +310,9 @@
       </Component>
       <Component Id="Themes.dark.css" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\Themes\dark.css" />
+      </Component>
+      <Component Id="Themes.dark_alt.css" Guid="*">
+        <File Source="$(var.ArtifactsPublishPath)\Themes\dark-alt.css" />
       </Component>
       <Component Id="Themes.dark_plus.css" Guid="*">
         <File Source="$(var.ArtifactsPublishPath)\Themes\dark+.css" />
@@ -808,6 +811,7 @@
       <ComponentRef Id="Themes.invariant.css" />
       <ComponentRef Id="Themes.light_plus.css" />
       <ComponentRef Id="Themes.dark.css" />
+      <ComponentRef Id="Themes.dark_alt.css" />
       <ComponentRef Id="Themes.dark_plus.css" />
     </ComponentGroup>
     <ComponentGroup Id="Component.Translation">

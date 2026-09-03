@@ -127,6 +127,8 @@ public sealed partial class FormCommit : GitModuleForm
 
     private readonly TranslationString _statusBarBranchWithoutRemote = new("(remote not configured)");
     private readonly TranslationString _untrackedRemote = new("(untracked)");
+
+    private readonly TranslationString _wordWrapCommitMessageBody = new("&Word wrap (except subject line)");
     #endregion
 
     private event Action? OnStageAreaLoaded;
@@ -247,6 +249,7 @@ public sealed partial class FormCommit : GitModuleForm
         SelectedDiff.AddContextMenuSeparator();
         _addSelectionToCommitMessageToolStripMenuItem = SelectedDiff.AddContextMenuEntry(_addSelectionToCommitMessage.Text, (s, e) => AddSelectionToCommitMessage());
         _addSelectionToCommitMessageToolStripMenuItem.ShortcutKeyDisplayString = GetShortcutKeyDisplayString(Command.AddSelectionToCommitMessage);
+        Message.ContextMenuPopulating += Message_ContextMenuPopulating;
         fileTooltip.SetToolTip(modifyCommitMessageButton, _modifyCommitMessageButtonToolTip.Text);
         commitAuthorStatus.ToolTipText = _commitCommitterToolTip.Text;
         toolStageAllItem.ToolTipText = _stageAll.Text;
@@ -851,7 +854,7 @@ public sealed partial class FormCommit : GitModuleForm
         }
 
         string pushTo;
-        if (string.IsNullOrEmpty(currentBranch.TrackingRemote) || string.IsNullOrEmpty(currentBranch.MergeWith))
+        if (string.IsNullOrEmpty(currentBranch.TrackingRemote))
         {
             string? defaultRemote = Module.GetRemoteNames().FirstOrDefault(r => r == "origin") ?? Module.GetRemoteNames().OrderBy(r => r).FirstOrDefault();
 
@@ -2254,6 +2257,27 @@ public sealed partial class FormCommit : GitModuleForm
         CheckForStagedAndCommit(push: false);
     }
 
+    private void Message_ContextMenuPopulating(object? sender, ContextMenuStrip menu)
+    {
+        int insertAt = menu.Items.OfType<ToolStripSeparator>().FirstOrDefault() is { } firstSeparator ? menu.Items.IndexOf(firstSeparator) : 0;
+        menu.Items.Insert(insertAt, new ToolStripMenuItem(_wordWrapCommitMessageBody.Text, null, (s, e) => WordWrapCommitMessageBody()));
+
+        return;
+
+        void WordWrapCommitMessageBody()
+        {
+            const int DefaultBodyLineLimit = 72;
+            int lineLimit = AppSettings.CommitValidationMaxCntCharsPerLine > 0
+                ? AppSettings.CommitValidationMaxCntCharsPerLine
+                : DefaultBodyLineLimit;
+
+            for (int line = 1; line < Message.LineCount(); line++)
+            {
+                WordWrapCommitMessageLineIfNecessary(line, lineLimit);
+            }
+        }
+    }
+
     private void Message_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Control && e.KeyCode == Keys.Enter)
@@ -2351,7 +2375,7 @@ public sealed partial class FormCommit : GitModuleForm
 
             if (limitX > 0 && line >= (empty2 ? 2 : 1))
             {
-                if (commitValidationAutoWrap && WrapIfNecessary())
+                if (commitValidationAutoWrap && WordWrapCommitMessageLineIfNecessary(line, limitX))
                 {
                     changed = true;
                 }
@@ -2391,22 +2415,6 @@ public sealed partial class FormCommit : GitModuleForm
                         }
                     }
                 }
-            }
-
-            bool WrapIfNecessary()
-            {
-                if (Message.LineLength(line) > limitX)
-                {
-                    string oldText = Message.Line(line);
-                    string newText = WordWrapper.WrapSingleLine(oldText, limitX);
-                    if (!string.Equals(oldText, newText))
-                    {
-                        Message.ReplaceLine(line, newText);
-                        return true;
-                    }
-                }
-
-                return false;
             }
         }
 
@@ -2835,6 +2843,24 @@ public sealed partial class FormCommit : GitModuleForm
     private void tsmiSelectStagedOnEnterMessage_Click(object sender, EventArgs e)
     {
         AppSettings.CommitDialogSelectStagedOnEnterMessage.Value = !AppSettings.CommitDialogSelectStagedOnEnterMessage.Value;
+    }
+
+    private bool WordWrapCommitMessageLineIfNecessary(int line, int lineLimit)
+    {
+        if (Message.LineLength(line) <= lineLimit)
+        {
+            return false;
+        }
+
+        string oldText = Message.Line(line);
+        string newText = WordWrapper.WrapSingleLine(oldText, lineLimit);
+        if (string.Equals(oldText, newText))
+        {
+            return false;
+        }
+
+        Message.ReplaceLine(line, newText);
+        return true;
     }
 
     internal readonly struct TestAccessor
