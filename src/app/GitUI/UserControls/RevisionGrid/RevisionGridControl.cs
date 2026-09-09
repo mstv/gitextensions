@@ -2251,10 +2251,10 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
             (focused && advanced ? tsmiOtherActions.DropDownItems : mainContextMenu.Items).Add(item);
         }
 
-        IGitRef? clickedRef = _rightClickedHitInfo?.GitRef;
-        string? relatedBranch = clickedRef is NestledVirtualRef
-            ? (clickedRef.IsRemote ? clickedRef.Remote + "/" : "") + clickedRef.MergeWith
-            : null;
+        IGitRef? clickedRef = _rightClickedHitInfo?.GitRef is NestledVirtualRef nestedRef
+            ? nestedRef.TargetRef
+            : _rightClickedHitInfo?.GitRef;
+        string? relatedBranch = clickedRef?.LocalName;
         _rightClickedHitInfo = null;
         Func<IEnumerable<IGitRef>, IEnumerable<IGitRef>> filterRefs = clickedRef is null
             ? refs => refs
