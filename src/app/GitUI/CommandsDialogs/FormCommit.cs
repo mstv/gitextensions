@@ -143,6 +143,7 @@ public sealed partial class FormCommit : GitModuleForm
     private readonly CancellationTokenSequence _viewChangesSequence = new();
     private readonly SplitterManager _splitterManager = new(new AppSettingsPath("CommitDialog"));
     private readonly Subject<string> _selectionFilterSubject = new();
+    private IDisposable? _selectionFilterSubscription;
     private readonly IFullPathResolver _fullPathResolver;
     private readonly List<string> _formattedLines = [];
 
@@ -325,7 +326,7 @@ public sealed partial class FormCommit : GitModuleForm
         RestorePosition();
 
         // TODO this code is very similar to code in FileStatusList
-        _selectionFilterSubject
+        _selectionFilterSubscription = _selectionFilterSubject
             .Throttle(TimeSpan.FromMilliseconds(250))
             .ObserveOn(SynchronizationContext.Current!)
             .Subscribe(filterText => TaskManager.HandleExceptions(() => Update(filterText), Application.OnThreadException));
@@ -403,6 +404,10 @@ public sealed partial class FormCommit : GitModuleForm
             {
                 UICommands.PostRepositoryChanged -= UICommands_PostRepositoryChanged;
             }
+
+            // Stop the throttled filtering: a pending callback would otherwise run after the form was
+            // closed and resurrect the handle of the disposed list view.
+            _selectionFilterSubscription?.Dispose();
 
             _unstagedLoader.Dispose();
             _customDiffToolsSequence.Dispose();
@@ -1656,6 +1661,16 @@ public sealed partial class FormCommit : GitModuleForm
                     }
 
                     item.IsTracked = !item.IsNew || item.IsChanged || item.IsDeleted;
+
+                    if (!item.IsTracked)
+                    {
+                        // The item is reused instead of being re-read from git-status, which reports a
+                        // no longer tracked path as a plain untracked directory, without the submodule
+                        // information it supplies for a staged one. Drop the stale flag, so that the
+                        // item does not offer submodule actions until the next rescan removes them anyway.
+                        item.IsSubmodule = false;
+                    }
+
                     int index = unstagedFiles.FindIndex(i => i.Name == item.Name);
 
                     if (index >= 0)
@@ -2915,6 +2930,8 @@ public sealed partial class FormCommit : GitModuleForm
         internal Button ResetSoft => _formCommit.ResetSoft;
 
         internal void RescanChanges() => _formCommit.RescanChanges();
+
+        internal void Unstage() => _formCommit.Unstage();
 
         internal (string message, int selectionStart) PrefixOrReplaceKeyword(string keyword)
             => _formCommit.PrefixOrReplaceKeyword(keyword);

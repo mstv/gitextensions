@@ -20,6 +20,10 @@ public class PathUtilTest
     [TestCase('~', false)]
     [TestCase('^', false)]
     [TestCase(':', false)]
+    [TestCase('"', false)]
+    [TestCase('<', false)]
+    [TestCase('>', false)]
+    [TestCase('|', false)]
     [TestCase('\0', false)]
     [TestCase('\t', false)]
     [TestCase('\n', false)]
@@ -478,6 +482,41 @@ public class PathUtilTest
         // The method should handle all these gracefully without throwing.
         bool result = PathUtil.TryFindShellPath("nonexistent_shell_1234567890.exe", out string? shellPath);
         result.Should().BeFalse();
+        shellPath.Should().BeNull();
+    }
+
+    [TestCase("", "git-bash.exe")]
+    [TestCase("bin", "sh.exe")]
+    [TestCase("usr/bin", "bash.exe")]
+    public void TryFindShellInGitDir_should_find_a_shell_shipped_with_git(string subDirectory, string shell)
+    {
+        string gitDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        string shellDir = Path.Combine(gitDir, subDirectory.Replace('/', Path.DirectorySeparatorChar));
+
+        try
+        {
+            Directory.CreateDirectory(shellDir);
+            string expected = Path.Combine(shellDir, shell);
+            File.WriteAllText(expected, "");
+
+            PathUtil.TryFindShellInGitDir(gitDir, shell, out string? shellPath).Should().BeTrue();
+            shellPath.Should().Be(expected);
+        }
+        finally
+        {
+            if (Directory.Exists(gitDir))
+            {
+                Directory.Delete(gitDir, recursive: true);
+            }
+        }
+    }
+
+    [Test]
+    public void TryFindShellInGitDir_should_not_find_a_shell_which_is_not_there()
+    {
+        string gitDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        PathUtil.TryFindShellInGitDir(gitDir, "sh.exe", out string? shellPath).Should().BeFalse();
         shellPath.Should().BeNull();
     }
 
