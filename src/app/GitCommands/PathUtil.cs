@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
@@ -432,7 +432,7 @@ public static partial class PathUtil
         // shipped below it - so looking in the installation directory alone never finds them, and
         // an unrelated shell which happens to be in the PATH would be preferred over the one which
         // belongs to the configured Git.
-        foreach (string dir in new[] { gitDir, Path.Join(gitDir, "usr", "bin"), Path.Join(gitDir, "bin") })
+        foreach (string dir in new[] { gitDir, Path.Join(gitDir, "bin"), Path.Join(gitDir, "usr", "bin") })
         {
             shellPath = Path.Join(dir, shell);
             if (File.Exists(shellPath))
