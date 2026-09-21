@@ -146,7 +146,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
     /// </summary>
     private Lazy<IReadOnlyCollection<string>>? _ambiguousRefs;
 
-    private int _suspendRefreshCounter;
+    private int _updatingFilters;
 
     private IDisposable? _revisionSubscription;
     private GitRevision? _baseCommitToCompare;
@@ -574,15 +574,15 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
     ///  Prevents revisions refreshes and stops <see cref="PerformRefreshRevisions"/> from executing
     ///  until <see cref="ResumeRefreshRevisions"/> is called.
     /// </summary>
-    internal void SuspendRefreshRevisions() => ++_suspendRefreshCounter;
+    internal void SuspendRefreshRevisions() => _updatingFilters++;
 
     /// <summary>
     ///  Resume revisions refreshes.
     /// </summary>
     internal void ResumeRefreshRevisions()
     {
-        --_suspendRefreshCounter;
-        DebugHelpers.Assert(_suspendRefreshCounter >= 0, $"{nameof(ResumeRefreshRevisions)} was called without matching {nameof(SuspendRefreshRevisions)}!");
+        --_updatingFilters;
+        DebugHelpers.Assert(_updatingFilters >= 0, $"{nameof(ResumeRefreshRevisions)} was called without matching {nameof(SuspendRefreshRevisions)}!");
     }
 
     public void SetAndApplyBranchFilter(string filter)
@@ -955,11 +955,11 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
     }
 
     /// <summary>
-    ///  Indicates whether the revision grid can be refreshed,
-    ///  i.e. it is not in a middle of reconfiguration process guarded by <see cref="SuspendRefreshRevisions"/>
+    ///  Indicates whether the revision grid can be refreshed, i.e. it is not currently being refreshed
+    ///  or it is not in a middle of reconfiguration process guarded by <see cref="SuspendRefreshRevisions"/>
     ///  and <see cref="ResumeRefreshRevisions"/>.
     /// </summary>
-    private bool CanRefresh => _suspendRefreshCounter == 0;
+    private bool CanRefresh => !_isRefreshingRevisions && _updatingFilters == 0;
 
     #region PerformRefreshRevisions
 
@@ -967,24 +967,15 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
     ///  Queries git for the new set of revisions and refreshes the grid.
     /// </summary>
     /// <exception cref="Exception"></exception>
-    /// <param name="forceRefreshRefs">Refresh may be required as references may be changed.</param>
-    public void PerformRefreshRevisions(Func<RefsFilter, IReadOnlyList<IGitRef>>? getRefs = null, bool forceRefreshRefs = false)
+    /// <param name="forceRefresh">Refresh may be required as references may be changed.</param>
+    public void PerformRefreshRevisions(Func<RefsFilter, IReadOnlyList<IGitRef>> getRefs = null!, bool forceRefresh = false)
     {
         ThreadHelper.AssertOnUIThread();
 
         if (!CanRefresh)
         {
-            Trace.WriteLine("Ignoring refresh as RefreshRevisions() is suspended.");
+            Trace.WriteLine("Ignoring refresh as RefreshRevisions() is already running.");
             return;
-        }
-
-        if (_isRefreshingRevisions)
-        {
-            Trace.WriteLine("Forcing refresh, cancel already running RefreshRevisions().");
-            if (!_gridView.IsDataLoadComplete)
-            {
-                _gridView.MarkAsDataLoadingComplete();
-            }
         }
 
         IGitModule capturedModule = Module;
@@ -1213,7 +1204,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
             });
 
             // Initiate update left panel
-            RevisionsLoading?.Invoke(this, new RevisionLoadEventArgs(this, UICommands, getUnfilteredRefs, getStashRevs, forceRefreshRefs));
+            RevisionsLoading?.Invoke(this, new RevisionLoadEventArgs(this, UICommands, getUnfilteredRefs, getStashRevs, forceRefresh));
         }
         catch
         {
@@ -1395,6 +1386,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
             }
 
             _gridView.AddRange(revisionsToDisplay);
+            return;
         }
 
         bool ShowArtificialRevisions()
@@ -1476,7 +1468,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
                     await semaphoreUpdateGrid.WaitAsync(cancellationToken);
 
                     bool showArtificial = AddArtificialRevisions();
-                    _gridView.LoadingCompleted(cancellationToken);
+                    _gridView.LoadingCompleted();
 
                     await this.SwitchToMainThreadAsync(cancellationToken);
                     if (showArtificial)
@@ -1490,7 +1482,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
                     }
 
                     _isRefreshingRevisions = false;
-                    RevisionsLoaded?.Invoke(this, new RevisionLoadEventArgs(this, UICommands, getUnfilteredRefs, getStashRevs, forceRefreshRefs));
+                    RevisionsLoaded?.Invoke(this, new RevisionLoadEventArgs(this, UICommands, getUnfilteredRefs, getStashRevs, forceRefresh));
                 });
                 return;
             }
@@ -1546,14 +1538,14 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
                     _gridView.SetToBeSelectedFromParents(parents);
                 }
 
-                _gridView.LoadingCompleted(cancellationToken);
+                _gridView.LoadingCompleted();
 
                 await this.SwitchToMainThreadAsync(cancellationToken);
 
                 SetPage(_gridView);
 
                 _isRefreshingRevisions = false;
-                RevisionsLoaded?.Invoke(this, new RevisionLoadEventArgs(this, UICommands, getUnfilteredRefs, getStashRevs, forceRefreshRefs));
+                RevisionsLoaded?.Invoke(this, new RevisionLoadEventArgs(this, UICommands, getUnfilteredRefs, getStashRevs, forceRefresh));
 
                 await TaskScheduler.Default;
 

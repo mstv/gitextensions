@@ -730,7 +730,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         // Pre-warm the ahead/behind cache in the background so the revision grid can pick it up synchronously. GetData checks the AppSetting itself.
         ThreadHelper.FileAndForget(() => _ = _aheadBehindDataProvider?.GetData());
 
-        RevisionGrid.PerformRefreshRevisions(getRefs, forceRefreshRefs: true);
+        RevisionGrid.PerformRefreshRevisions(getRefs, forceRefresh: true);
 
         InternalInitialize();
         ToolStripFilters.RefreshRevisionFunction(getRefs);
@@ -1725,48 +1725,42 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         if (Module.IsValidGitWorkingDir())
         {
             RevisionGrid.SuspendRefreshRevisions();
-            try
+            string path = Module.WorkingDir;
+            AppSettings.RecentWorkingDir = path;
+
+            HideDashboard();
+
+            if (!string.Equals(originalWorkingDir, Module.WorkingDir, StringComparison.Ordinal))
             {
-                string path = Module.WorkingDir;
-                AppSettings.RecentWorkingDir = path;
-
-                HideDashboard();
-
-                if (!string.Equals(originalWorkingDir, Module.WorkingDir, StringComparison.Ordinal))
-                {
-                    ChangeTerminalActiveFolder(Module.WorkingDir);
+                ChangeTerminalActiveFolder(Module.WorkingDir);
 
 #if DEBUG
-                    // Current encodings
-                    Debug.WriteLine($"Encodings for {Module.WorkingDir}");
-                    Debug.WriteLine($"Files content encoding: {Module.FilesEncoding.EncodingName}");
-                    Debug.WriteLine($"Commit encoding: {Module.CommitEncoding.EncodingName}");
-                    if (Module.LogOutputEncoding.CodePage != Module.CommitEncoding.CodePage)
-                    {
-                        Debug.WriteLine($"Log output encoding: {Module.LogOutputEncoding.EncodingName}");
-                    }
+                // Current encodings
+                Debug.WriteLine($"Encodings for {Module.WorkingDir}");
+                Debug.WriteLine($"Files content encoding: {Module.FilesEncoding.EncodingName}");
+                Debug.WriteLine($"Commit encoding: {Module.CommitEncoding.EncodingName}");
+                if (Module.LogOutputEncoding.CodePage != Module.CommitEncoding.CodePage)
+                {
+                    Debug.WriteLine($"Log output encoding: {Module.LogOutputEncoding.EncodingName}");
+                }
 #endif
 
-                    // Reset the filter when switching repos
+                // Reset the filter when switching repos
 
-                    // If we're applying custom branch or revision filters - reset them
-                    RevisionGrid.ResetAllFilters();
-                    ToolStripFilters.ClearQuickFilters();
-                    revisionDiff.RepositoryChanged();
+                // If we're applying custom branch or revision filters - reset them
+                RevisionGrid.ResetAllFilters();
+                ToolStripFilters.ClearQuickFilters();
+                revisionDiff.RepositoryChanged();
 
-                    _selectedRevisionUpdatedTargets = UpdateTargets.None;
-                }
-
-                RevisionInfo.SetRevisionWithChildren(revision: null, children: []);
+                _selectedRevisionUpdatedTargets = UpdateTargets.None;
             }
-            finally
-            {
-                RevisionGrid.ResumeRefreshRevisions();
 
-                RefreshRevisions();
+            RevisionInfo.SetRevisionWithChildren(revision: null, children: []);
+            RevisionGrid.ResumeRefreshRevisions();
 
-                SetShortcutKeyDisplayStringsFromHotkeySettings();
-            }
+            RefreshRevisions();
+
+            SetShortcutKeyDisplayStringsFromHotkeySettings();
         }
         else
         {
