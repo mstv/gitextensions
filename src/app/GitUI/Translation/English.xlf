@@ -9262,7 +9262,7 @@ Reset the filter via View &gt; Show all branches.</source>
         <target />
       </trans-unit>
       <trans-unit id="txtCommitGpgInfo.Text">
-        <source>Commit is not signed</source>
+        <source>Loading data...</source>
         <target />
       </trans-unit>
     </body>
@@ -10339,6 +10339,12 @@ Select this commit to populate the full message.</source>
       </trans-unit>
       <trans-unit id="_deleteFile.Text">
         <source>{0:Delete file|Delete files}</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_deleteMainWorktreeRefused.Text">
+        <source>{0} is the main worktree of the repository.
+
+Deleting it would delete the repository itself, with all of its branches and stashes, so git refuses to remove it as well.</source>
         <target />
       </trans-unit>
       <trans-unit id="_deleteWorktreeCaption.Text">
