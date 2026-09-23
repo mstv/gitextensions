@@ -9,23 +9,16 @@ namespace GitUI.UserControls.RevisionGrid;
 internal static class RevisionGridRefRenderer
 {
     private static readonly float[] _dashPattern = [4, 4];
-
-    // Cache for GetTextAscent, which is only invalidated by a font change.
-    private static Font? _ascentFont;
-    private static int _ascentTextHeight;
-    private static int _ascent;
+    private static readonly PointF[] _arrowPoints = new PointF[4];
 
     private static int PaddingTopBottom => DpiUtil.Scale(2);
-
-    // Uniform horizontal padding applied on both sides of any ref label icon.
-    private static int IconPaddingLeftRight => DpiUtil.Scale(3);
 
     // Pixel radius for the rounded corners of ref label capsules.
     private static int RefLabelCornerRadius => DpiUtil.Scale(5);
 
     // Pixel width of the highlight frame drawn around a hovered ref label,
     // and the left-side offset used when drawing the nestled remote label.
-    private static float RefLabelHighlightWidth => DpiUtil.ScaleX;
+    private static int RefLabelHighlightWidth => DpiUtil.Scale(1);
 
     private static int PointWidth(int height) => height / 2;
 
@@ -173,6 +166,7 @@ internal static class RevisionGridRefRenderer
         bool highlight = false,
         RefLabelShape shape = RefLabelShape.Rect)
     {
+        icon = GetEffectiveIcon(icon);
         int paddingLeftRight = PaddingLeftRight(name);
         int paddingTopBottom = PaddingTopBottom;
         int marginRight = DpiUtil.Scale(5);
@@ -183,16 +177,10 @@ internal static class RevisionGridRefRenderer
             ? TextRenderer.MeasureText(graphics, name, font, Size.Empty, TextFormatFlags.NoPadding)
             : new(0, TextRenderer.MeasureText(graphics, " ", font, Size.Empty, TextFormatFlags.NoPadding).Height);
 
+        int iconWidth = icon == RefLabelIcon.None ? 0 : bounds.Height / 2;
+
         int backgroundHeight = textSize.Height + paddingTopBottom + paddingTopBottom - 1;
         int outerMarginTopBottom = (bounds.Height - backgroundHeight) / 2;
-        int capsuleTop = bounds.Y + outerMarginTopBottom;
-        int textOffsetY = paddingTopBottom - 1;
-
-        // The metrics are relative to the capsule and therefore constant, so the icon renderers are cached and shared.
-        RefLabelIconRenderer? iconRenderer = RefLabelIconRenderer.Get(
-            icon,
-            new RefLabelIconMetrics(backgroundHeight, textSize.Height, textOffsetY + GetTextAscent(font, textSize.Height)));
-        int iconAreaWidth = iconRenderer is null ? 0 : iconRenderer.Width + (2 * IconPaddingLeftRight);
 
         int scaledRadius = RefLabelCornerRadius;
         int pointWidth = PointWidth(backgroundHeight);
@@ -208,8 +196,8 @@ internal static class RevisionGridRefRenderer
 
         Rectangle rect = new(
             bounds.X + offset,
-            capsuleTop,
-            Math.Min(bounds.Width - offset, textSize.Width + iconAreaWidth + paddingLeftRight + paddingLeftRight + extraWidth - 1),
+            bounds.Y + outerMarginTopBottom,
+            Math.Min(bounds.Width - offset, textSize.Width + iconWidth + paddingLeftRight + paddingLeftRight + extraWidth - 1),
             backgroundHeight);
 
         if (rect.Width <= 0 || rect.Height <= 0)
@@ -230,16 +218,15 @@ internal static class RevisionGridRefRenderer
 
         // For NotchLeft and PointLeft the point/notch occupies the left portion of the rect,
         // so the icon and text must be shifted right by pointWidth.
-        int iconXOffset = shape is RefLabelShape.NotchLeft or RefLabelShape.PointLeft ? pointWidth : iconRenderer is null ? 0 : DpiUtil.Scale(1);
-        int iconX = rect.X + iconXOffset + IconPaddingLeftRight;
-        DrawRefBackground(isRowSelected, graphics, headColor, rect, refPath, iconRenderer, dashedLine, fill, highlight: false, iconX);
+        int iconXOffset = shape is RefLabelShape.NotchLeft or RefLabelShape.PointLeft ? pointWidth : 0;
+        DrawRefBackground(isRowSelected, graphics, headColor, rect, refPath, icon, dashedLine, fill, highlight: false, iconXOffset);
 
         // For PointLeft, offset by half pointWidth so text starts inside the point.
-        int textX = rect.X + iconXOffset + iconAreaWidth + paddingLeftRight - (shape is RefLabelShape.PointLeft ? pointWidth / 2 : 0);
+        int textX = rect.X + iconXOffset + iconWidth + paddingLeftRight - (shape is RefLabelShape.PointLeft ? pointWidth / 2 : 0);
         int textWidth = Math.Min(bounds.Width - offset - paddingLeftRight - paddingLeftRight, textSize.Width);
         Rectangle textBounds = new(
             textX,
-            capsuleTop + textOffsetY,
+            rect.Y + paddingTopBottom - 1,
             Math.Clamp(textWidth, 0, Math.Max(0, bounds.Right - textX)),
             textSize.Height);
 
@@ -277,7 +264,7 @@ internal static class RevisionGridRefRenderer
             });
     }
 
-    private static void DrawRefBackground(bool isRowSelected, Graphics graphics, Color color, Rectangle bounds, GraphicsPath path, RefLabelIconRenderer? iconRenderer, bool dashedLine, bool fill, bool highlight, int iconX)
+    private static void DrawRefBackground(bool isRowSelected, Graphics graphics, Color color, Rectangle bounds, GraphicsPath path, RefLabelIcon icon, bool dashedLine, bool fill, bool highlight, int iconXOffset)
     {
         SmoothingMode oldMode = graphics.SmoothingMode;
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -311,7 +298,11 @@ internal static class RevisionGridRefRenderer
                 graphics.DrawPath(highlightPen, path);
             }
 
-            iconRenderer?.Draw(graphics, iconX, bounds.Y, color);
+            // arrow if the head is the current branch
+            if (icon != RefLabelIcon.None)
+            {
+                DrawArrow(graphics, bounds.X + iconXOffset, bounds.Y, bounds.Height, color, filled: icon == RefLabelIcon.Head);
+            }
         }
         finally
         {
@@ -339,28 +330,39 @@ internal static class RevisionGridRefRenderer
         return AppColor.OtherTag.GetThemeColor();
     }
 
-    /// <summary>
-    ///  Computes the distance from the top of the text to its baseline.
-    /// </summary>
-    /// <remarks>
-    ///  The measured text height corresponds to the line spacing of the font, so the ascent can be scaled by the same ratio.
-    ///  The result is cached because it only changes when the font changes.
-    /// </remarks>
-    private static int GetTextAscent(Font font, int textHeight)
+    private static void DrawArrow(Graphics graphics, float x, float y, float rowHeight, Color color, bool filled)
     {
-        if (ReferenceEquals(font, _ascentFont) && textHeight == _ascentTextHeight)
+        ThreadHelper.AssertOnUIThread();
+
+        float horShift = DpiUtil.Scale(4f);
+        float verShift = DpiUtil.Scale(3f);
+
+        float height = rowHeight - (verShift * 2);
+        float width = height / 2;
+
+        x += horShift;
+        y += verShift;
+
+        _arrowPoints[0] = new PointF(x, y);
+        _arrowPoints[1] = new PointF(x + width, y + (height / 2));
+        _arrowPoints[2] = new PointF(x, y + height);
+        _arrowPoints[3] = new PointF(x, y);
+
+        if (filled)
         {
-            return _ascent;
+            using SolidBrush brush = new(color);
+            graphics.FillPolygon(brush, _arrowPoints);
         }
+        else
+        {
+            using Pen pen = new(color);
+            graphics.DrawPolygon(pen, _arrowPoints);
+        }
+    }
 
-        FontFamily family = font.FontFamily;
-        int lineSpacing = family.GetLineSpacing(font.Style);
-        int cellAscent = family.GetCellAscent(font.Style);
-        _ascent = lineSpacing > 0 ? (int)Math.Round((double)textHeight * cellAscent / lineSpacing) : textHeight;
-        _ascentFont = font;
-        _ascentTextHeight = textHeight;
-
-        return _ascent;
+    private static RefLabelIcon GetEffectiveIcon(RefLabelIcon icon)
+    {
+        return icon is RefLabelIcon.Head or RefLabelIcon.HeadMergeSource ? icon : RefLabelIcon.None;
     }
 
     /// <summary>
