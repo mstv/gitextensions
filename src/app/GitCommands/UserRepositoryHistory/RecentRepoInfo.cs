@@ -71,8 +71,8 @@ public class RecentRepoSplitter
         bool middleDot = ShorteningStrategy == ShorteningRecentRepoPathStrategy.MiddleDots;
         bool signDir = ShorteningStrategy == ShorteningRecentRepoPathStrategy.MostSignDir;
 
-        HashSet<string> mixedFileSystemRepoNames = signDir
-            ? repositories.GroupBy(repository => Path.GetFileName(repository.Path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)))
+        HashSet<string> mixedFileSystemRepoPaths = signDir
+            ? repositories.GroupBy(repository => GetRepoPathSuffix(repository.Path))
                 .Where(group => group.Any(repository => PathUtil.IsWslPath(repository.Path))
                     && group.Any(repository => !PathUtil.IsWslPath(repository.Path)))
                 .Select(group => group.Key)
@@ -104,7 +104,7 @@ public class RecentRepoSplitter
             }
             else
             {
-                string fileSystemLabel = mixedFileSystemRepoNames.Contains(ri.ShortName ?? "")
+                string fileSystemLabel = signDir && mixedFileSystemRepoPaths.Contains(GetRepoPathSuffix(repository.Path))
                     ? PathUtil.IsWslPath(repository.Path)
                         ? "WSL"
                         : Path.GetPathRoot(repository.Path)?.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) ?? ""
@@ -166,6 +166,12 @@ public class RecentRepoSplitter
         {
             AddNotSortedRepos(recentRepos, recentRepoList);
         }
+    }
+
+    private static string GetRepoPathSuffix(string path)
+    {
+        string nativePath = path.ToNativePath();
+        return nativePath[(Path.GetPathRoot(nativePath)?.Length ?? 0)..].Trim(Path.DirectorySeparatorChar);
     }
 
     private static void AddToOrderedSignDir(SortedList<string, List<RecentRepoInfo>> orderedRepos, RecentRepoInfo repoInfo, bool shortenPath, string fileSystemLabel, bool compareWslDistro = false)

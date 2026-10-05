@@ -74,6 +74,33 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == windowsPath).Caption.Should().Be("repo (X:)");
     }
 
+    [TestCase(@"X:\home\other\repo\", "repo (user)", "repo (other)", false)]
+    [TestCase(@"X:\home\other\repo\", "repo (user)", "repo (other)", true)]
+    [TestCase(@"X:\projects\user\repo\", @"repo (home\user)", @"repo (projects\user)", false)]
+    [TestCase(@"X:\projects\user\repo\", @"repo (home\user)", @"repo (projects\user)", true)]
+    public void SplitRecentRepos_should_not_mark_filesystems_with_distinct_path_suffixes(string windowsPath, string wslCaption, string windowsCaption, bool reverseOrder)
+    {
+        const string wslPath = @"\\wsl$\Ubuntu\home\user\repo\";
+        List<Repository> history =
+        [
+            new Repository(wslPath) { Anchor = Repository.RepositoryAnchor.AnchoredInTop },
+            new Repository(windowsPath) { Anchor = Repository.RepositoryAnchor.AnchoredInTop }
+        ];
+        if (reverseOrder)
+        {
+            history.Reverse();
+        }
+
+        RecentRepoSplitter sut = new() { ShorteningStrategy = GitCommands.ShorteningRecentRepoPathStrategy.MostSignDir };
+        List<RecentRepoInfo> topRepoList = [];
+        List<RecentRepoInfo> recentRepoList = [];
+
+        sut.SplitRecentRepos(history, topRepoList, recentRepoList);
+
+        topRepoList.Single(repo => repo.Repo.Path == wslPath).Caption.Should().Be(wslCaption);
+        topRepoList.Single(repo => repo.Repo.Path == windowsPath).Caption.Should().Be(windowsCaption);
+    }
+
     [TestCase(@"\\wsl$", false)]
     [TestCase(@"\\wsl$", true)]
     [TestCase(@"\\wsl.localhost", false)]
