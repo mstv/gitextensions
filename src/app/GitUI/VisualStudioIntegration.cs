@@ -45,8 +45,7 @@ internal static class VisualStudioIntegration
 
     public static void OpenFile(string filePath, int lineNumber = 0)
     {
-        Form form = Form.ActiveForm ?? Application.OpenForms.Cast<Form>().First();
-        form.InvokeAndForget(async () =>
+        ThreadHelper.FileAndForget(async () =>
         {
             while (true)
             {
@@ -62,8 +61,9 @@ internal static class VisualStudioIntegration
                 catch (COMException exception) when ((uint)exception.HResult == RPC_E_CALL_REJECTED)
                 {
                     Trace.WriteLine(exception);
-                    await form.SwitchToMainThreadAsync();
-                    if (!MessageBoxes.ConfirmRetryOpenVisualStudio(form))
+                    Form? activeForm = Form.ActiveForm;
+                    await activeForm!.SwitchToMainThreadAsync();
+                    if (!MessageBoxes.ConfirmRetryOpenVisualStudio(activeForm))
                     {
                         return;
                     }
