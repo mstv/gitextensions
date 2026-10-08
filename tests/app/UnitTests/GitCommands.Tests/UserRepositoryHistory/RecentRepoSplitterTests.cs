@@ -47,10 +47,10 @@ public class RecentRepoSplitterTests
         topRepoList.Should().ContainSingle().Which.Caption.Should().Be("repo");
     }
 
-    [TestCase(@"\\wsl$\Ubuntu\home\user\repo\", "repo (wsl$)", false)]
-    [TestCase(@"\\wsl$\Ubuntu\home\user\repo\", "repo (wsl$)", true)]
+    [TestCase(@"\\wsl$\Ubuntu\home\user\repo\", "repo (wsl)", false)]
+    [TestCase(@"\\wsl$\Ubuntu\home\user\repo\", "repo (wsl)", true)]
     [TestCase(@"\\wsl.localhost\Ubuntu\home\user\repo\", "repo (wsl)", false)]
-    [TestCase(@"\\WSL$\Ubuntu\home\user\repo\", "repo (WSL$)", true)]
+    [TestCase(@"\\WSL$\Ubuntu\home\user\repo\", "repo (WSL)", true)]
     public void SplitRecentRepos_should_mark_colliding_filesystems(string wslPath, string expectedCaption, bool reverseOrder)
     {
         const string windowsPath = @"X:\home\user\repo\";
@@ -188,11 +188,11 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == windowsPath).Caption.Should().Be(windowsCaption);
     }
 
-    [TestCase(@"\\wsl$", false)]
-    [TestCase(@"\\wsl$", true)]
-    [TestCase(@"\\wsl.localhost", false)]
-    [TestCase(@"\\wsl.localhost", true)]
-    public void SplitRecentRepos_should_distinguish_wsl_distributions_by_path(string wslPrefix, bool includeWindowsRepo)
+    [TestCase(@"\\wsl$", "wsl", false)]
+    [TestCase(@"\\wsl$", "wsl", true)]
+    [TestCase(@"\\wsl.localhost", "wsl.localhost", false)]
+    [TestCase(@"\\wsl.localhost", "wsl.localhost", true)]
+    public void SplitRecentRepos_should_distinguish_wsl_distributions_by_path(string wslPrefix, string expectedWsl, bool includeWindowsRepo)
     {
         string ubuntuPath = $@"{wslPrefix}\Ubuntu\home\user\repo\";
         string debianPath = $@"{wslPrefix}\Debian\home\user\repo\";
@@ -212,9 +212,8 @@ public class RecentRepoSplitterTests
 
         sut.SplitRecentRepos(history, topRepoList, recentRepoList);
 
-        string server = wslPrefix.TrimStart('\\');
-        string ubuntuCaption = includeWindowsRepo ? $@"repo ({server}\Ubuntu)" : "repo (Ubuntu)";
-        string debianCaption = includeWindowsRepo ? $@"repo ({server}\Debian)" : "repo (Debian)";
+        string ubuntuCaption = includeWindowsRepo ? $@"repo ({expectedWsl}\Ubuntu)" : "repo (Ubuntu)";
+        string debianCaption = includeWindowsRepo ? $@"repo ({expectedWsl}\Debian)" : "repo (Debian)";
         topRepoList.Single(repo => repo.Repo.Path == ubuntuPath).Caption.Should().Be(ubuntuCaption);
         topRepoList.Single(repo => repo.Repo.Path == debianPath).Caption.Should().Be(debianCaption);
         topRepoList.Select(repo => repo.Caption).Should().OnlyHaveUniqueItems();

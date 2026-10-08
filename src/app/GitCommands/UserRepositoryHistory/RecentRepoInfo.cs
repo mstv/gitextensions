@@ -224,7 +224,14 @@ public class RecentRepoSplitter
         string[] serverParts = serverAndShare[0].Split('.');
         for (int i = 0; i < serverParts.Length; i++)
         {
-            tokens.Add((i == 0 ? "" : ".", serverParts[i]));
+            if (i == 0)
+            {
+                string server = serverParts[0];
+                tokens.Add(("", server.Equals("wsl$", StringComparison.OrdinalIgnoreCase) ? server[..^1] : server));
+                continue;
+            }
+
+            tokens.Add((".", serverParts[i]));
         }
 
         if (serverAndShare.Length > 1)
