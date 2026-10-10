@@ -48,11 +48,12 @@ internal static class VisualStudioIntegration
         Form form = Form.ActiveForm ?? Application.OpenForms.Cast<Form>().First();
         form.InvokeAndForget(async () =>
         {
+            bool firstAttempt = true;
             while (true)
             {
                 try
                 {
-                    if (await TryOpenFileInRunningInstanceAsync(filePath, lineNumber))
+                    if (TryOpenFileInRunningInstance(filePath, lineNumber))
                     {
                         return;
                     }
@@ -62,10 +63,12 @@ internal static class VisualStudioIntegration
                 catch (COMException exception) when ((uint)exception.HResult == RPC_E_CALL_REJECTED)
                 {
                     Trace.WriteLine(exception);
-                    if (!MessageBoxes.ConfirmRetryOpenVisualStudio(form))
+                    if (!firstAttempt && !MessageBoxes.ConfirmRetryOpenVisualStudio(form))
                     {
                         return;
                     }
+
+                    firstAttempt = false;
                 }
             }
 
@@ -76,7 +79,7 @@ internal static class VisualStudioIntegration
         });
     }
 
-    private static async Task<bool> TryOpenFileInRunningInstanceAsync(string filePath, int lineNumber = 0)
+    private static bool TryOpenFileInRunningInstance(string filePath, int lineNumber = 0)
     {
         if (!File.Exists(filePath))
         {
