@@ -710,7 +710,7 @@ public sealed partial class GitModule : IGitModule
     ///  Uses the same scheme as git-mergetool ("folder/file_LOCAL_1234.ext"):
     ///  the extension is kept at the end so that merge tools recognize the file type.
     /// </remarks>
-    internal static string GetConflictPartFileName(string fileName, string side, int processId)
+    private static string GetConflictPartFileName(string fileName, string side, int processId)
     {
         string extension = Path.GetExtension(fileName);
         return $"{fileName[..^extension.Length]}_{side}_{processId}{extension}";
@@ -719,7 +719,7 @@ public sealed partial class GitModule : IGitModule
     /// <summary>
     ///  If necessary, inserts an index before the extension of the path until the file does not exist.
     /// </summary>
-    internal static string GetAvailableFileName(string basePath, Func<string, bool> fileExists)
+    private static string GetAvailableFileName(string basePath, Func<string, bool> fileExists)
     {
         string extension = Path.GetExtension(basePath);
         string stem = basePath[..^extension.Length];
@@ -4154,10 +4154,10 @@ public sealed partial class GitModule : IGitModule
         public StagedStatus GetStagedStatus(ObjectId firstId, ObjectId secondId, ObjectId parentToSecond)
             => GitModule.GetStagedStatus(firstId, secondId, parentToSecond);
 
-        public static string ConflictPartFileName(string fileName, string side, int processId)
-            => GetConflictPartFileName(fileName, side, processId);
+        public static string GetConflictPartFileName(string fileName, string side, int processId)
+            => GitModule.GetConflictPartFileName(fileName, side, processId);
 
-        public static string AvailableFileName(string basePath, Func<string, bool> fileExists)
-            => GetAvailableFileName(basePath, fileExists);
+        public static string GetAvailableFileName(string basePath, Func<string, bool> fileExists)
+            => GitModule.GetAvailableFileName(basePath, fileExists);
     }
 }
