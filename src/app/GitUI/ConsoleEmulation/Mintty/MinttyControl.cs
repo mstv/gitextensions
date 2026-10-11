@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -15,7 +14,7 @@ internal sealed class MinttyControl : Panel
     private HANDLE _jobHandle = NativeMethods.CreateKillOnCloseJob();
     private readonly MinttyKeyboardHook _keyboardHook;
 
-    public MinttyControl()
+    public MinttyControl(bool interceptTabPress)
     {
         // Make the panel focusable so Focus() works programmatically and
         // OnGotFocus runs whenever WinForms restores focus here (e.g. after
@@ -25,8 +24,9 @@ internal sealed class MinttyControl : Panel
         SetStyle(ControlStyles.Selectable, true);
 
         _keyboardHook = new MinttyKeyboardHook(
+            () => FindForm() is { IsHandleCreated: true } form ? (HWND)form.Handle : HWND.Null,
             () => _runningSession?.WindowHandle ?? HWND.Null,
-            () => FindForm() is { IsHandleCreated: true } form ? (HWND)form.Handle : HWND.Null);
+            interceptTabPress);
     }
 
     protected override void OnHandleCreated(EventArgs e)
@@ -161,7 +161,7 @@ internal sealed class MinttyControl : Panel
     {
         ProcessStartInfo psi = new()
         {
-            FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, @"ConsoleEmulation\Mintty\mintty.exe"),
+            FileName = minttyPath,
             Arguments = minttyArgs,
             WorkingDirectory = workDir ?? Environment.CurrentDirectory,
             UseShellExecute = false,
@@ -173,8 +173,6 @@ internal sealed class MinttyControl : Panel
         {
             psi.EnvironmentVariables[key] = value;
         }
-
-        psi.EnvironmentVariables["PATH"] = $"{Path.GetDirectoryName(minttyPath)};{Environment.GetEnvironmentVariable("PATH")}";
 
         Process minttyProcess = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start mintty.exe");
