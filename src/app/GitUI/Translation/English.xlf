@@ -1325,6 +1325,10 @@ Please make sure that Git for Windows is installed or set the correct command ma
         <source>Add log messages</source>
         <target />
       </trans-unit>
+      <trans-unit id="btnAiDiffPromptDefault.Text">
+        <source>Enter default prompt</source>
+        <target />
+      </trans-unit>
       <trans-unit id="chkMergeGraphLanesHavingCommonParent.Text">
         <source>Merge graph lanes having common parent</source>
         <target />

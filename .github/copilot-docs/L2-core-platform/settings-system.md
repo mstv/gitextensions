@@ -33,7 +33,7 @@ storage and precedence rules; keeping them separate prevents accidental coupling
   Keys organised via `AppSettingsPath` / `SettingsPath` (prefixes: `Appearance.`, `Confirmations.`,
   `Detailed.`, …). Created with `Setting.Create(path, nameof(Key), defaultValue)`.
 - Backing store: `GitExtSettingsCache` / `FileSettingsCache`; root is a single-node `DistributedSettings` at `SettingLevel.Global`.
-- Read / write: `AppSettings.Foo.Value` / `AppSettings.Foo.Value = x`.
+- Read / write: `AppSettings.Foo` or `AppSettings.Foo.Value` / `AppSettings.Foo.Value = x`.
 - `AppSettings.Saved` fires on persist; `AppSettings.SaveSettings()` flushes the file.
 - **No per-repo override** — every user shares one global value.
 

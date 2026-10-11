@@ -26,6 +26,12 @@ public partial class DetailedSettingsPage : DistributedSettingsPage
         return new SettingsPageReferenceByType(typeof(DetailedSettingsPage));
     }
 
+    private void btnAiDiffPromptDefault_Click(object sender, EventArgs e)
+    {
+        txtAiDiffPromptPrefix.Text = DetailedSettings.AiDiffPromptPrefix.DefaultValue;
+        txtAiDiffPromptSuffix.Text = DetailedSettings.AiDiffPromptSuffix.DefaultValue;
+    }
+
     protected override void SettingsToPage()
     {
         gbRevisionGraph.Enabled = GetCurrentSettings().SettingLevel == SettingLevel.Global;

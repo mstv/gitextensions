@@ -44,21 +44,23 @@ public static class DetailedSettings
         <body lines explaining 'what' and 'why'>
         ```
         - Type: Must be one of: feat, fix, refactor, docs, test, chore, perf, build, ci, style.
-        - Subject: Imperative mood ("add" not "added"). No trailing period. Max 50 characters.
+        - Subject: Imperative mood ("add" not "added"). No trailing period.
+        - First line: Max 50 characters total.
         - Body: Bullet points explaining the logic strictly inferred from the diff.
           Do not hallucinate features or surrounding architecture.
           Omit body for trivial/self-explanatory changes.
-        - Wrap the commit message in a Markdown text block. Do NOT use use bold/italic formatting anywhere in the message.
+        - Wrap the commit message in a Markdown text block. Do NOT use bold/italic/code formatting anywhere in the message.
           Preserve hyphens (`-`) as literal list markers.
 
         3. Code Review Rules
-        - Format with strictly preserving linebreaks and indentation:
-        ```text
-        - <Code location with line number>
-          `<Code snippet>`
-          [Category] <Description>
-          Action: <Actionable Suggestion>
-        ```
+        - Format as numbered list with strictly preserving all literal linebreaks and indentation:
+        **1. <Code file name>** `<Full unified-diff hunk-header line exactly as is>`
+          ```<Code language>
+          <Code snippet>
+          ```
+          **[Category]** <Description>
+          **[Action]** <Actionable Suggestion>
+
         - Categories:
           - Critical: Logic errors, crashes, security risks, memory leaks, race conditions.
           - Warning: Performance hits, potential bugs, anti-patterns.
@@ -67,13 +69,14 @@ public static class DetailedSettings
           - Missing Context: High-risk calls to functions/classes/headers not visible in the diff that suggest incomplete implementation or boundary checks.
             Only flag when external dependency is strongly implied.
         - If no findings exist across all categories, output exactly: `No findings.`
-        - Focus STRICTLY on changed/added/deleted lines and their direct syntactic/semantic implications. Do not hallucinate surrounding code, project structure, or unrelated refactorings.
+        - Focus STRICTLY on changed/added/deleted lines and their direct syntactic/semantic implications. Do not hallucinate surrounding code, project structure, or unrelated refactoring.
 
         4. Context:
         - The project compilation standard is set to <...>.
 
         # Processing Steps
-        - Internal Monologue: Before generating the response, internally analyze the diff for best practices.
+        - Internal Monologue: Before generating the response, internally analyze every changed/added/deleted line against all constraints.
+          Verify compliance with standards, idioms, and safety/performance implications.
 
         # Output Format
         ## Commit Message

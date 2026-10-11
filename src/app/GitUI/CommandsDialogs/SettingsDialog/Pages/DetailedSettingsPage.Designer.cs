@@ -44,6 +44,7 @@ partial class DetailedSettingsPage
         nbMessages = new TextBox();
         gbxAiDiffPrompt = new GroupBox();
         tlpnlAiDiffPrompt = new TableLayoutPanel();
+        btnAiDiffPromptDefault = new Button();
         lblAiDiffPromptPrefix = new Label();
         txtAiDiffPromptPrefix = new TextBox();
         lblAiDiffPromptSuffix = new Label();
@@ -276,19 +277,31 @@ partial class DetailedSettingsPage
         tlpnlAiDiffPrompt.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         tlpnlAiDiffPrompt.ColumnCount = 1;
         tlpnlAiDiffPrompt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        tlpnlAiDiffPrompt.Controls.Add(lblAiDiffPromptPrefix, 0, 0);
-        tlpnlAiDiffPrompt.Controls.Add(txtAiDiffPromptPrefix, 0, 1);
-        tlpnlAiDiffPrompt.Controls.Add(lblAiDiffPromptSuffix, 0, 2);
-        tlpnlAiDiffPrompt.Controls.Add(txtAiDiffPromptSuffix, 0, 3);
+        tlpnlAiDiffPrompt.Controls.Add(btnAiDiffPromptDefault, 0, 0);
+        tlpnlAiDiffPrompt.Controls.Add(lblAiDiffPromptPrefix, 0, 1);
+        tlpnlAiDiffPrompt.Controls.Add(txtAiDiffPromptPrefix, 0, 2);
+        tlpnlAiDiffPrompt.Controls.Add(lblAiDiffPromptSuffix, 0, 3);
+        tlpnlAiDiffPrompt.Controls.Add(txtAiDiffPromptSuffix, 0, 4);
         tlpnlAiDiffPrompt.Dock = DockStyle.Fill;
         tlpnlAiDiffPrompt.Location = new Point(8, 24);
         tlpnlAiDiffPrompt.Name = "tlpnlAiDiffPrompt";
-        tlpnlAiDiffPrompt.RowCount = 4;
+        tlpnlAiDiffPrompt.RowCount = 5;
+        tlpnlAiDiffPrompt.RowStyles.Add(new RowStyle());
         tlpnlAiDiffPrompt.RowStyles.Add(new RowStyle());
         tlpnlAiDiffPrompt.RowStyles.Add(new RowStyle());
         tlpnlAiDiffPrompt.RowStyles.Add(new RowStyle());
         tlpnlAiDiffPrompt.RowStyles.Add(new RowStyle());
         tlpnlAiDiffPrompt.TabIndex = 0;
+        // 
+        // btnAiDiffPromptDefault
+        // 
+        btnAiDiffPromptDefault.AutoSize = true;
+        btnAiDiffPromptDefault.Location = new Point(3, 3);
+        btnAiDiffPromptDefault.Name = "btnAiDiffPromptDefault";
+        btnAiDiffPromptDefault.TabIndex = 0;
+        btnAiDiffPromptDefault.Text = "Enter default prompt";
+        btnAiDiffPromptDefault.UseVisualStyleBackColor = true;
+        btnAiDiffPromptDefault.Click += btnAiDiffPromptDefault_Click;
         // 
         // lblAiDiffPromptPrefix
         // 
@@ -296,7 +309,7 @@ partial class DetailedSettingsPage
         lblAiDiffPromptPrefix.Dock = DockStyle.Fill;
         lblAiDiffPromptPrefix.Location = new Point(3, 0);
         lblAiDiffPromptPrefix.Name = "lblAiDiffPromptPrefix";
-        lblAiDiffPromptPrefix.TabIndex = 0;
+        lblAiDiffPromptPrefix.TabIndex = 1;
         lblAiDiffPromptPrefix.Text = "Prompt prefix:";
         // 
         // txtAiDiffPromptPrefix
@@ -307,7 +320,7 @@ partial class DetailedSettingsPage
         txtAiDiffPromptPrefix.Name = "txtAiDiffPromptPrefix";
         txtAiDiffPromptPrefix.ScrollBars = ScrollBars.Vertical;
         txtAiDiffPromptPrefix.Size = new Size(1000, 80);
-        txtAiDiffPromptPrefix.TabIndex = 1;
+        txtAiDiffPromptPrefix.TabIndex = 2;
         // 
         // lblAiDiffPromptSuffix
         // 
@@ -315,7 +328,7 @@ partial class DetailedSettingsPage
         lblAiDiffPromptSuffix.Dock = DockStyle.Fill;
         lblAiDiffPromptSuffix.Location = new Point(3, 121);
         lblAiDiffPromptSuffix.Name = "lblAiDiffPromptSuffix";
-        lblAiDiffPromptSuffix.TabIndex = 2;
+        lblAiDiffPromptSuffix.TabIndex = 3;
         lblAiDiffPromptSuffix.Text = "Prompt suffix:";
         // 
         // txtAiDiffPromptSuffix
@@ -326,7 +339,7 @@ partial class DetailedSettingsPage
         txtAiDiffPromptSuffix.Name = "txtAiDiffPromptSuffix";
         txtAiDiffPromptSuffix.ScrollBars = ScrollBars.Vertical;
         txtAiDiffPromptSuffix.Size = new Size(1000, 120);
-        txtAiDiffPromptSuffix.TabIndex = 3;
+        txtAiDiffPromptSuffix.TabIndex = 4;
         // 
         // DetailedSettingsPage
         // 
@@ -378,6 +391,7 @@ partial class DetailedSettingsPage
     private CheckBox chkStraightenGraphDiagonals;
     private GroupBox gbxAiDiffPrompt;
     private TableLayoutPanel tlpnlAiDiffPrompt;
+    private Button btnAiDiffPromptDefault;
     private Label lblAiDiffPromptPrefix;
     private TextBox txtAiDiffPromptPrefix;
     private Label lblAiDiffPromptSuffix;
