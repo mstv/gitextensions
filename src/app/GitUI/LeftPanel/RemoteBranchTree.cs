@@ -11,6 +11,7 @@ namespace GitUI.LeftPanel;
 internal sealed class RemoteBranchTree : BaseRefTree
 {
     private readonly IAheadBehindDataProvider? _aheadBehindDataProvider;
+    private Dictionary<string, Remote> _remoteByName = [];
 
     public RemoteBranchTree(TreeNode treeNode, IGitUICommandsSource uiCommands, IAheadBehindDataProvider? aheadBehindDataProvider, ICheckRefs refsSource)
         : base(treeNode, uiCommands, refsSource, RefsFilter.Remotes)
@@ -18,13 +19,9 @@ internal sealed class RemoteBranchTree : BaseRefTree
         _aheadBehindDataProvider = aheadBehindDataProvider;
     }
 
-    private Dictionary<string, Remote> _remoteByName = new();
-
     protected override async Task PreloadAsync(CancellationToken token)
     {
-        // Runs on a background thread via BaseRefTree.LoadNodesAsync.
-        // `git remote -v` is fast, but must never run on (or pump) the UI thread.
-        IReadOnlyList<Remote> remotes = await Module.GetRemotesAsync().ConfigureAwait(false);
+        IReadOnlyList<Remote> remotes = await Module.GetRemotesAsync();
         token.ThrowIfCancellationRequested();
         _remoteByName = remotes.ToDictionary(r => r.Name);
     }

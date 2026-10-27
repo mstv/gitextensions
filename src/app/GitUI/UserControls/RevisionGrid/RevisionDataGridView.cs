@@ -268,7 +268,26 @@ public sealed partial class RevisionDataGridView : DataGridView
         }
     }
 
-    internal FrozenDictionary<string, Color> RemoteColors { get; set; }
+    internal FrozenDictionary<string, Color> RemoteColors
+    {
+        get => field ??= FrozenDictionary<string, Color>.Empty;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field = value;
+
+            // Remote label colors are baked into the cached cell style: drop it and repaint
+            // so rows painted before the async config read pick up the real colors.
+            // Must be set on the UI thread (both current callers comply).
+            _cellStyle = null;
+            _revision = null;
+            Invalidate();
+        }
+    }
 
     internal void AddColumn(ColumnProvider columnProvider)
     {
