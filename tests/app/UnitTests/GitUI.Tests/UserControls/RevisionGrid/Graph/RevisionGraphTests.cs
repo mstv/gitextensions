@@ -1021,9 +1021,9 @@ public class RevisionGraphTests
         SubjectAndRefsColumn subjectColumn = new();
         grid.AddColumn(subjectColumn);
 
-        grid.MarkAsDataLoading();
+        int id = grid.MarkAsDataLoading();
         grid.AddRange(revisionGraph.GetTestAccessor().Revisions);
-        grid.LoadingCompleted();
+        grid.LoadingCompleted(id);
 
         int rowCount = revisionGraph.Count;
         graphColumn.GetTestAccessor().RenderGraphToCache(new(0, rowCount), rowCount, grid.RowTemplate.Height);
