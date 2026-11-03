@@ -19,7 +19,7 @@ internal interface IRevisionGraphRowProvider
 // The RevisionGraph contains all the basic structures needed to render the graph.
 public class RevisionGraph : IRevisionGraphRowProvider
 {
-    private static string _avoidBumpOption = "C";
+    private static string _avoidBumpOption = "none";
 
     internal const int MaxLanes = 40;
     private const int _orderSegmentsLookAhead = 50;
