@@ -1,5 +1,4 @@
-﻿using GitUI;
-using GitUI.UserControls;
+﻿using GitUI.UserControls;
 
 namespace GitUITests.UserControls;
 
@@ -27,7 +26,7 @@ public class InteractiveGitActionControlTests
     [TestCase(InteractiveGitActionControl.GitAction.Bisect, false)]
     public void The_buttons_must_be_tall_enough_for_their_caption(InteractiveGitActionControl.GitAction action, bool conflicts)
     {
-        ThreadHelper.JoinableTaskFactory.Run(() => _accessor.SetGitActionAsync(action, conflicts));
+        _accessor.SetGitAction(action, conflicts);
         _control.PerformLayout();
 
         foreach (Button button in _accessor.Controls.OfType<Button>())
@@ -48,7 +47,7 @@ public class InteractiveGitActionControlTests
     [TestCase(InteractiveGitActionControl.GitAction.None, true)]
     public void SetState(InteractiveGitActionControl.GitAction action, bool conflicts)
     {
-        ThreadHelper.JoinableTaskFactory.Run(() => _accessor.SetGitActionAsync(action, conflicts));
+        _accessor.SetGitAction(action, conflicts);
 
         _accessor.Action.Should().Be(action);
         _accessor.HasConflicts.Should().Be(conflicts);

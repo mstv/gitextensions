@@ -4,7 +4,6 @@ using GitExtUtils.GitUI.Theming;
 using GitUI.CommandsDialogs;
 using GitUI.CommandsDialogs.BrowseDialog;
 using GitUI.HelperDialogs;
-using Microsoft.VisualStudio.Threading;
 using ResourceManager;
 
 namespace GitUI.UserControls;
@@ -51,10 +50,8 @@ public partial class InteractiveGitActionControl : GitModuleControl
     // It is possible for a repo to be in a middle of a bisect operation and
     // be in a conflicted state. Hence detect bisect separately from the rest
     // of git actions
-    public async Task RefreshBisectAsync()
+    public void RefreshBisect()
     {
-        await TaskScheduler.Default;
-
         if (!Module.IsValidGitWorkingDir())
         {
             return;
@@ -62,23 +59,21 @@ public partial class InteractiveGitActionControl : GitModuleControl
 
         if (Module.InTheMiddleOfBisect())
         {
-            await SetGitActionAsync(GitAction.Bisect, false);
+            SetGitAction(GitAction.Bisect, false);
             return;
         }
 
-        await SetGitActionAsync(GitAction.None, false);
-        return;
+        SetGitAction(GitAction.None, false);
     }
 
     /// <summary>
     /// Refresh the banner in the revision grid after reactivation.
     /// </summary>
     /// <param name="checkForConflicts">Allow running Git command to check for conflicts.</param>
-    public async Task RefreshGitActionAsync(bool checkForConflicts)
+    public void RefreshGitAction(bool checkForConflicts)
     {
-        await TaskScheduler.Default;
-
         // get the current state of the repo
+
         if (!Module.IsValidGitWorkingDir())
         {
             return;
@@ -99,26 +94,26 @@ public partial class InteractiveGitActionControl : GitModuleControl
 
         if (Module.InTheMiddleOfRebase())
         {
-            await SetGitActionAsync(GitAction.Rebase, hasConflicts);
+            SetGitAction(GitAction.Rebase, hasConflicts);
             return;
         }
 
         if (Module.InTheMiddleOfMerge())
         {
-            await SetGitActionAsync(GitAction.Merge, hasConflicts);
+            SetGitAction(GitAction.Merge, hasConflicts);
             return;
         }
 
         if (Module.InTheMiddleOfPatch())
         {
-            await SetGitActionAsync(GitAction.Patch, hasConflicts);
+            SetGitAction(GitAction.Patch, hasConflicts);
             return;
         }
 
-        await SetGitActionAsync(GitAction.None, hasConflicts);
+        SetGitAction(GitAction.None, hasConflicts);
     }
 
-    private async Task SetGitActionAsync(GitAction action, bool hasConflicts)
+    private void SetGitAction(GitAction action, bool hasConflicts)
     {
         if ((action == _action) && (hasConflicts == _hasConflicts))
         {
@@ -128,7 +123,6 @@ public partial class InteractiveGitActionControl : GitModuleControl
 
         _action = action;
         _hasConflicts = hasConflicts;
-        await this.SwitchToMainThreadAsync();
 
         // remove old controls
         ButtonContainer.Controls.Clear();
@@ -296,6 +290,6 @@ public partial class InteractiveGitActionControl : GitModuleControl
         internal Button AbortButton => _interactiveGitActionControl.AbortButton;
         internal Button MoreButton => _interactiveGitActionControl.MoreButton;
 
-        internal Task SetGitActionAsync(GitAction action, bool conflicts) => _interactiveGitActionControl.SetGitActionAsync(action, conflicts);
+        internal void SetGitAction(GitAction action, bool conflicts) => _interactiveGitActionControl.SetGitAction(action, conflicts);
     }
 }
