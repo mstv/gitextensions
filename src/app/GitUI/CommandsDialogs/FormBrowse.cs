@@ -578,7 +578,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
         _windowsJumpListManager.EnableThumbnailToolbar(_dashboard?.Visible is not true && Module.IsValidGitWorkingDir());
 
-        ThreadHelper.FileAndForget(OnActivateAsync);
+        this.InvokeAndForget(OnActivate);
         base.OnActivated(e);
     }
 
@@ -1047,7 +1047,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
             _NO_TRANSLATE_WorkingDir.RefreshContent();
 
-            ThreadHelper.FileAndForget(OnActivateAsync);
+            OnActivate();
 
             LoadUserMenu();
             toolStripButtonLevelUp.Image = validBrowseDir && Module.SuperprojectModule is not null ? Images.NavigateUp : Images.SubmodulesManage;
@@ -1177,13 +1177,13 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         UpdateTooltipWithShortcut(userShell, Command.GitBash);
     }
 
-    private async Task OnActivateAsync()
+    private void OnActivate()
     {
         // check if we are in the middle of bisect
-        await notificationBarBisectInProgress.RefreshBisectAsync();
+        notificationBarBisectInProgress.RefreshBisect();
 
         // check if we are in the middle of an action (merge/rebase/etc.)
-        await notificationBarGitActionInProgress.RefreshGitActionAsync(
+        notificationBarGitActionInProgress.RefreshGitAction(
             checkForConflicts: AppSettings.GitAsyncWhenMinimized || (WindowState != FormWindowState.Minimized));
     }
 
