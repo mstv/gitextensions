@@ -152,12 +152,12 @@ public sealed class PlainTextConsoleCommandRunner : ContainerControl, IPlainText
             };
 
             const string envVarNameGitTerminalPrompt = "GIT_TERMINAL_PROMPT";
-            envVariables.Add(envVarNameGitTerminalPrompt, "1");
+            envVariables[envVarNameGitTerminalPrompt] = "1";
             envVariables.ForwardEnvironmentVariableToWsl(workDir, envVarNameGitTerminalPrompt);
 
             foreach ((string name, string value) in envVariables)
             {
-                startInfo.EnvironmentVariables.Add(name, value);
+                startInfo.EnvironmentVariables[name] = value;
             }
 
             _process = new() { StartInfo = startInfo, EnableRaisingEvents = true };
