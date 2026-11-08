@@ -54,6 +54,8 @@ public sealed partial class FormContributors : GitExtensionsForm
 
             ResumeLayout(false);
 
+            this.EnableProperWordBoundaries();
+
             return;
 
             TextBox GetNewTextBox()
