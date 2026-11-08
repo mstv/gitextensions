@@ -487,18 +487,31 @@ public class RevisionGraphTests
     }
 
     [Test]
-    public async Task DiagonalStraighteningDoesNotAddABump([Values] bool mergeGraphLanesHavingCommonParent, [Values] bool straightenGraphDiagonals)
+    public async Task MergesCanUseReservedLaneBeforeFirstNode_3(
+        [Values("A;B;C", "A;C;B", "B;A;C", "B;C;A", "C;A;B", "C;B;A")] string reservedLanes)
     {
-        AppSettings.MergeGraphLanesHavingCommonParent.Value = mergeGraphLanesHavingCommonParent;
-        AppSettings.StraightenGraphDiagonals.Value = straightenGraphDiagonals;
+        AppSettings.MergeGraphLanesHavingCommonParent.Value = false;
+        AppSettings.ReservedLanesBranchNames = reservedLanes;
 
-        // Previously, diagonal straightening at rev 7 would cause a new bump in segments 6-9 and 5-b
-        RevisionGraph revisionGraph = CreateGraph(" 1 2:1:dev 3:1 3a:3 3b:3,3a 4:1 5:1 6:3b 7:1,6 8:7,4 9:6 " +
-            "a:8,9 b:5 c:9 d:a,2 e:d,c f:e,b:main");
+        // When A is on the next line above, the merge from B to A does not actually occupy B's lane.
+        // So, we can let the merge to C use B's lane.
+        RevisionGraph revisionGraph = CreateGraph(" 1 2:1 3:1 4:1:B 5:2,4:A 6:3,4:C");
 
         await VerifyGraphLayoutAsync(revisionGraph);
+    }
 
-        Assert.Inconclusive("This change and the consequences should be reviewed.");
+    [Test]
+    public async Task ArtificialCommitsCanUseReservedLaneBeforeFirstNode(
+        [Values] bool mergeCommonParent,
+        [Values] bool withLaterMerge,
+        [Values("A;B;C", "A;C;B", "B;A;C", "B;C;A", "C;A;B", "C;B;A")] string reservedLanes)
+    {
+        AppSettings.MergeGraphLanesHavingCommonParent.Value = mergeCommonParent;
+        AppSettings.ReservedLanesBranchNames = reservedLanes;
+
+        RevisionGraph revisionGraph = CreateGraph(" 1 2:1 3:1:C 4:1:B  _i:4 _w:_i " + (withLaterMerge ? " 5:2,4:A" : ""));
+
+        await VerifyGraphLayoutAsync(revisionGraph);
     }
 
     [Test]
@@ -737,6 +750,8 @@ public class RevisionGraphTests
         Dictionary<string, GitRevision> commitsById = [];
         Random random = new(42);
 
+        RevisionGraph graph = new();
+
         // Parse and create commits
         foreach (string spec in commitSpecs.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -760,6 +775,10 @@ public class RevisionGraphTests
             {
                 string[] parentIds = parts[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
                 commit.ParentIds = parentIds.Select(id => commitsById[id].ObjectId).ToList();
+                if (objectId == ObjectId.IndexId)
+                {
+                    graph.HeadId = commit.ParentIds[0];
+                }
             }
 
             if (parts.Length > 2)
@@ -770,7 +789,6 @@ public class RevisionGraphTests
         }
 
         // Add commits to graph from newest to oldest
-        RevisionGraph graph = new();
         commits.Reverse();
 
         foreach (GitRevision commit in commits)
@@ -1003,9 +1021,9 @@ public class RevisionGraphTests
         SubjectAndRefsColumn subjectColumn = new();
         grid.AddColumn(subjectColumn);
 
-        int id = grid.MarkAsDataLoading();
+        grid.MarkAsDataLoading();
         grid.AddRange(revisionGraph.GetTestAccessor().Revisions);
-        grid.LoadingCompleted(id);
+        grid.LoadingCompleted();
 
         int rowCount = revisionGraph.Count;
         graphColumn.GetTestAccessor().RenderGraphToCache(new(0, rowCount), rowCount, grid.RowTemplate.Height);
