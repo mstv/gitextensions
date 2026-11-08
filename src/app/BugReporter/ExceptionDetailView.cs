@@ -4,8 +4,6 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-using GitUI;
-
 namespace BugReporter;
 
 internal partial class ExceptionDetailView : Form
@@ -13,7 +11,6 @@ internal partial class ExceptionDetailView : Form
     public ExceptionDetailView()
     {
         InitializeComponent();
-        this.EnableProperWordBoundaries();
     }
 
     internal void ShowDialog(string property, string info)

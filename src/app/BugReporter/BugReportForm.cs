@@ -72,7 +72,6 @@ Send report?");
 
         this.AdjustForDpiScaling();
         this.EnableRemoveWordHotkey();
-        this.EnableProperWordBoundaries();
 
         toolTip.SetToolTip(btnCopy, _toolTipCopy.Text);
         toolTip.SetToolTip(sendAndQuitButton, _toolTipSendQuit.Text);

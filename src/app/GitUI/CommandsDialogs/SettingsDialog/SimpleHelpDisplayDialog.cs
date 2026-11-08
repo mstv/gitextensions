@@ -5,7 +5,6 @@ public partial class SimpleHelpDisplayDialog : Form
     public SimpleHelpDisplayDialog()
     {
         InitializeComponent();
-        this.EnableProperWordBoundaries();
     }
 
     public string? DialogTitle { get; set; }
