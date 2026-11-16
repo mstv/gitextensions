@@ -7180,6 +7180,14 @@ Is the merge conflict solved?</source>
         <source>deleted</source>
         <target />
       </trans-unit>
+      <trans-unit id="_diffBaseWithModifiedButtonDescription.Text">
+        <source>Opens the difftool. This dialog stays open, so solve conflict afterwards.</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="_diffBaseWithModifiedButtonText.Text">
+        <source>Diff base with modified</source>
+        <target />
+      </trans-unit>
       <trans-unit id="_errorStartingMergetool.Text">
         <source>Error starting mergetool: {0}</source>
         <target />
@@ -8129,6 +8137,14 @@ Context menu for additional operations</source>
     <body>
       <trans-unit id="$this.Text">
         <source>Advanced</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="lblCoreFsMonitor.Text">
+        <source>Run a file system monitor daemon per working directory</source>
+        <target />
+      </trans-unit>
+      <trans-unit id="lblCoreUntrackedCache.Text">
+        <source>Cache the untracked files in the index</source>
         <target />
       </trans-unit>
       <trans-unit id="lblFetchPrune.Text">
@@ -9409,8 +9425,8 @@ Reset the filter via View &gt; Show all branches.</source>
         <source>Show remote &amp;branches</source>
         <target />
       </trans-unit>
-      <trans-unit id="ShowSessionCheckpoints.Text">
-        <source>Show session checkpoints</source>
+      <trans-unit id="ShowSessionRefs.Text">
+        <source>Show agentic sessions (&amp;Q)</source>
         <target />
       </trans-unit>
       <trans-unit id="ShowStashes.Text">

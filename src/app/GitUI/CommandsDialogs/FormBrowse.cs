@@ -1185,6 +1185,9 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         // check if we are in the middle of an action (merge/rebase/etc.)
         await notificationBarGitActionInProgress.RefreshGitActionAsync(
             checkForConflicts: AppSettings.GitAsyncWhenMinimized || (WindowState != FormWindowState.Minimized));
+
+        IndexWatcher indexWatcher = RevisionGrid.IndexWatcher;
+        ThreadHelper.FileAndForget(indexWatcher.DetectUnreportedChangesInWsl);
     }
 
     private void UpdateStashCount()
