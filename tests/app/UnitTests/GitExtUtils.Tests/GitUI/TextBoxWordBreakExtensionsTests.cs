@@ -49,6 +49,63 @@ public sealed class TextBoxWordBreakExtensionsTests
         TextBoxWordBreakExtensions.TestAccessor.FindPreviousBoundary(text, position).Should().Be(expected);
     }
 
+    [TestCase("a\U0001F600b", 0, 1)]
+    [TestCase("a\U0001F600b", 1, 3)]
+    [TestCase("a\U0001F600b", 2, 3)]
+    [TestCase("\U0001F600b", 0, 2)]
+    public void FindNextBoundary_does_not_split_surrogate_pairs(string text, int position, int expected)
+    {
+        TextBoxWordBreakExtensions.TestAccessor.FindNextBoundary(text, position).Should().Be(expected);
+    }
+
+    [TestCase("a\U0001F600b", 4, 3)]
+    [TestCase("a\U0001F600b", 3, 1)]
+    [TestCase("a\U0001F600b", 2, 1)]
+    [TestCase("a\U0001F600b", 1, 0)]
+    public void FindPreviousBoundary_does_not_split_surrogate_pairs(string text, int position, int expected)
+    {
+        TextBoxWordBreakExtensions.TestAccessor.FindPreviousBoundary(text, position).Should().Be(expected);
+    }
+
+    [TestCase("a\U0001F600b", 1, 1, 3)]
+    [TestCase("a\U0001F600b", 2, 1, 3)]
+    [TestCase("a\U0001F600\U0001F600b", 3, 1, 5)]
+    [TestCase("\U0001F600", 1, 0, 2)]
+    public void GetWordAt_does_not_split_surrogate_pairs(string text, int index, int expectedStart, int expectedEnd)
+    {
+        TextBoxWordBreakExtensions.TestAccessor.GetWordAt(text, index).Should().Be((expectedStart, expectedEnd));
+    }
+
+    [Test]
+    public void SelectAll_then_CtrlShiftLeft_shrinks_the_selection_in_TextBox()
+    {
+        using TextBox textBox = new() { Text = "foo/bar" };
+        _ = textBox.Handle;
+        textBox.EnableProperWordBoundaries();
+
+        textBox.SelectionStart = 7;
+        TextBoxWordBreakExtensions.TestAccessor.HandleKeyDown(textBox, new KeyEventArgs(Keys.Control | Keys.A));
+        textBox.SelectAll();
+        TextBoxWordBreakExtensions.TestAccessor.HandleKeyDown(textBox, new KeyEventArgs(Keys.Control | Keys.Shift | Keys.Left));
+
+        (textBox.SelectionStart, textBox.SelectionLength).Should().Be((0, 4));
+    }
+
+    [Test]
+    public void SelectAll_then_CtrlShiftLeft_shrinks_the_selection_in_ComboBox()
+    {
+        using ComboBox comboBox = new() { Text = "foo/bar" };
+        _ = comboBox.Handle;
+        comboBox.EnableProperWordBoundaries();
+
+        comboBox.SelectionStart = 7;
+        TextBoxWordBreakExtensions.TestAccessor.HandleKeyDown(comboBox, new KeyEventArgs(Keys.Control | Keys.A));
+        comboBox.SelectAll();
+        TextBoxWordBreakExtensions.TestAccessor.HandleKeyDown(comboBox, new KeyEventArgs(Keys.Control | Keys.Shift | Keys.Left));
+
+        (comboBox.SelectionStart, comboBox.SelectionLength).Should().Be((0, 4));
+    }
+
     [Test]
     public void FindNextBoundary_clamps_position_past_end_of_text()
     {

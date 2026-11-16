@@ -48,7 +48,7 @@ public static class TextBoxWordBreakExtensions
         // triple-click, so it needs none of this and that behavior must not be overridden.
         // DropDownList combo boxes have no editable text, so they are excluded as well.
         foreach (Control textInput in control.FindDescendants()
-            .Where(c => c is ComboBox { DropDownStyle: not ComboBoxStyle.DropDownList } || c is TextBoxBase and not RichTextBox))
+            .Where(c => (c is ComboBox { DropDownStyle: not ComboBoxStyle.DropDownList } || c is TextBoxBase and not RichTextBox) && !IsMasked(c)))
         {
             // Detach first so it is safe to call this for both a form and a control it hosts
             // without handling the keystroke twice.
@@ -83,7 +83,7 @@ public static class TextBoxWordBreakExtensions
 
     private sealed class WordSelectionState
     {
-        public int Anchor { get; set; }
+        public int Anchor { get; set; } = -1;
         public long LastDoubleClickTicks { get; set; }
         public Point LastDoubleClickLocation { get; set; }
 
@@ -102,7 +102,8 @@ public static class TextBoxWordBreakExtensions
 
     private static void HandleDisposed(object? sender, EventArgs e)
     {
-        Control control = (Control)sender!;
+        Control control = sender as Control ?? throw new InvalidOperationException($"{nameof(sender)} is not a Control");
+
         control.Disposed -= HandleDisposed;
         control.KeyDown -= HandleKeyDown;
         control.MouseDown -= HandleMouseDown;
@@ -134,7 +135,7 @@ public static class TextBoxWordBreakExtensions
     }
 
     private static void HandleComboBoxHandleCreated(object? sender, EventArgs e)
-        => AttachComboBoxEditWindow((ComboBox)sender!);
+        => AttachComboBoxEditWindow(sender as ComboBox ?? throw new InvalidOperationException($"{nameof(sender)} is not a ComboBox"));
 
     private static void AttachComboBoxEditWindow(ComboBox comboBox)
     {
@@ -174,12 +175,12 @@ public static class TextBoxWordBreakExtensions
         // TextBoxBase suppresses the MouseDoubleClick event (StandardDoubleClick style is off),
         // but MouseDown still fires with Clicks == 2 for the second click. ComboBox is handled
         // separately via its child edit control (see ComboBoxEditWindow).
-        if (sender is not TextBoxBase textBox)
+        if (sender is not TextBoxBase textBox || IsMasked(textBox))
         {
             return;
         }
 
-        // Only the left button drives caret/selection gestures. Right- and middle-clicks must not
+        // Only the left button
         // queue a pending selection, or mouse-up would collapse an existing selection (e.g. the one
         // the context menu is about to act on).
         if (e.Button != MouseButtons.Left)
@@ -207,12 +208,50 @@ public static class TextBoxWordBreakExtensions
             // (e.g. one left at 0 by a prior Select All) can be collapsed back on mouse-up.
             // Shift+click is skipped: the native control extends the selection to the click, and a
             // zero-length pending caret would collapse it back on mouse-up.
-            SetPendingSelection(textBox, textBox.GetCharIndexFromPosition(e.Location), 0, e.Location);
+            SetPendingSelection(textBox, GetNativeCaretOrHitTest(textBox, textBox.GetCharIndexFromPosition(e.Location)), 0, e.Location);
+        }
+        else if (e.Clicks == 1)
+        {
+            // Shift+click extends natively and keeps the fixed end of the previous selection.
+            SetAnchor(textBox, ResolveAnchorAfterShiftClick(textBox, textBox.GetCharIndexFromPosition(e.Location)));
         }
     }
 
     /// <summary>
-    ///  Selects the punctuation-delimited word at <paramref name="index"/> and returns the
+    ///  Whether the input hides its text. Word-wise caret stops and selections would otherwise reveal
+    ///  word and punctuation boundaries of the real text.
+    /// </summary>
+    private static bool IsMasked(Control control)
+        => control is TextBox { UseSystemPasswordChar: true } or TextBox { PasswordChar: not '\0' };
+
+    /// <summary>
+    ///  By the time the managed event runs, the native control has extended the selection to the click.
+    ///  The fixed end is the endpoint that is not the click position: the cached anchor when it is
+    ///  still an endpoint, otherwise the endpoint farther from the hit-test index.
+    /// </summary>
+    private static int ResolveAnchorAfterShiftClick(Control control, int hitTestIndex)
+    {
+        int start = GetSelectionStart(control);
+        int end = start + GetSelectionLength(control);
+        int stored = GetAnchor(control);
+        if (stored == start || stored == end)
+        {
+            return stored;
+        }
+
+        return Math.Abs(hitTestIndex - start) <= Math.Abs(hitTestIndex - end) ? end : start;
+    }
+
+    /// <summary>
+    ///  The native control has already placed the caret for a plain click by the time the managed
+    ///  event runs. Its hit-test index is not equivalent: it clamps to the last character when the
+    ///  click is beyond the text.
+    /// </summary>
+    private static int GetNativeCaretOrHitTest(Control control, int hitTestIndex)
+        => GetSelectionLength(control) == 0 ? GetSelectionStart(control) : hitTestIndex;
+
+    /// <summary>
+    ///  Selects the punctuation-delimited word
     ///  applied <c>[Start, Length]</c>, or <c>(-1, 0)</c> if <paramref name="index"/> is out of range.
     /// </summary>
     private static (int Start, int Length) SelectWordAt(Control control, string text, int index)
@@ -233,12 +272,12 @@ public static class TextBoxWordBreakExtensions
     {
         // ComboBox mouse handling lives in ComboBoxEditWindow (its edit area raises no usable
         // mouse events); only plain TextBoxBase controls are handled here.
-        if (sender is not TextBoxBase textBox)
+        if (sender is not TextBoxBase textBox || IsMasked(textBox))
         {
             return;
         }
 
-        // While the button is held, the native edit control drag-extends the selection from its
+        // While the button
         // anchor on any WM_MOUSEMOVE: after a double-click that grows it back to the whole
         // whitespace-delimited run, and after a Select All (anchor left at 0) it grows it to
         // [0, cursor]. Reasserting the gesture's intended selection here, on its final event,
@@ -324,18 +363,24 @@ public static class TextBoxWordBreakExtensions
 
     private static void HandleKeyDown(object? sender, KeyEventArgs e)
     {
-        Control control = (Control)sender!;
-        if (control is ComboBox { DropDownStyle: ComboBoxStyle.DropDownList })
+        Control control = sender as Control ?? throw new InvalidOperationException($"{nameof(sender)} is not a Control");
+        if (control is ComboBox { DropDownStyle: ComboBoxStyle.DropDownList } || IsMasked(control))
         {
             return;
         }
 
-        // Record the anchor of a plain Shift+navigation selection as it begins from a collapsed
-        // caret: that caret is the end that stays fixed. Doing so lets a later Ctrl+Shift+Left/Right
-        // extend from the correct end instead of guessing the direction (see ResolveAnchorAndCaret).
-        if (e.Shift && !e.Control && !e.Alt && IsSelectionAnchorKey(e.KeyCode) && GetSelectionLength(control) == 0)
+        // Capture the fixed end before Shift+navigation starts a selection, including
+        // Ctrl+Shift+Home/End, so later word navigation preserves its direction.
+        // Ctrl+Shift+Left/Right must still reach the custom handler below.
+        if (e.Shift && !e.Alt && IsSelectionAnchorKey(e.KeyCode) && GetSelectionLength(control) == 0)
         {
             SetAnchor(control, GetSelectionStart(control));
+        }
+
+        if (e.Control && !e.Shift && !e.Alt && e.KeyCode == Keys.A)
+        {
+            // Select All is handled natively: anchor at the start, active end (caret) at the end.
+            SetAnchor(control, 0);
             return;
         }
 
@@ -358,8 +403,7 @@ public static class TextBoxWordBreakExtensions
 
         if (extend)
         {
-            SetSelectionStart(control, Math.Min(anchor, target));
-            SetSelectionLength(control, Math.Abs(target - anchor));
+            SetDirectionalSelection(control, anchor, target);
             SetAnchor(control, anchor);
         }
         else
@@ -368,6 +412,9 @@ public static class TextBoxWordBreakExtensions
             SetSelectionLength(control, 0);
             SetAnchor(control, target);
         }
+
+        // Suppressing the native key handling also suppressed its scrolling of the caret into view.
+        ScrollToCaret(control);
     }
 
     /// <summary>Finds the start of the word at or before <paramref name="position"/>.</summary>
@@ -375,7 +422,7 @@ public static class TextBoxWordBreakExtensions
     {
         for (int i = Math.Min(position, text.Length) - 1; i > 0; i--)
         {
-            if (IsWordStart(text, i))
+            if (!IsInsideSurrogatePair(text, i) && IsWordStart(text, i))
             {
                 return i;
             }
@@ -389,7 +436,7 @@ public static class TextBoxWordBreakExtensions
     {
         for (int i = position + 1; i < text.Length; i++)
         {
-            if (IsWordStart(text, i))
+            if (!IsInsideSurrogatePair(text, i) && IsWordStart(text, i))
             {
                 return i;
             }
@@ -409,18 +456,29 @@ public static class TextBoxWordBreakExtensions
             return (index, index);
         }
 
-        char type = GetCharType(text[index]);
-
-        int start = index;
-        while (start > 0 && GetCharType(text[start - 1]) == type)
+        if (IsInsideSurrogatePair(text, index))
         {
-            start--;
+            index--;
         }
 
-        int end = index + 1;
-        while (end < text.Length && GetCharType(text[end]) == type)
+        int type = GetCharType(text, index);
+
+        int start = index;
+        while (start > 0)
         {
-            end++;
+            int previous = IsInsideSurrogatePair(text, start - 1) ? start - 2 : start - 1;
+            if (GetCharType(text, previous) != type)
+            {
+                break;
+            }
+
+            start = previous;
+        }
+
+        int end = index + CodePointLength(text, index);
+        while (end < text.Length && GetCharType(text, end) == type)
+        {
+            end += CodePointLength(text, end);
         }
 
         return (start, end);
@@ -434,25 +492,33 @@ public static class TextBoxWordBreakExtensions
     /// </summary>
     private static bool IsWordStart(string text, int index)
     {
-        char current = GetCharType(text[index]);
-        return current != ' ' && current != GetCharType(text[index - 1]);
+        int current = GetCharType(text, index);
+        int previousIndex = IsInsideSurrogatePair(text, index - 1) ? index - 2 : index - 1;
+        return current != ' ' && current != GetCharType(text, previousIndex);
     }
 
-    private static char GetCharType(char c)
+    /// <summary>Whether <paramref name="index"/> addresses the low surrogate of a valid surrogate pair.</summary>
+    private static bool IsInsideSurrogatePair(string text, int index)
+        => index > 0 && char.IsLowSurrogate(text[index]) && char.IsHighSurrogate(text[index - 1]);
+
+    private static int CodePointLength(string text, int index)
+        => char.IsHighSurrogate(text[index]) && index + 1 < text.Length && char.IsLowSurrogate(text[index + 1]) ? 2 : 1;
+
+    private static int GetCharType(string text, int index)
     {
-        if (char.IsLetterOrDigit(c) || c is '_' or '+' or '-')
+        if (char.IsLetterOrDigit(text, index) || text[index] is '_' or '+' or '-')
         {
             return 'w';
         }
 
-        if (char.IsWhiteSpace(c))
+        if (char.IsWhiteSpace(text, index))
         {
             return ' ';
         }
 
         // Each distinct punctuation character is its own class so Ctrl+Left/Right stops
-        // between e.g. ')' and ':' as well as at letters.
-        return c;
+        // between e.g. ')' and ':' as well as at letters. A surrogate pair is one code point.
+        return CodePointLength(text, index) == 2 ? char.ConvertToUtf32(text, index) : text[index];
     }
 
     /// <summary>
@@ -538,6 +604,41 @@ public static class TextBoxWordBreakExtensions
     /// </summary>
     private static Rectangle CenteredRectangle(Point center, Size size)
         => new(center.X - (size.Width / 2), center.Y - (size.Height / 2), size.Width, size.Height);
+
+    /// <summary>
+    ///  Selects from <paramref name="anchor"/> to <paramref name="caret"/> keeping the native active end
+    ///  at <paramref name="caret"/>, so that a following plain Shift+Arrow extends from the right end.
+    /// </summary>
+    private static void SetDirectionalSelection(Control control, int anchor, int caret)
+    {
+        IntPtr handle = GetEditHandle(control);
+
+        if (handle == IntPtr.Zero)
+        {
+            SetSelectionStart(control, Math.Min(anchor, caret));
+            SetSelectionLength(control, Math.Abs(caret - anchor));
+            return;
+        }
+
+        NativeMethods.SendMessageW(handle, NativeMethods.EM_SETSEL, (IntPtr)anchor, (IntPtr)caret);
+    }
+
+    private static IntPtr GetEditHandle(Control control)
+        => control switch
+        {
+            TextBoxBase { IsHandleCreated: true } t => t.Handle,
+            ComboBox cb when _comboBoxEditWindows.TryGetValue(cb, out ComboBoxEditWindow? editWindow) => editWindow.Handle,
+            _ => IntPtr.Zero
+        };
+
+    private static void ScrollToCaret(Control control)
+    {
+        IntPtr handle = GetEditHandle(control);
+        if (handle != IntPtr.Zero)
+        {
+            NativeMethods.SendMessageW(handle, NativeMethods.EM_SCROLLCARET);
+        }
+    }
 
     private static int GetSelectionStart(Control control)
         => control switch
@@ -638,7 +739,14 @@ public static class TextBoxWordBreakExtensions
                     // anchor (e.g. one left at 0 by a prior Select All) is collapsed back on mouse-up.
                     // Shift+click is skipped: the edit control extends the selection to the click, and
                     // a zero-length pending caret would collapse it back on mouse-up.
-                    SetPendingSelection(_comboBox, CharIndexFromPosition(m.LParam), 0, m.LParam.ToPoint());
+                    SetPendingSelection(_comboBox, GetNativeCaretOrHitTest(_comboBox, CharIndexFromPosition(m.LParam)), 0, m.LParam.ToPoint());
+                    break;
+                }
+
+                case NativeMethods.WM_LBUTTONDOWN:
+                {
+                    // Shift+click extends natively and keeps the fixed end of the previous selection.
+                    SetAnchor(_comboBox, ResolveAnchorAfterShiftClick(_comboBox, CharIndexFromPosition(m.LParam)));
                     break;
                 }
             }
@@ -650,11 +758,13 @@ public static class TextBoxWordBreakExtensions
         /// </summary>
         private int CharIndexFromPosition(IntPtr packedPosition)
         {
-            int result = NativeMethods.SendMessageW(Handle, NativeMethods.EM_CHARFROMPOS, IntPtr.Zero, packedPosition).ToInt32();
+            // Truncate without a checked conversion: the 32-bit result may arrive zero- or sign-extended.
+            int result = unchecked((int)(long)NativeMethods.SendMessageW(Handle, NativeMethods.EM_CHARFROMPOS, IntPtr.Zero, packedPosition));
 
             // The character index is the unsigned LOWORD (0..65535); the HIWORD is the line. A whole
-            // result of -1 means no character, which callers treat as "out of range".
-            return result < 0 ? -1 : result & 0xFFFF;
+            // result of -1 means no character, which callers treat as "out of range". It must be
+            // checked before masking, which would turn it into index 65535.
+            return result == -1 ? -1 : result & 0xFFFF;
         }
     }
 
@@ -669,6 +779,9 @@ public static class TextBoxWordBreakExtensions
 
         public static (int Start, int End) GetWordAt(string text, int index) =>
             TextBoxWordBreakExtensions.GetWordAt(text, index);
+
+        public static void HandleKeyDown(Control control, KeyEventArgs e) =>
+            TextBoxWordBreakExtensions.HandleKeyDown(control, e);
     }
 #pragma warning restore S3218
 }
