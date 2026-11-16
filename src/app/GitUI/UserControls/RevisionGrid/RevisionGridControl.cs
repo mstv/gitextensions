@@ -1108,8 +1108,6 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
                 .ObserveOn(ThreadPoolScheduler.Instance)
                 .Subscribe(OnRevisionRead, OnRevisionReaderError, OnRevisionReadCompleted);
 
-            IndexWatcher.Reset();
-
             // Selected is null: Update to trigger reset the tabs etc.
             _selectionTimer.Stop();
             _selectionTimer.Start();
@@ -1132,6 +1130,13 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
             ThreadHelper.FileAndForget(async () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                // The git commands for the remote colors and the watchers must not delay painting the window.
+                // The colors are loaded in parallel to reading the refs, they are required when the first revisions are painted.
+                Task<FrozenDictionary<string, Color>> getRemoteColors = Task.Run(capturedModule.GetRemoteColors, cancellationToken);
+
+                // Watch for changes before the refs are read, so that none is missed
+                IndexWatcher.Reset();
 
                 // If the current checkout (HEAD) is changed, don't get the currently selected rows,
                 // select the new current checkout instead.
@@ -1156,6 +1161,24 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
                 _gridView._revisionGraph.OnlyFirstParent = _filterInfo.ShowOnlyFirstParent;
                 _gridView._revisionGraph.HeadId = CurrentCheckout;
+
+                try
+                {
+                    // Loading the colors cannot be cancelled. If this refresh has been replaced meanwhile
+                    // (e.g. after the revision reader failed), its colors must not overwrite those of the new one.
+                    cancellationToken.ThrowIfCancellationRequested();
+                    _gridView.RemoteColors = await getRemoteColors;
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // A refresh which has been replaced meanwhile must not report the failure
+                    // nor cancel the refresh which replaced it
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    // The revisions are not added to the grid without the colors, do not wait for them forever
+                    OnRevisionReaderError(ex);
+                    return;
+                }
 
                 // Allow add revisions to the grid
                 semaphoreUpdateGrid.Release();

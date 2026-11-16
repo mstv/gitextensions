@@ -985,11 +985,6 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
             toolStripButtonPush.Enabled = validBrowseDir;
             toolStripButtonPush.ResetBeforeUpdate();
 
-            if (validBrowseDir)
-            {
-                UpdateFetchAllVisibility();
-            }
-
             dashboardToolStripMenuItem.Visible = isDashboard;
             pluginsToolStripMenuItem.Visible = validBrowseDir;
             repositoryToolStripMenuItem.Visible = validBrowseDir;
