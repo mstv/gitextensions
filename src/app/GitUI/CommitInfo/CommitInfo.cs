@@ -923,9 +923,9 @@ public partial class CommitInfo : GitModuleControl
             string[] remoteBranchRegexes = [.. branchRegexes.Select(regex => $"^{_remoteBranchPrefix}[^/]+/({regex})$")];
             string[] remoteRegexes = [.. AppSettings.PrioritizedRemoteNames.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(regex => $"^{_remoteBranchPrefix}({regex})/")];
 
-            Dictionary<string, int> localBranchPriorities = Priority.Priorities(branches, x => x, localBranchRegexes);
-            Dictionary<string, int> remoteBranchPriorities = Priority.Priorities(branches, x => x, remoteBranchRegexes);
-            Dictionary<string, int> remotePriorities = Priority.Priorities(branches, x => x, remoteRegexes);
+            IReadOnlyDictionary<string, int> localBranchPriorities = branches.GetPriorityMapping(x => x, localBranchRegexes);
+            IReadOnlyDictionary<string, int> remoteBranchPriorities = branches.GetPriorityMapping(x => x, remoteBranchRegexes);
+            IReadOnlyDictionary<string, int> remotePriorities = branches.GetPriorityMapping(x => x, remoteRegexes);
 
             foreach (string branch in branches)
             {
@@ -987,7 +987,7 @@ public partial class CommitInfo : GitModuleControl
 
                 // Get the index of the match for prioritized sorting,
                 // set order to regexes.Length at no match
-                bool TryGetOrder(string branch, string[] regexes, Dictionary<string, int> priorities, out int order)
+                bool TryGetOrder(string branch, string[] regexes, IReadOnlyDictionary<string, int> priorities, out int order)
                 {
                     if (priorities.TryGetValue(branch, out order))
                     {
@@ -998,7 +998,7 @@ public partial class CommitInfo : GitModuleControl
                     return false;
                 }
 
-                int GetOrder(string branch, string[] regexes, Dictionary<string, int> priorities)
+                int GetOrder(string branch, string[] regexes, IReadOnlyDictionary<string, int> priorities)
                 {
                     TryGetOrder(branch, regexes, priorities, out int order);
                     return order;

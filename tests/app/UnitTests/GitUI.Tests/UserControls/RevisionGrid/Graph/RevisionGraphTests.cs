@@ -4,6 +4,7 @@ using GitExtensions.Extensibility.Git;
 using GitUI.UserControls.RevisionGrid;
 using GitUI.UserControls.RevisionGrid.Columns;
 using GitUI.UserControls.RevisionGrid.Graph;
+using GitUI.UserControls.RevisionGrid.Graph.Rendering;
 using GitUIPluginInterfaces;
 using NSubstitute;
 
@@ -875,7 +876,7 @@ public class RevisionGraphTests
             line[row.GetCurrentRevisionLane() * 2] = subject?.Length is 1 ? subject[0] : '*';
 
             // List refs applying to commit
-            string refs = string.Join(" ", row.Revision.GitRevision?.Refs.Select(r => r.Name) ?? []);
+            string refs = string.Join("", row.Revision.GitRevision?.Refs.Select(r => $" {r.Name}") ?? []);
             if (row.Revision.Objectid == ObjectId.WorkTreeId)
             {
                 refs += " [Working directory]";
@@ -886,7 +887,7 @@ public class RevisionGraphTests
                 refs += " [Commit index]";
             }
 
-            graph.Add($"{new string(line)}  {refs}".TrimEnd());
+            graph.Add($"{new string(line)} {refs}".TrimEnd());
 
             IRevisionGraphRow? nextRow = revisionGraph.GetSegmentsForRow(rowIndex + 1);
             if (nextRow == null)
@@ -1069,7 +1070,7 @@ public class RevisionGraphTests
             // Size window to fit graph
             int maxLaneCount = Enumerable.Range(0, revisionGraph.Count)
                 .Max(rowIndex => revisionGraph.GetSegmentsForRow(rowIndex)?.GetLaneCount() ?? 0);
-            window.ClientSize = new((graphColumn.GetTestAccessor().LaneWidth * (maxLaneCount + 1)) + subjectColumn.Column.Width,
+            window.ClientSize = new((GraphRenderer.LaneWidth * (maxLaneCount + 1)) + subjectColumn.Column.Width,
                 grid.RowTemplate.Height * (rowCount + 1));
 
             AppSettings.ShowRevisionGridGraphColumn = true;
