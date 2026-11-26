@@ -70,11 +70,11 @@ public partial class FormRecentReposSettings : GitExtensionsForm
 
         AppSettings.ShorteningRecentRepoPathStrategy = GetShorteningStrategy();
         AppSettings.HideTopRepositoriesFromRecentList.Value = hideTopRepositoriesFromRecentList.Checked;
-        AppSettings.SortTopRepos = sortTopRepos.Checked;
-        AppSettings.SortRecentRepos = sortRecentRepos.Checked;
-        AppSettings.MaxTopRepositories = (int)_NO_TRANSLATE_maxRecentRepositories.Value;
-        AppSettings.RecentReposComboMinWidth = (int)comboMinWidthEdit.Value;
-        AppSettings.RecentRepositoriesHistorySize = (int)_NO_TRANSLATE_RecentRepositoriesHistorySize.Value;
+        AppSettings.SortTopRepos.Value = sortTopRepos.Checked;
+        AppSettings.SortRecentRepos.Value = sortRecentRepos.Checked;
+        AppSettings.MaxTopRepositories.Value = (int)_NO_TRANSLATE_maxRecentRepositories.Value;
+        AppSettings.RecentReposComboMinWidth.Value = (int)comboMinWidthEdit.Value;
+        AppSettings.RecentRepositoriesHistorySize.Value = (int)_NO_TRANSLATE_RecentRepositoriesHistorySize.Value;
 
         ThreadHelper.JoinableTaskFactory.Run(() => RepositoryHistoryManager.Locals.SaveRecentHistoryAsync(_repositoryHistory));
     }

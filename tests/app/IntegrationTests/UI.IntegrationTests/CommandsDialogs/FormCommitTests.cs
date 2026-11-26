@@ -57,15 +57,15 @@ public class FormCommitTests
         _showAvailableDiffTools = AppSettings.ShowAvailableDiffTools;
 
         // ...and stop loading auto completion and custom diff tools
-        AppSettings.ProvideAutocompletion = false;
-        AppSettings.ShowAvailableDiffTools = false;
+        AppSettings.ProvideAutocompletion.Value = false;
+        AppSettings.ShowAvailableDiffTools.Value = false;
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        AppSettings.ProvideAutocompletion = _provideAutocompletion;
-        AppSettings.ShowAvailableDiffTools = _showAvailableDiffTools;
+        AppSettings.ProvideAutocompletion.Value = _provideAutocompletion;
+        AppSettings.ShowAvailableDiffTools.Value = _showAvailableDiffTools;
     }
 
     [Test]
@@ -233,7 +233,7 @@ public class FormCommitTests
     public void SelectMessageFromHistory()
     {
         const string lastCommitMessage = "last commit message";
-        AppSettings.LastCommitMessage = lastCommitMessage;
+        AppSettings.LastCommitMessage.Value = lastCommitMessage;
 
         RunFormTest(form =>
         {
@@ -253,7 +253,7 @@ public class FormCommitTests
     public void Should_handle_well_commit_message_in_commit_message_menu()
     {
         const string lastCommitMessage = "last commit message";
-        AppSettings.LastCommitMessage = lastCommitMessage;
+        AppSettings.LastCommitMessage.Value = lastCommitMessage;
 
         _referenceRepository.CreateCommit("Only first line\n\nof a multi-line commit message\nmust be displayed in the menu");
         _referenceRepository.CreateCommit("Too long commit message that should be shorten because first line of a commit message is only 50 chars long");
@@ -456,11 +456,11 @@ public class FormCommitTests
     [Test]
     public void ResetSoft()
     {
-        AppSettings.CommitAndPushForcedWhenAmend = true;
+        AppSettings.CommitAndPushForcedWhenAmend.Value = true;
         AppSettings.DontConfirmAmend.Value = true;
-        AppSettings.CloseCommitDialogAfterCommit = false;
-        AppSettings.CloseCommitDialogAfterLastCommit = false;
-        AppSettings.CloseProcessDialog = true;
+        AppSettings.CloseCommitDialogAfterCommit.Value = false;
+        AppSettings.CloseCommitDialogAfterLastCommit.Value = false;
+        AppSettings.CloseProcessDialog.Value = true;
 
         int defaultBackColor = SystemColors.ButtonFace.ToArgb();
         int forceBackColor = OtherColors.AmendButtonForcedColor.ToArgb();

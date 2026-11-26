@@ -1258,7 +1258,7 @@ public sealed class GitUICommands : IGitUICommands
             return;
         }
 
-        bool updateSubmodules = AppSettings.UpdateSubmodulesOnCheckout ?? (AppSettings.DontConfirmUpdateSubmodulesOnCheckout.Value ?? MessageBoxes.ConfirmUpdateSubmodules(owner));
+        bool updateSubmodules = AppSettings.UpdateSubmodulesOnCheckout.Value ?? (AppSettings.DontConfirmUpdateSubmodulesOnCheckout.Value ?? MessageBoxes.ConfirmUpdateSubmodules(owner));
 
         if (updateSubmodules)
         {
@@ -2083,7 +2083,7 @@ public sealed class GitUICommands : IGitUICommands
 
         if (arguments.ContainsKey("autostash"))
         {
-            AppSettings.AutoStash = true;
+            AppSettings.AutoStash.Value = true;
         }
     }
 

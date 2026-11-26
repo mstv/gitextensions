@@ -571,7 +571,7 @@ public partial class EditNetSpell : GitModuleControl
         };
         mi.Click += (s, _) =>
         {
-            AppSettings.ProvideAutocompletion = !AppSettings.ProvideAutocompletion;
+            AppSettings.ProvideAutocompletion.Value = !AppSettings.ProvideAutocompletion;
             ToggleAutoCompletion();
         };
         SpellCheckContextMenu.Items.Add(mi);
@@ -602,7 +602,7 @@ public partial class EditNetSpell : GitModuleControl
 
     private void MarkIllFormedLinesInCommitMsgClick(object? sender, EventArgs e)
     {
-        AppSettings.MarkIllFormedLinesInCommitMsg = !AppSettings.MarkIllFormedLinesInCommitMsg;
+        AppSettings.MarkIllFormedLinesInCommitMsg.Value = !AppSettings.MarkIllFormedLinesInCommitMsg;
         CheckSpelling();
     }
 

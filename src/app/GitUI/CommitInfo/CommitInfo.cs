@@ -742,19 +742,19 @@ public partial class CommitInfo : GitModuleControl
 
     private void showContainedInBranchesToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.CommitInfoShowContainedInBranchesLocal = !AppSettings.CommitInfoShowContainedInBranchesLocal;
+        AppSettings.CommitInfoShowContainedInBranchesLocal.Value = !AppSettings.CommitInfoShowContainedInBranchesLocal;
         ReloadCommitInfo();
     }
 
     private void showContainedInTagsToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.CommitInfoShowContainedInTags = !AppSettings.CommitInfoShowContainedInTags;
+        AppSettings.CommitInfoShowContainedInTags.Value = !AppSettings.CommitInfoShowContainedInTags;
         ReloadCommitInfo();
     }
 
     private void showTagThisCommitDerivesFromMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.CommitInfoShowTagThisCommitDerivesFrom = !AppSettings.CommitInfoShowTagThisCommitDerivesFrom;
+        AppSettings.CommitInfoShowTagThisCommitDerivesFrom.Value = !AppSettings.CommitInfoShowTagThisCommitDerivesFrom;
         ReloadCommitInfo();
     }
 
@@ -766,19 +766,19 @@ public partial class CommitInfo : GitModuleControl
 
     private void showContainedInBranchesRemoteToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.CommitInfoShowContainedInBranchesRemote = !AppSettings.CommitInfoShowContainedInBranchesRemote;
+        AppSettings.CommitInfoShowContainedInBranchesRemote.Value = !AppSettings.CommitInfoShowContainedInBranchesRemote;
         ReloadCommitInfo();
     }
 
     private void showContainedInBranchesRemoteIfNoLocalToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal = !AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal;
+        AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal.Value = !AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal;
         ReloadCommitInfo();
     }
 
     private void showMessagesOfAnnotatedTagsToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.ShowAnnotatedTagsMessages = !AppSettings.ShowAnnotatedTagsMessages;
+        AppSettings.ShowAnnotatedTagsMessages.Value = !AppSettings.ShowAnnotatedTagsMessages;
         ReloadCommitInfo();
     }
 

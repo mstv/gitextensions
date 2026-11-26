@@ -80,7 +80,7 @@ public partial class FormMergeBranch : GitModuleForm
         IDetachedSettings detachedSettings = Module.GetEffectiveSettings().Detached();
 
         detachedSettings.NoFastForwardMerge = noFastForward.Checked;
-        AppSettings.DontCommitMerge = noCommit.Checked;
+        AppSettings.DontCommitMerge.Value = noCommit.Checked;
 
         bool success = ScriptsRunner.RunEventScripts(ScriptEvent.BeforeMerge, this);
         if (!success)

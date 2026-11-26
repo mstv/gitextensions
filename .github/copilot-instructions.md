@@ -76,6 +76,7 @@ For example:
 * Prefer file-scoped namespace declarations and single-line `using` declarations.
 * Order `using` directives alphabetically by namespace, with `System.*` directives first (StyleCop SA1208/SA1210). When adding a new `using`, insert it at the correct alphabetical position rather than appending it to the end of the list.
 * Insert a newline before the opening curly brace of any code block (e.g., after `if`, `for`, `while`, `foreach`, `using`, `try`, etc.).
+* Alphabetize members (fields, properties, methods, etc.) within their groups, e.g. by property name rather than storage key.
 * Ensure that the final return statement of a method is on its own line.
 * Use pattern matching and switch expressions wherever possible.
 * Use `nameof` instead of string literals when referring to code symbols.

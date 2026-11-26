@@ -53,7 +53,7 @@ public partial class SshSettingsPage : SettingsPageWithHeader
         AppSettings.Plink = PlinkPath.Text;
         AppSettings.Puttygen = PuttygenPath.Text;
         AppSettings.Pageant = PageantPath.Text;
-        AppSettings.AutoStartPageant = AutostartPageant.Checked;
+        AppSettings.AutoStartPageant.Value = AutostartPageant.Checked;
 
         string path;
         if (OpenSSH.Checked)

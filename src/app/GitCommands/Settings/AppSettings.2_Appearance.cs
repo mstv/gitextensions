@@ -4,6 +4,8 @@ namespace GitCommands;
 
 public static partial class AppSettings
 {
+    public static IntegerSetting AvatarCacheSize { get; } = new(AppearanceSettingsPath, "AvatarCacheSize", defaultValue: 200);
+
     /// <summary>
     ///  Gets or sets whether to remember the preference for diff appearance.
     /// </summary>

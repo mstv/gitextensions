@@ -20,7 +20,7 @@ public class LocalRepositoryManagerTests
     {
         // backup the user setting, will restore it at the end of the test run
         _userSetting = AppSettings.RecentRepositoriesHistorySize;
-        AppSettings.RecentRepositoriesHistorySize = 30;
+        AppSettings.RecentRepositoriesHistorySize.Value = 30;
 
         _repositoryStorage = Substitute.For<IRepositoryStorage>();
         _repositoryHistoryMigrator = Substitute.For<IRepositoryHistoryMigrator>();
@@ -30,7 +30,7 @@ public class LocalRepositoryManagerTests
     [TearDown]
     public void TearDown()
     {
-        AppSettings.RecentRepositoriesHistorySize = _userSetting;
+        AppSettings.RecentRepositoriesHistorySize.Value = _userSetting;
     }
 
     [Test]
@@ -158,7 +158,7 @@ public class LocalRepositoryManagerTests
     public async Task LoadRecentHistoryAsync_should_trim_history_per_settings()
     {
         const int size = 3;
-        AppSettings.RecentRepositoriesHistorySize = size;
+        AppSettings.RecentRepositoriesHistorySize.Value = size;
         List<Repository> history =
         [
             new Repository("path1") { Category = "my" },
@@ -181,7 +181,7 @@ public class LocalRepositoryManagerTests
     public async Task LoadRecentHistoryAsync_should_keep_anchored_repositories_when_trimming()
     {
         const int size = 3;
-        AppSettings.RecentRepositoriesHistorySize = size;
+        AppSettings.RecentRepositoriesHistorySize.Value = size;
         List<Repository> history =
         [
             new Repository("path1"),
@@ -204,7 +204,7 @@ public class LocalRepositoryManagerTests
     public async Task LoadRecentHistoryAsync_should_keep_all_anchored_repositories_when_they_exceed_size()
     {
         const int size = 2;
-        AppSettings.RecentRepositoriesHistorySize = size;
+        AppSettings.RecentRepositoriesHistorySize.Value = size;
         List<Repository> history =
         [
             new Repository("path1"),
@@ -355,7 +355,7 @@ public class LocalRepositoryManagerTests
     public async Task SaveRecentHistoryAsync_should_trim_history_size()
     {
         const int size = 3;
-        AppSettings.RecentRepositoriesHistorySize = size;
+        AppSettings.RecentRepositoriesHistorySize.Value = size;
         List<Repository> history =
         [
             new Repository("path1"),

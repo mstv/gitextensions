@@ -51,7 +51,7 @@ public partial class FormFormatPatch : GitModuleForm
     {
         if (Directory.Exists(OutputPath.Text))
         {
-            AppSettings.LastFormatPatchDir = OutputPath.Text;
+            AppSettings.LastFormatPatchDir.Value = OutputPath.Text;
         }
     }
 

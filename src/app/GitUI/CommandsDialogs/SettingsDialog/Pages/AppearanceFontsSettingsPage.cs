@@ -41,7 +41,7 @@ public partial class AppearanceFontsSettingsPage : SettingsPageWithHeader
         AppSettings.CommitFont = _commitFont;
         AppSettings.MonospaceFont = _monospaceFont;
 
-        AppSettings.ShowEolMarkerAsGlyph = ShowEolMarkerAsGlyph.Checked;
+        AppSettings.ShowEolMarkerAsGlyph.Value = ShowEolMarkerAsGlyph.Checked;
 
         base.PageToSettings();
     }

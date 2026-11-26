@@ -42,17 +42,17 @@ public class FormBrowse_LeftPanel_SubmodulesTests
         _showAvailableDiffTools = AppSettings.ShowAvailableDiffTools;
 
         // Stop loading custom diff tools
-        AppSettings.ShowAvailableDiffTools = false;
+        AppSettings.ShowAvailableDiffTools.Value = false;
 
         // We don't want avatars during tests, otherwise we will be attempting to download them from gravatar....
-        AppSettings.ShowAuthorAvatarColumn = false;
+        AppSettings.ShowAuthorAvatarColumn.Value = false;
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        AppSettings.ShowAuthorAvatarColumn = _originalShowAuthorAvatarColumn;
-        AppSettings.ShowAvailableDiffTools = _showAvailableDiffTools;
+        AppSettings.ShowAuthorAvatarColumn.Value = _originalShowAuthorAvatarColumn;
+        AppSettings.ShowAvailableDiffTools.Value = _showAvailableDiffTools;
     }
 
     [SetUp]

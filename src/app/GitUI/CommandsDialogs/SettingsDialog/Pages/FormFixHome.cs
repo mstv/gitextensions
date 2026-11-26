@@ -260,14 +260,14 @@ public partial class FormFixHome : GitExtensionsForm
                 return;
             }
 
-            AppSettings.CustomHomeDir = otherHomeDir.Text;
+            AppSettings.CustomHomeDir.Value = otherHomeDir.Text;
         }
         else
         {
-            AppSettings.CustomHomeDir = "";
+            AppSettings.CustomHomeDir.Value = "";
         }
 
-        AppSettings.UserProfileHomeDir = userprofileHome.Checked;
+        AppSettings.UserProfileHomeDir.Value = userprofileHome.Checked;
 
         EnvironmentConfiguration.SetEnvironmentVariables();
         string? path = Environment.GetEnvironmentVariable("HOME");

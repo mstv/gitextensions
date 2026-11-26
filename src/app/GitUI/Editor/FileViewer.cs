@@ -2079,7 +2079,7 @@ public partial class FileViewer : GitModuleControl
     private void ContinuousScrollToolStripMenuItemClick(object sender, EventArgs e)
     {
         automaticContinuousScrollToolStripMenuItem.Checked = !automaticContinuousScrollToolStripMenuItem.Checked;
-        AppSettings.AutomaticContinuousScroll = automaticContinuousScrollToolStripMenuItem.Checked;
+        AppSettings.AutomaticContinuousScroll.Value = automaticContinuousScrollToolStripMenuItem.Checked;
     }
 
     private void ShowNonprintableCharactersToolStripMenuItemClick(object sender, EventArgs e)

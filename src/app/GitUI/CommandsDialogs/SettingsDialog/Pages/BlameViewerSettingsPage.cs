@@ -36,17 +36,17 @@ public partial class BlameViewerSettingsPage : SettingsPageWithHeader
 
     protected override void PageToSettings()
     {
-        AppSettings.IgnoreWhitespaceOnBlame = cbIgnoreWhitespace.Checked;
-        AppSettings.DetectCopyInAllOnBlame = cbDetectMoveAndCopyInAllFiles.Checked;
-        AppSettings.DetectCopyInFileOnBlame = cbDetectMoveAndCopyInThisFile.Checked;
+        AppSettings.IgnoreWhitespaceOnBlame.Value = cbIgnoreWhitespace.Checked;
+        AppSettings.DetectCopyInAllOnBlame.Value = cbDetectMoveAndCopyInAllFiles.Checked;
+        AppSettings.DetectCopyInFileOnBlame.Value = cbDetectMoveAndCopyInThisFile.Checked;
 
-        AppSettings.BlameDisplayAuthorFirst = cbDisplayAuthorFirst.Checked;
-        AppSettings.BlameShowAuthor = cbShowAuthor.Checked;
-        AppSettings.BlameShowAuthorDate = cbShowAuthorDate.Checked;
-        AppSettings.BlameShowAuthorTime = cbShowAuthorTime.Checked;
-        AppSettings.BlameShowLineNumbers = cbShowLineNumbers.Checked;
-        AppSettings.BlameShowOriginalFilePath = cbShowOriginalFilePath.Checked;
-        AppSettings.BlameShowAuthorAvatar = cbShowAuthorAvatar.Checked;
+        AppSettings.BlameDisplayAuthorFirst.Value = cbDisplayAuthorFirst.Checked;
+        AppSettings.BlameShowAuthor.Value = cbShowAuthor.Checked;
+        AppSettings.BlameShowAuthorDate.Value = cbShowAuthorDate.Checked;
+        AppSettings.BlameShowAuthorTime.Value = cbShowAuthorTime.Checked;
+        AppSettings.BlameShowLineNumbers.Value = cbShowLineNumbers.Checked;
+        AppSettings.BlameShowOriginalFilePath.Value = cbShowOriginalFilePath.Checked;
+        AppSettings.BlameShowAuthorAvatar.Value = cbShowAuthorAvatar.Checked;
 
         base.PageToSettings();
     }

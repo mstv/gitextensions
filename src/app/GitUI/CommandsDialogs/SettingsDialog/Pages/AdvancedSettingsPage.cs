@@ -42,16 +42,16 @@ public partial class AdvancedSettingsPage : SettingsPageWithHeader
 
     protected override void PageToSettings()
     {
-        AppSettings.AlwaysShowCheckoutBranchDlg = chkAlwaysShowCheckoutDlg.Checked;
-        AppSettings.UseDefaultCheckoutBranchAction = chkUseLocalChangesAction.Checked;
-        AppSettings.DontShowHelpImages = chkDontSHowHelpImages.Checked;
-        AppSettings.AlwaysShowAdvOpt = chkAlwaysShowAdvOpt.Checked;
-        AppSettings.CheckForUpdates = chkCheckForUpdates.Checked;
-        AppSettings.CheckForReleaseCandidates = chkCheckForRCVersions.Checked;
+        AppSettings.AlwaysShowCheckoutBranchDlg.Value = chkAlwaysShowCheckoutDlg.Checked;
+        AppSettings.UseDefaultCheckoutBranchAction.Value = chkUseLocalChangesAction.Checked;
+        AppSettings.DontShowHelpImages.Value = chkDontSHowHelpImages.Checked;
+        AppSettings.AlwaysShowAdvOpt.Value = chkAlwaysShowAdvOpt.Checked;
+        AppSettings.CheckForUpdates.Value = chkCheckForUpdates.Checked;
+        AppSettings.CheckForReleaseCandidates.Value = chkCheckForRCVersions.Checked;
         AppSettings.UseConsoleEmulatorForCommands.Value = chkConsoleEmulator.Checked;
         AppSettings.AutoNormaliseBranchName.Value = chkAutoNormaliseBranchName.Checked;
         AppSettings.AutoNormaliseSymbol = (string)cboAutoNormaliseSymbol.SelectedValue!;
-        AppSettings.CommitAndPushForcedWhenAmend = chkCommitAndPushForcedWhenAmend.Checked;
+        AppSettings.CommitAndPushForcedWhenAmend.Value = chkCommitAndPushForcedWhenAmend.Checked;
 
         base.PageToSettings();
     }

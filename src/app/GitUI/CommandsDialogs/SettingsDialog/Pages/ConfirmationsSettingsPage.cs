@@ -62,8 +62,8 @@ public partial class ConfirmationsSettingsPage : SettingsPageWithHeader
         AppSettings.ConfirmBranchCheckout.Value = chkBranchCheckoutConfirmation.Checked;
 
         // Stashes:
-        AppSettings.AutoPopStashAfterPull = ToBooleanInverted(chkAutoPopStashAfterPull.CheckState);
-        AppSettings.AutoPopStashAfterCheckoutBranch = ToBooleanInverted(chkAutoPopStashAfterCheckout.CheckState);
+        AppSettings.AutoPopStashAfterPull.Value = ToBooleanInverted(chkAutoPopStashAfterPull.CheckState);
+        AppSettings.AutoPopStashAfterCheckoutBranch.Value = ToBooleanInverted(chkAutoPopStashAfterCheckout.CheckState);
         AppSettings.DontConfirmStashDrop.Value = !chkConfirmStashDrop.Checked;
 
         // Conflict resolution:

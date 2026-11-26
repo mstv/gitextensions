@@ -13,7 +13,7 @@ public static class DiagnosticsClient
     private static TelemetryClient? _client;
     private static TelemetryConfiguration _telemetryConfiguration = TelemetryConfiguration.CreateDefault();
 
-    private static bool Enabled => _initialized && (AppSettings.TelemetryEnabled ?? false);
+    private static bool Enabled => _initialized && (AppSettings.TelemetryEnabled.Value ?? false);
 
     public static void Initialize(bool isDirty)
     {

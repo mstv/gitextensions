@@ -33,12 +33,12 @@ internal sealed class CommitInfoPanelTestSettingsScope : IDisposable
 
         if (disableAsyncCommitInfoData)
         {
-            AppSettings.CommitInfoShowContainedInBranchesLocal = false;
-            AppSettings.CommitInfoShowContainedInBranchesRemote = false;
-            AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal = false;
-            AppSettings.CommitInfoShowContainedInTags = false;
-            AppSettings.CommitInfoShowTagThisCommitDerivesFrom = false;
-            AppSettings.ShowAnnotatedTagsMessages = false;
+            AppSettings.CommitInfoShowContainedInBranchesLocal.Value = false;
+            AppSettings.CommitInfoShowContainedInBranchesRemote.Value = false;
+            AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal.Value = false;
+            AppSettings.CommitInfoShowContainedInTags.Value = false;
+            AppSettings.CommitInfoShowTagThisCommitDerivesFrom.Value = false;
+            AppSettings.ShowAnnotatedTagsMessages.Value = false;
         }
 
         if (commitInfoPosition is not null)
@@ -48,7 +48,7 @@ internal sealed class CommitInfoPanelTestSettingsScope : IDisposable
 
         if (revisionGraphShowArtificialCommits is not null)
         {
-            AppSettings.RevisionGraphShowArtificialCommits = revisionGraphShowArtificialCommits.Value;
+            AppSettings.RevisionGraphShowArtificialCommits.Value = revisionGraphShowArtificialCommits.Value;
         }
     }
 
@@ -63,13 +63,13 @@ internal sealed class CommitInfoPanelTestSettingsScope : IDisposable
 
     public void Dispose()
     {
-        AppSettings.CommitInfoShowContainedInBranchesLocal = _commitInfoShowContainedInBranchesLocal;
-        AppSettings.CommitInfoShowContainedInBranchesRemote = _commitInfoShowContainedInBranchesRemote;
-        AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal = _commitInfoShowContainedInBranchesRemoteIfNoLocal;
-        AppSettings.CommitInfoShowContainedInTags = _commitInfoShowContainedInTags;
-        AppSettings.CommitInfoShowTagThisCommitDerivesFrom = _commitInfoShowTagThisCommitDerivesFrom;
-        AppSettings.ShowAnnotatedTagsMessages = _showAnnotatedTagsMessages;
+        AppSettings.CommitInfoShowContainedInBranchesLocal.Value = _commitInfoShowContainedInBranchesLocal;
+        AppSettings.CommitInfoShowContainedInBranchesRemote.Value = _commitInfoShowContainedInBranchesRemote;
+        AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal.Value = _commitInfoShowContainedInBranchesRemoteIfNoLocal;
+        AppSettings.CommitInfoShowContainedInTags.Value = _commitInfoShowContainedInTags;
+        AppSettings.CommitInfoShowTagThisCommitDerivesFrom.Value = _commitInfoShowTagThisCommitDerivesFrom;
+        AppSettings.ShowAnnotatedTagsMessages.Value = _showAnnotatedTagsMessages;
         AppSettings.CommitInfoPosition.Value = _commitInfoPosition;
-        AppSettings.RevisionGraphShowArtificialCommits = _revisionGraphShowArtificialCommits;
+        AppSettings.RevisionGraphShowArtificialCommits.Value = _revisionGraphShowArtificialCommits;
     }
 }

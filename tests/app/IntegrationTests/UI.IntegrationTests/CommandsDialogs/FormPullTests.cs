@@ -34,7 +34,7 @@ public class FormPullTests
     {
         AppSettings.DefaultPullAction = _originalDefaultPullAction;
         AppSettings.FormPullAction = _originalFormPullAction;
-        AppSettings.AutoStash = _originalAutoStash;
+        AppSettings.AutoStash.Value = _originalAutoStash;
 
         _referenceRepository.Dispose();
     }

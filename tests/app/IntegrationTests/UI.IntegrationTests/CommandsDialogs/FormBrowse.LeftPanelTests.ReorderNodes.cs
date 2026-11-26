@@ -30,10 +30,10 @@ public class FormBrowse_LeftPanel_ReorderNodesTest
         _showAvailableDiffTools = AppSettings.ShowAvailableDiffTools;
 
         // Stop loading custom diff tools
-        AppSettings.ShowAvailableDiffTools = false;
+        AppSettings.ShowAvailableDiffTools.Value = false;
 
         // We don't want avatars during tests, otherwise we will be attempting to download them from gravatar....
-        AppSettings.ShowAuthorAvatarColumn = false;
+        AppSettings.ShowAuthorAvatarColumn.Value = false;
 
         // Show all root nodes for test, restore when done
         _originalRepoObjectsTreeShow.Add(AppSettings.RepoObjectsTreeShowBranches);
@@ -42,26 +42,26 @@ public class FormBrowse_LeftPanel_ReorderNodesTest
         _originalRepoObjectsTreeShow.Add(AppSettings.RepoObjectsTreeShowTags);
         _originalRepoObjectsTreeShow.Add(AppSettings.RepoObjectsTreeShowStashes);
         _originalRepoObjectsTreeShow.Add(AppSettings.RepoObjectsTreeShowSubmodules);
-        AppSettings.RepoObjectsTreeShowBranches = true;
-        AppSettings.RepoObjectsTreeShowRemotes = true;
-        AppSettings.RepoObjectsTreeShowWorktrees = true;
-        AppSettings.RepoObjectsTreeShowTags = true;
-        AppSettings.RepoObjectsTreeShowStashes = true;
-        AppSettings.RepoObjectsTreeShowSubmodules = true;
+        AppSettings.RepoObjectsTreeShowBranches.Value = true;
+        AppSettings.RepoObjectsTreeShowRemotes.Value = true;
+        AppSettings.RepoObjectsTreeShowWorktrees.Value = true;
+        AppSettings.RepoObjectsTreeShowTags.Value = true;
+        AppSettings.RepoObjectsTreeShowStashes.Value = true;
+        AppSettings.RepoObjectsTreeShowSubmodules.Value = true;
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        AppSettings.ShowAuthorAvatarColumn = _originalShowAuthorAvatarColumn;
-        AppSettings.ShowAvailableDiffTools = _showAvailableDiffTools;
+        AppSettings.ShowAuthorAvatarColumn.Value = _originalShowAuthorAvatarColumn;
+        AppSettings.ShowAvailableDiffTools.Value = _showAvailableDiffTools;
 
-        AppSettings.RepoObjectsTreeShowBranches = _originalRepoObjectsTreeShow[0];
-        AppSettings.RepoObjectsTreeShowRemotes = _originalRepoObjectsTreeShow[1];
-        AppSettings.RepoObjectsTreeShowWorktrees = _originalRepoObjectsTreeShow[2];
-        AppSettings.RepoObjectsTreeShowTags = _originalRepoObjectsTreeShow[3];
-        AppSettings.RepoObjectsTreeShowSubmodules = _originalRepoObjectsTreeShow[4];
-        AppSettings.RepoObjectsTreeShowStashes = _originalRepoObjectsTreeShow[5];
+        AppSettings.RepoObjectsTreeShowBranches.Value = _originalRepoObjectsTreeShow[0];
+        AppSettings.RepoObjectsTreeShowRemotes.Value = _originalRepoObjectsTreeShow[1];
+        AppSettings.RepoObjectsTreeShowWorktrees.Value = _originalRepoObjectsTreeShow[2];
+        AppSettings.RepoObjectsTreeShowTags.Value = _originalRepoObjectsTreeShow[3];
+        AppSettings.RepoObjectsTreeShowSubmodules.Value = _originalRepoObjectsTreeShow[4];
+        AppSettings.RepoObjectsTreeShowStashes.Value = _originalRepoObjectsTreeShow[5];
     }
 
     [SetUp]

@@ -49,7 +49,7 @@ internal sealed class ColorsSettingsPageController
         if (_page.SelectedThemeId != ThemeId.WindowsAppColorModeId && _page.SelectedThemeId != ThemeId.DefaultLight)
         {
             // set only if UseSystemVisualStyle is not overridden
-            AppSettings.UseSystemVisualStyle = _page.UseSystemVisualStyle;
+            AppSettings.UseSystemVisualStyle.Value = _page.UseSystemVisualStyle;
         }
     }
 

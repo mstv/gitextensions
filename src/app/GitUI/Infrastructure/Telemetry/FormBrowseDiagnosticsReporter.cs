@@ -18,8 +18,8 @@ internal sealed class FormBrowseDiagnosticsReporter
             {
                 // layout
                 { "ShowLeftPanel".FormatKey(), _owner.MainSplitContainer.Panel1Collapsed.ToString() },
-                { nameof(AppSettings.ShowSplitViewLayout).FormatKey(), AppSettings.ShowSplitViewLayout.Value.ToString() },
-                { nameof(AppSettings.CommitInfoPosition).FormatKey(), AppSettings.CommitInfoPosition.Value.ToString() },
+                { nameof(AppSettings.ShowSplitViewLayout).FormatKey(), AppSettings.ShowSplitViewLayout.ToString() },
+                { nameof(AppSettings.CommitInfoPosition).FormatKey(), AppSettings.CommitInfoPosition.ToString() },
 
                 // revision grid
                 { nameof(AppSettings.ShowAuthorAvatarColumn).FormatKey(), AppSettings.ShowAuthorAvatarColumn.ToString() },
@@ -29,7 +29,7 @@ internal sealed class FormBrowseDiagnosticsReporter
 
                 // commit info panel
                 { nameof(AppSettings.ShowAuthorAvatarInCommitInfo).FormatKey(), AppSettings.ShowAuthorAvatarInCommitInfo.ToString() },
-                { nameof(AppSettings.ShowGpgInformation).FormatKey(), AppSettings.ShowGpgInformation.Value.ToString() },
+                { nameof(AppSettings.ShowGpgInformation).FormatKey(), AppSettings.ShowGpgInformation.ToString() },
 
                 // other
                 { nameof(AppSettings.ShowAheadBehindData).FormatKey(), AppSettings.ShowAheadBehindData.ToString() },

@@ -23,7 +23,7 @@ public class FilterToolBarTests
     {
         _originalShowOnlyFirstParent = AppSettings.ShowOnlyFirstParent;
         _originalShowReflogReferences = AppSettings.ShowReflogReferences;
-        AppSettings.ShowOnlyFirstParent = false;
+        AppSettings.ShowOnlyFirstParent.Value = false;
         AppSettings.ShowReflogReferences.Value = false;
 
         _gitModule = Substitute.For<IGitModule>();
@@ -37,7 +37,7 @@ public class FilterToolBarTests
     public void TearDown()
     {
         _filterToolBar.Dispose();
-        AppSettings.ShowOnlyFirstParent = _originalShowOnlyFirstParent;
+        AppSettings.ShowOnlyFirstParent.Value = _originalShowOnlyFirstParent;
         AppSettings.ShowReflogReferences.Value = _originalShowReflogReferences;
     }
 
@@ -232,14 +232,14 @@ public class FilterToolBarTests
         bool original = AppSettings.ShowOnlyFirstParent;
         try
         {
-            AppSettings.ShowOnlyFirstParent = settingValue;
+            AppSettings.ShowOnlyFirstParent.Value = settingValue;
 
             _revisionGridFilter.FilterChanged += Raise.EventWith(_revisionGridFilter, new FilterChangedEventArgs(new()));
             _filterToolBar.GetTestAccessor().tsmiShowOnlyFirstParent.Checked.Should().Be(settingValue);
         }
         finally
         {
-            AppSettings.ShowOnlyFirstParent = original;
+            AppSettings.ShowOnlyFirstParent.Value = original;
         }
     }
 

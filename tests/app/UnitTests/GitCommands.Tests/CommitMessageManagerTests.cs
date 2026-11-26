@@ -70,7 +70,7 @@ public class CommitMessageManagerTests
     [TearDown]
     public void TearDown()
     {
-        AppSettings.RememberAmendCommitState = _rememberAmendCommitState;
+        AppSettings.RememberAmendCommitState.Value = _rememberAmendCommitState;
 
         _referenceRepository.Dispose();
     }
@@ -99,7 +99,7 @@ public class CommitMessageManagerTests
     {
         _file.Exists(_amendSaveStatePath).Returns(false);
 
-        AppSettings.RememberAmendCommitState = true;
+        AppSettings.RememberAmendCommitState.Value = true;
         (await _manager.GetAmendStateAsync()).Should().BeFalse();
     }
 
@@ -108,7 +108,7 @@ public class CommitMessageManagerTests
     {
         _file.Exists(_amendSaveStatePath).Returns(true);
 
-        AppSettings.RememberAmendCommitState = false;
+        AppSettings.RememberAmendCommitState.Value = false;
         (await _manager.GetAmendStateAsync()).Should().BeFalse();
     }
 
@@ -128,7 +128,7 @@ public class CommitMessageManagerTests
         _file.Exists(_amendSaveStatePath).Returns(true);
         _file.ReadAllText(_amendSaveStatePath, Encoding.Default).Returns(amendText);
 
-        AppSettings.RememberAmendCommitState = true;
+        AppSettings.RememberAmendCommitState.Value = true;
         (await _manager.GetAmendStateAsync()).Should().BeFalse();
     }
 
@@ -142,7 +142,7 @@ public class CommitMessageManagerTests
         _file.Exists(_amendSaveStatePath).Returns(true);
         _file.ReadAllTextAsync(_amendSaveStatePath, Encoding.Default, cancellationToken: default).Returns(amendText);
 
-        AppSettings.RememberAmendCommitState = true;
+        AppSettings.RememberAmendCommitState.Value = true;
         (await _manager.GetAmendStateAsync()).Should().BeTrue();
     }
 
@@ -153,7 +153,7 @@ public class CommitMessageManagerTests
         _file.When(x => x.WriteAllTextAsync(_amendSaveStatePath, true.ToString(), Encoding.Default, cancellationToken: default)).Do(_ => correctlyWritten = true);
         _directory.Exists(Path.GetDirectoryName(_amendSaveStatePath)).Returns(true);
 
-        AppSettings.RememberAmendCommitState = true;
+        AppSettings.RememberAmendCommitState.Value = true;
         await _manager.SetAmendStateAsync(amendState: true);
 
         correctlyWritten.Should().BeTrue();
@@ -166,7 +166,7 @@ public class CommitMessageManagerTests
         _file.Exists(_amendSaveStatePath).Returns(true);
         _file.When(x => x.Delete(_amendSaveStatePath)).Do(_ => correctlyDeleted = true);
 
-        AppSettings.RememberAmendCommitState = false;
+        AppSettings.RememberAmendCommitState.Value = false;
         await _manager.SetAmendStateAsync(amendState: true);
 
         correctlyDeleted.Should().BeTrue();
@@ -180,7 +180,7 @@ public class CommitMessageManagerTests
         _file.When(x => x.Delete(_amendSaveStatePath)).Do(_ => correctlyDeleted = true);
         _file.Exists(_amendSaveStatePath).Returns(true);
 
-        AppSettings.RememberAmendCommitState = rememberAmendCommitState;
+        AppSettings.RememberAmendCommitState.Value = rememberAmendCommitState;
         await _manager.SetAmendStateAsync(amendState: false);
 
         correctlyDeleted.Should().BeTrue();

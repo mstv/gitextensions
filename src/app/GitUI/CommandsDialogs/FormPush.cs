@@ -314,7 +314,7 @@ public partial class FormPush : GitModuleForm
             ThreadHelper.JoinableTaskFactory.Run(() => RepositoryHistoryManager.Remotes.AddAsMostRecentAsync(path));
         }
 
-        AppSettings.RecursiveSubmodules = RecursiveSubmodules.SelectedIndex;
+        AppSettings.RecursiveSubmodules.Value = RecursiveSubmodules.SelectedIndex;
 
         string remote = "";
         string destination;

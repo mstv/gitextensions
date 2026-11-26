@@ -134,7 +134,7 @@ public record FilterInfo
     public bool ShowOnlyFirstParent
     {
         get => AppSettings.ShowOnlyFirstParent;
-        set => AppSettings.ShowOnlyFirstParent = value;
+        set => AppSettings.ShowOnlyFirstParent.Value = value;
     }
 
     public bool ShowReflogReferences
@@ -146,7 +146,7 @@ public record FilterInfo
     public bool ShowSimplifyByDecoration
     {
         get => AppSettings.ShowSimplifyByDecoration;
-        set => AppSettings.ShowSimplifyByDecoration = value;
+        set => AppSettings.ShowSimplifyByDecoration.Value = value;
     }
 
     public bool HideMergeCommits
@@ -158,13 +158,13 @@ public record FilterInfo
     public bool ShowFullHistory
     {
         get => AppSettings.FullHistoryInFileHistory;
-        set => AppSettings.FullHistoryInFileHistory = value;
+        set => AppSettings.FullHistoryInFileHistory.Value = value;
     }
 
     public bool ShowSimplifyMerges
     {
         get => AppSettings.SimplifyMergesInFileHistory;
-        set => AppSettings.SimplifyMergesInFileHistory = value;
+        set => AppSettings.SimplifyMergesInFileHistory.Value = value;
     }
 
     /// <summary>

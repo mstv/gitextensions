@@ -122,12 +122,12 @@ public partial class ColorsSettingsPage : SettingsPageWithHeader, IColorsSetting
 
     protected override void PageToSettings()
     {
-        AppSettings.MulticolorBranches = MulticolorBranches.Checked;
-        AppSettings.RevisionGraphDrawAlternateBackColor = chkDrawAlternateBackColor.Checked;
-        AppSettings.RevisionGraphDrawNonRelativesGray = DrawNonRelativesGray.Checked;
-        AppSettings.RevisionGraphDrawNonRelativesTextGray = DrawNonRelativesTextGray.Checked;
-        AppSettings.HighlightAuthoredRevisions = chkHighlightAuthored.Checked;
-        AppSettings.FillRefLabels = chkFillRefLabels.Checked;
+        AppSettings.MulticolorBranches.Value = MulticolorBranches.Checked;
+        AppSettings.RevisionGraphDrawAlternateBackColor.Value = chkDrawAlternateBackColor.Checked;
+        AppSettings.RevisionGraphDrawNonRelativesGray.Value = DrawNonRelativesGray.Checked;
+        AppSettings.RevisionGraphDrawNonRelativesTextGray.Value = DrawNonRelativesTextGray.Checked;
+        AppSettings.HighlightAuthoredRevisions.Value = chkHighlightAuthored.Checked;
+        AppSettings.FillRefLabels.Value = chkFillRefLabels.Checked;
         _controller.ApplyThemeSettings();
 
         base.PageToSettings();

@@ -27,7 +27,7 @@ public class RevisionGridControlTests
         // There is no need to restore the original AppSettings because AppSettings is routed to a temp folder.
 
         // We don't want avatars during tests, otherwise we will be attempting to download them from gravatar.
-        AppSettings.ShowAuthorAvatarColumn = false;
+        AppSettings.ShowAuthorAvatarColumn.Value = false;
     }
 
     [SetUp]
@@ -47,7 +47,7 @@ public class RevisionGridControlTests
 
         _commands = new GitUICommands(GlobalServiceContainer.CreateDefaultMockServiceContainer(), _referenceRepository.Module);
 
-        AppSettings.RevisionGraphShowArtificialCommits = true;
+        AppSettings.RevisionGraphShowArtificialCommits.Value = true;
     }
 
     [TearDown]
@@ -62,7 +62,7 @@ public class RevisionGridControlTests
         AppSettings.ShowReflogReferences.Value = false;
         AppSettings.BranchFilterEnabled.Value = false;
         AppSettings.ShowCurrentBranchOnly.Value = false;
-        AppSettings.ShowGitNotes = true;
+        AppSettings.ShowGitNotes.Value = true;
 
         RunSetAndApplyBranchFilterTest(
             initialFilter: "",
@@ -110,7 +110,7 @@ public class RevisionGridControlTests
         AppSettings.ShowReflogReferences.Value = false;
         AppSettings.BranchFilterEnabled.Value = false;
         AppSettings.ShowCurrentBranchOnly.Value = false;
-        AppSettings.ShowGitNotes = true;
+        AppSettings.ShowGitNotes.Value = true;
 
         RunSetAndApplyBranchFilterTest(
             initialFilter: "",
@@ -152,7 +152,7 @@ public class RevisionGridControlTests
         AppSettings.ShowReflogReferences.Value = false;
         AppSettings.BranchFilterEnabled.Value = false;
         AppSettings.ShowCurrentBranchOnly.Value = false;
-        AppSettings.ShowGitNotes = true;
+        AppSettings.ShowGitNotes.Value = true;
 
         RunSetAndApplyBranchFilterTest(
             initialFilter: "Branch1",
@@ -329,7 +329,7 @@ public class RevisionGridControlTests
     private void RunSetAndApplyBranchFilterTest(string initialFilter, string grepMessage, Action<RevisionGridControl> runTest)
     {
         // Disable artificial commits as they appear to destabilise these tests
-        AppSettings.RevisionGraphShowArtificialCommits = false;
+        AppSettings.RevisionGraphShowArtificialCommits.Value = false;
 
         UITest.RunForm<FormBrowse>(
             showForm: () => _commands.StartBrowseDialog(owner: null).Should().BeTrue(),
@@ -364,7 +364,7 @@ public class RevisionGridControlTests
 
     private void RunToggleBetweenArtificialAndHeadCommitsTest(bool showGitStatusForArtificialCommits, Action<RevisionGridControl> runTest)
     {
-        AppSettings.ShowGitStatusForArtificialCommits = showGitStatusForArtificialCommits;
+        AppSettings.ShowGitStatusForArtificialCommits.Value = showGitStatusForArtificialCommits;
 
         UITest.RunForm<FormBrowse>(
             showForm: () => _commands.StartBrowseDialog(owner: null).Should().BeTrue(),

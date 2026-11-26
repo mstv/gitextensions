@@ -135,7 +135,7 @@ public class BlameControlTests
 
         try
         {
-            AppSettings.BlameShowAuthorTime = true;
+            AppSettings.BlameShowAuthorTime.Value = true;
 
             (string gutter, string content, List<GitUI.Editor.GitBlameEntry> _) = _blameControl.GetTestAccessor().BuildBlameContents("fileName.txt");
 
@@ -151,7 +151,7 @@ public class BlameControlTests
         }
         finally
         {
-            AppSettings.BlameShowAuthorTime = originalValue;
+            AppSettings.BlameShowAuthorTime.Value = originalValue;
         }
     }
 
@@ -163,7 +163,7 @@ public class BlameControlTests
         try
         {
             // Given
-            AppSettings.BlameShowAuthorTime = false;
+            AppSettings.BlameShowAuthorTime.Value = false;
 
             // When
             (string gutter, string content, List<GitUI.Editor.GitBlameEntry> _) = _blameControl.GetTestAccessor().BuildBlameContents("fileName.txt");
@@ -181,7 +181,7 @@ public class BlameControlTests
         }
         finally
         {
-            AppSettings.BlameShowAuthorTime = originalValue;
+            AppSettings.BlameShowAuthorTime.Value = originalValue;
         }
     }
 

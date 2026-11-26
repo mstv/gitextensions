@@ -463,7 +463,7 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void followFileHistoryToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.FollowRenamesInFileHistory = !AppSettings.FollowRenamesInFileHistory;
+        AppSettings.FollowRenamesInFileHistory.Value = !AppSettings.FollowRenamesInFileHistory;
         UpdateFollowHistoryMenuItems();
 
         LoadFileHistory();
@@ -488,7 +488,7 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void ToggleSimplifyMergesFlag()
     {
-        AppSettings.SimplifyMergesInFileHistory = !AppSettings.SimplifyMergesInFileHistory;
+        AppSettings.SimplifyMergesInFileHistory.Value = !AppSettings.SimplifyMergesInFileHistory;
         simplifyMergesToolStripMenuItem.Checked = AppSettings.SimplifyMergesInFileHistory;
 
         if (AppSettings.FullHistoryInFileHistory)
@@ -499,7 +499,7 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void ToggleFullHistoryFlag()
     {
-        AppSettings.FullHistoryInFileHistory = !AppSettings.FullHistoryInFileHistory;
+        AppSettings.FullHistoryInFileHistory.Value = !AppSettings.FullHistoryInFileHistory;
         showFullHistoryToolStripMenuItem.Checked = AppSettings.FullHistoryInFileHistory;
 
         simplifyMergesToolStripMenuItem.Enabled = AppSettings.FullHistoryInFileHistory;
@@ -553,13 +553,13 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void loadHistoryOnShowToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.LoadFileHistoryOnShow = !AppSettings.LoadFileHistoryOnShow;
+        AppSettings.LoadFileHistoryOnShow.Value = !AppSettings.LoadFileHistoryOnShow;
         loadHistoryOnShowToolStripMenuItem.Checked = AppSettings.LoadFileHistoryOnShow;
     }
 
     private void loadBlameOnShowToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.LoadBlameOnShow = !AppSettings.LoadBlameOnShow;
+        AppSettings.LoadBlameOnShow.Value = !AppSettings.LoadBlameOnShow;
         loadBlameOnShowToolStripMenuItem.Checked = AppSettings.LoadBlameOnShow;
     }
 
@@ -600,28 +600,28 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void followFileHistoryRenamesToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.FollowRenamesInFileHistoryExactOnly = !AppSettings.FollowRenamesInFileHistoryExactOnly;
+        AppSettings.FollowRenamesInFileHistoryExactOnly.Value = !AppSettings.FollowRenamesInFileHistoryExactOnly;
         UpdateFollowHistoryMenuItems();
         LoadFileHistory();
     }
 
     private void ignoreWhitespaceToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.IgnoreWhitespaceOnBlame = !AppSettings.IgnoreWhitespaceOnBlame;
+        AppSettings.IgnoreWhitespaceOnBlame.Value = !AppSettings.IgnoreWhitespaceOnBlame;
         ignoreWhitespaceToolStripMenuItem.Checked = AppSettings.IgnoreWhitespaceOnBlame;
         UpdateSelectedFileViewers(true);
     }
 
     private void detectMoveAndCopyInAllFilesToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.DetectCopyInAllOnBlame = !AppSettings.DetectCopyInAllOnBlame;
+        AppSettings.DetectCopyInAllOnBlame.Value = !AppSettings.DetectCopyInAllOnBlame;
         detectMoveAndCopyInAllFilesToolStripMenuItem.Checked = AppSettings.DetectCopyInAllOnBlame;
         UpdateSelectedFileViewers(true);
     }
 
     private void detectMoveAndCopyInThisFileToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.DetectCopyInFileOnBlame = !AppSettings.DetectCopyInFileOnBlame;
+        AppSettings.DetectCopyInFileOnBlame.Value = !AppSettings.DetectCopyInFileOnBlame;
         detectMoveAndCopyInThisFileToolStripMenuItem.Checked = AppSettings.DetectCopyInFileOnBlame;
         UpdateSelectedFileViewers(true);
     }
@@ -644,20 +644,20 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void displayAuthorFirstToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.BlameDisplayAuthorFirst = !AppSettings.BlameDisplayAuthorFirst;
+        AppSettings.BlameDisplayAuthorFirst.Value = !AppSettings.BlameDisplayAuthorFirst;
         displayAuthorFirstToolStripMenuItem.Checked = AppSettings.BlameDisplayAuthorFirst;
         UpdateSelectedFileViewers(true);
     }
 
     private void showAuthorToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.BlameShowAuthor = !AppSettings.BlameShowAuthor;
+        AppSettings.BlameShowAuthor.Value = !AppSettings.BlameShowAuthor;
         showAuthorToolStripMenuItem.Checked = AppSettings.BlameShowAuthor;
 
         if (!AppSettings.BlameShowAuthor)
         {
             showAuthorDateToolStripMenuItem.Checked = true;
-            AppSettings.BlameShowAuthorDate = true;
+            AppSettings.BlameShowAuthorDate.Value = true;
         }
 
         UpdateSelectedFileViewers(true);
@@ -665,7 +665,7 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void showAuthorDateToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.BlameShowAuthorDate = !AppSettings.BlameShowAuthorDate;
+        AppSettings.BlameShowAuthorDate.Value = !AppSettings.BlameShowAuthorDate;
         showAuthorDateToolStripMenuItem.Checked = AppSettings.BlameShowAuthorDate;
 
         showAuthorTimeToolStripMenuItem.Enabled = AppSettings.BlameShowAuthorDate;
@@ -673,7 +673,7 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
         if (!AppSettings.BlameShowAuthorDate)
         {
             showAuthorToolStripMenuItem.Checked = true;
-            AppSettings.BlameShowAuthor = true;
+            AppSettings.BlameShowAuthor.Value = true;
         }
 
         UpdateSelectedFileViewers(true);
@@ -681,14 +681,14 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void showAuthorTimeToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.BlameShowAuthorTime = !AppSettings.BlameShowAuthorTime;
+        AppSettings.BlameShowAuthorTime.Value = !AppSettings.BlameShowAuthorTime;
         showAuthorTimeToolStripMenuItem.Checked = AppSettings.BlameShowAuthorTime;
         UpdateSelectedFileViewers(true);
     }
 
     private void showLineNumbersToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.BlameShowLineNumbers = !AppSettings.BlameShowLineNumbers;
+        AppSettings.BlameShowLineNumbers.Value = !AppSettings.BlameShowLineNumbers;
         showLineNumbersToolStripMenuItem.Checked = AppSettings.BlameShowLineNumbers;
         Blame.UpdateShowLineNumbers();
         UpdateSelectedFileViewers(true);
@@ -696,14 +696,14 @@ public sealed partial class FormFileHistory : GitModuleForm, IRevisionGridFileUp
 
     private void showOriginalFilePathToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.BlameShowOriginalFilePath = !AppSettings.BlameShowOriginalFilePath;
+        AppSettings.BlameShowOriginalFilePath.Value = !AppSettings.BlameShowOriginalFilePath;
         showOriginalFilePathToolStripMenuItem.Checked = AppSettings.BlameShowOriginalFilePath;
         UpdateSelectedFileViewers(true);
     }
 
     private void showAuthorAvatarToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.BlameShowAuthorAvatar = !AppSettings.BlameShowAuthorAvatar;
+        AppSettings.BlameShowAuthorAvatar.Value = !AppSettings.BlameShowAuthorAvatar;
         showAuthorAvatarToolStripMenuItem.Checked = AppSettings.BlameShowAuthorAvatar;
         UpdateSelectedFileViewers(true);
     }

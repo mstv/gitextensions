@@ -195,7 +195,7 @@ partial class FileStatusList
 
     private void RefreshOnFormFocus_Click(object sender, EventArgs e)
     {
-        AppSettings.RefreshArtificialCommitOnApplicationActivated = tsmiRefreshOnFormFocus.Checked;
+        AppSettings.RefreshArtificialCommitOnApplicationActivated.Value = tsmiRefreshOnFormFocus.Checked;
     }
 
     private void Settings_DropDownOpening(object sender, EventArgs e)
@@ -222,7 +222,7 @@ partial class FileStatusList
 
     private void ShowDiffForAllParents_Click(object sender, EventArgs e)
     {
-        AppSettings.ShowDiffForAllParents = tsmiShowDiffForAllParents.Checked;
+        AppSettings.ShowDiffForAllParents.Value = tsmiShowDiffForAllParents.Checked;
         CancellationToken cancellationToken = _reloadSequence.Next();
         FileStatusListLoading();
         ThreadHelper.FileAndForget(async () =>

@@ -47,7 +47,7 @@ public partial class FormOpenDirectory : GitExtensionsForm
 
         if (!string.IsNullOrWhiteSpace(AppSettings.DefaultCloneDestinationPath))
         {
-            directories.Add(AppSettings.DefaultCloneDestinationPath.EnsureTrailingPathSeparator());
+            directories.Add(AppSettings.DefaultCloneDestinationPath.Value.EnsureTrailingPathSeparator());
         }
 
         if (!string.IsNullOrWhiteSpace(currentModule?.WorkingDir))

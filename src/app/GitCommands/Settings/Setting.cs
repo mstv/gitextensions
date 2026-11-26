@@ -63,6 +63,8 @@ public class Setting<T> : ISetting<T>
 
     public string FullPath => _settingsSource.PathFor(Name);
 
+    public override string ToString() => Value?.ToString() ?? "";
+
     /// <summary>
     ///  Implicit conversion for direct get-access to the <see cref="Setting{T}.Value"/> property.
     /// </summary>

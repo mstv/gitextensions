@@ -766,7 +766,7 @@ public sealed partial class FormCommit : GitModuleForm
 
     private void ShowOnlyMyMessagesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
     {
-        AppSettings.CommitDialogShowOnlyMyMessages = ShowOnlyMyMessagesToolStripMenuItem.Checked;
+        AppSettings.CommitDialogShowOnlyMyMessages.Value = ShowOnlyMyMessagesToolStripMenuItem.Checked;
     }
 
     protected override bool ExecuteCommand(int cmd)
@@ -1249,7 +1249,7 @@ public sealed partial class FormCommit : GitModuleForm
                 if (_useFormCommitMessage)
                 {
                     // Save last commit message in settings. This way it can be used in multiple repositories.
-                    AppSettings.LastCommitMessage = Message.Text;
+                    AppSettings.LastCommitMessage.Value = Message.Text;
                     ThreadHelper.JoinableTaskFactory.Run(
                         () => _commitMessageManager.WriteCommitMessageToFileAsync(Message.Text, CommitMessageType.Normal,
                                                                                   usingCommitTemplate: !string.IsNullOrEmpty(_commitTemplate),
@@ -2471,19 +2471,19 @@ public sealed partial class FormCommit : GitModuleForm
     private void closeDialogAfterEachCommitToolStripMenuItem_Click(object sender, EventArgs e)
     {
         closeDialogAfterEachCommitToolStripMenuItem.Checked = !closeDialogAfterEachCommitToolStripMenuItem.Checked;
-        AppSettings.CloseCommitDialogAfterCommit = closeDialogAfterEachCommitToolStripMenuItem.Checked;
+        AppSettings.CloseCommitDialogAfterCommit.Value = closeDialogAfterEachCommitToolStripMenuItem.Checked;
     }
 
     private void closeDialogAfterAllFilesCommittedToolStripMenuItem_Click(object sender, EventArgs e)
     {
         closeDialogAfterAllFilesCommittedToolStripMenuItem.Checked = !closeDialogAfterAllFilesCommittedToolStripMenuItem.Checked;
-        AppSettings.CloseCommitDialogAfterLastCommit = closeDialogAfterAllFilesCommittedToolStripMenuItem.Checked;
+        AppSettings.CloseCommitDialogAfterLastCommit.Value = closeDialogAfterAllFilesCommittedToolStripMenuItem.Checked;
     }
 
     private void refreshDialogOnFormFocusToolStripMenuItem_Click(object sender, EventArgs e)
     {
         refreshDialogOnFormFocusToolStripMenuItem.Checked = !refreshDialogOnFormFocusToolStripMenuItem.Checked;
-        AppSettings.RefreshArtificialCommitOnApplicationActivated = refreshDialogOnFormFocusToolStripMenuItem.Checked;
+        AppSettings.RefreshArtificialCommitOnApplicationActivated.Value = refreshDialogOnFormFocusToolStripMenuItem.Checked;
     }
 
     private void signOffToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2801,7 +2801,7 @@ public sealed partial class FormCommit : GitModuleForm
     {
         if (StageInSuperproject.Visible)
         {
-            AppSettings.StageInSuperprojectAfterCommit = StageInSuperproject.Checked;
+            AppSettings.StageInSuperprojectAfterCommit.Value = StageInSuperproject.Checked;
         }
     }
 
