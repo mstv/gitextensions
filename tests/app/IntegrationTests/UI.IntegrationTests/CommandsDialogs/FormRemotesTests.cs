@@ -34,7 +34,7 @@ public class FormRemotesTests
     [TearDown]
     public void TearDown()
     {
-        AppSettings.AlwaysShowAdvOpt = _originalAlwaysShowAdvOpt;
+        AppSettings.AlwaysShowAdvOpt.Value = _originalAlwaysShowAdvOpt;
         AppSettings.Font = _originalFont;
         _referenceRepository.Dispose();
     }
@@ -106,7 +106,7 @@ public class FormRemotesTests
     [Test]
     public void Should_normalise_remote_prefix_on_leave()
     {
-        AppSettings.AlwaysShowAdvOpt = true;
+        AppSettings.AlwaysShowAdvOpt.Value = true;
 
         IGitBranchNameNormaliser branchNameNormaliser = _commands.GetRequiredService<IGitBranchNameNormaliser>();
         branchNameNormaliser.Normalise("invalid branch prefix/", Arg.Any<GitBranchNameOptions>()).Returns("invalid-branch-prefix/");

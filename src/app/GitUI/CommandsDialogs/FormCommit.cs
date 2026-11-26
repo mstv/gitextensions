@@ -766,7 +766,7 @@ public sealed partial class FormCommit : GitModuleForm
 
     private void ShowOnlyMyMessagesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
     {
-        AppSettings.CommitDialogShowOnlyMyMessages = ShowOnlyMyMessagesToolStripMenuItem.Checked;
+        AppSettings.CommitDialogShowOnlyMyMessages.Value = ShowOnlyMyMessagesToolStripMenuItem.Checked;
     }
 
     protected override bool ExecuteCommand(int cmd)
@@ -1249,7 +1249,7 @@ public sealed partial class FormCommit : GitModuleForm
                 if (_useFormCommitMessage)
                 {
                     // Save last commit message in settings. This way it can be used in multiple repositories.
-                    AppSettings.LastCommitMessage = Message.Text;
+                    AppSettings.LastCommitMessage.Value = Message.Text;
                     ThreadHelper.JoinableTaskFactory.Run(
                         () => _commitMessageManager.WriteCommitMessageToFileAsync(Message.Text, CommitMessageType.Normal,
                                                                                   usingCommitTemplate: !string.IsNullOrEmpty(_commitTemplate),

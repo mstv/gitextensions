@@ -29,7 +29,7 @@ internal sealed class PathFormatter
         string? text = string.IsNullOrEmpty(name) ? "" : "...";
         string? suffix = null;
 
-        switch (AppSettings.TruncatePathMethod)
+        switch (AppSettings.TruncatePathMethod.Value)
         {
             case TruncatePathMethod.FileNameOnly:
                 (text, suffix) = FormatTextForFileNameOnly(name, oldName);

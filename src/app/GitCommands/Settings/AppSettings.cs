@@ -144,12 +144,6 @@ public static partial class AppSettings
         _documentationBaseUrl = $"https://git-extensions-documentation.readthedocs.org/{docVersion}";
     }
 
-    public static bool? TelemetryEnabled
-    {
-        get => GetBool("TelemetryEnabled");
-        set => SetBool("TelemetryEnabled", value);
-    }
-
     public static string AutoNormaliseSymbol
     {
         // when persisted "" is treated as null, so use "+" instead
@@ -170,12 +164,6 @@ public static partial class AppSettings
     }
 
     public static string FileEditorCommand => @$"""{AppSettings.GetGitExtensionsFullPath()}"" fileeditor";
-
-    public static bool RememberAmendCommitState
-    {
-        get => GetBool("RememberAmendCommitState", true);
-        set => SetBool("RememberAmendCommitState", value);
-    }
 
     public static void UsingContainer(DistributedSettings settingsContainer, Action action)
     {
@@ -353,115 +341,6 @@ public static partial class AppSettings
         }
     }
 
-    // Currently not configurable in UI (Set manually in settings file)
-    public static bool WslGitEnabled
-    {
-        get => GetBool("WslGitEnabled", true);
-    }
-
-    // Currently not configurable in UI (Set manually in settings file)
-    public static string WslCommand
-    {
-        get => GetString(nameof(WslCommand), "wsl");
-    }
-
-    // Currently not configurable in UI (Set manually in settings file)
-    public static string WslGitCommand
-    {
-        get => GetString(nameof(WslGitCommand), "git");
-    }
-
-    public static bool StashKeepIndex
-    {
-        get => GetBool("stashkeepindex", false);
-        set => SetBool("stashkeepindex", value);
-    }
-
-    public static bool ApplyPatchIgnoreWhitespace
-    {
-        get => GetBool("applypatchignorewhitespace", false);
-        set => SetBool("applypatchignorewhitespace", value);
-    }
-
-    public static bool ApplyPatchSignOff
-    {
-        get => GetBool("applypatchsignoff", true);
-        set => SetBool("applypatchsignoff", value);
-    }
-
-    public static bool UseHistogramDiffAlgorithm
-    {
-        // History Compatibility: The settings key has patience in the name for historical reasons
-        get => GetBool("usepatiencediffalgorithm", false);
-        set => SetBool("usepatiencediffalgorithm", value);
-    }
-
-    public static bool ShowErrorsWhenStagingFiles
-    {
-        get => GetBool("showerrorswhenstagingfiles", true);
-        set => SetBool("showerrorswhenstagingfiles", value);
-    }
-
-    public static bool EnsureCommitMessageSecondLineEmpty
-    {
-        get => GetBool("addnewlinetocommitmessagewhenmissing", true);
-        set => SetBool("addnewlinetocommitmessagewhenmissing", value);
-    }
-
-    public static string LastCommitMessage
-    {
-        get => GetString("lastCommitMessage", "");
-        set => SetString("lastCommitMessage", value);
-    }
-
-    public static int CommitDialogNumberOfPreviousMessages
-    {
-        get => GetInt("commitDialogNumberOfPreviousMessages", 6);
-        set => SetInt("commitDialogNumberOfPreviousMessages", value);
-    }
-
-    public static bool CommitDialogShowOnlyMyMessages
-    {
-        get => GetBool("commitDialogShowOnlyMyMessages", false);
-        set => SetBool("commitDialogShowOnlyMyMessages", value);
-    }
-
-    public static bool ShowCommitAndPush
-    {
-        get => GetBool("showcommitandpush", true);
-        set => SetBool("showcommitandpush", value);
-    }
-
-    public static bool ShowResetWorkTreeChanges
-    {
-        get => GetBool("showresetunstagedchanges", true);
-        set => SetBool("showresetunstagedchanges", value);
-    }
-
-    public static bool ShowResetAllChanges
-    {
-        get => GetBool("showresetallchanges", true);
-        set => SetBool("showresetallchanges", value);
-    }
-
-    public static bool ProvideAutocompletion
-    {
-        get => GetBool("provideautocompletion", true);
-        set => SetBool("provideautocompletion", value);
-    }
-
-    public static TruncatePathMethod TruncatePathMethod
-    {
-        get => GetEnum("truncatepathmethod", TruncatePathMethod.None);
-        set => SetEnum("truncatepathmethod", value);
-    }
-
-    public static bool ShowGitStatusInBrowseToolbar
-    {
-        get => GetBool("showgitstatusinbrowsetoolbar", true);
-        set => SetBool("showgitstatusinbrowsetoolbar", value);
-    }
-
     public static bool ShowGitStatusForArtificialCommits
     {
         get => GetBool("showgitstatusforartificialcommits", true);
@@ -542,28 +421,10 @@ public static partial class AppSettings
     /// <remarks>The value should be scaled with DPI.</remarks>
     public static int AuthorImageSizeInCommitInfo => 80;
 
-    public static int AvatarImageCacheDays
-    {
-        get => GetInt("authorimagecachedays", 13);
-        set => SetInt("authorimagecachedays", value);
-    }
-
-    public static bool ShowAuthorAvatarInCommitInfo
-    {
-        get => GetBool("showauthorgravatar", true);
-        set => SetBool("showauthorgravatar", value);
-    }
-
     public static AvatarProvider AvatarProvider
     {
         get => GetEnumViaString("Appearance.AvatarProvider", AvatarProvider.None);
         set => SetString("Appearance.AvatarProvider", value.ToString());
-    }
-
-    public static int AvatarCacheSize
-    {
-        get => GetInt("Appearance.AvatarCacheSize", 200);
-        set => SetInt("Appearance.AvatarCacheSize", value);
     }
 
     // Currently not configurable in UI (Set manually in settings file)
@@ -921,61 +782,10 @@ public static partial class AppSettings
         set => SetEnum("FormPullAction", value);
     }
 
-    public static bool AutoStash
-    {
-        get => GetBool("autostash", false);
-        set => SetBool("autostash", value);
-    }
-
-    /// <summary>
-    ///  Whether the submodules of a cloned repository shall be initialized, as chosen the last time.
-    /// </summary>
-    public static bool CloneInitializeAllSubmodules
-    {
-        get => GetBool("CloneInitializeAllSubmodules", true);
-        set => SetBool("CloneInitializeAllSubmodules", value);
-    }
-
-    public static bool RebaseAutoStash
-    {
-        get => GetBool("RebaseAutostash", false);
-        set => SetBool("RebaseAutostash", value);
-    }
-
-    public static LocalChangesAction CheckoutBranchAction
-    {
-        get => GetEnum("checkoutbranchaction", LocalChangesAction.DontChange);
-        set => SetEnum("checkoutbranchaction", value);
-    }
-
     public static bool UseDefaultCheckoutBranchAction
     {
         get => GetBool("UseDefaultCheckoutBranchAction", false);
         set => SetBool("UseDefaultCheckoutBranchAction", value);
-    }
-
-    public static bool DontShowHelpImages
-    {
-        get => GetBool("DontShowHelpImages", false);
-        set => SetBool("DontShowHelpImages", value);
-    }
-
-    public static bool AlwaysShowAdvOpt
-    {
-        get => GetBool("AlwaysShowAdvOpt", false);
-        set => SetBool("AlwaysShowAdvOpt", value);
-    }
-
-    public static bool? AutoPopStashAfterPull
-    {
-        get => GetBool("AutoPopStashAfterPull");
-        set => SetBool("AutoPopStashAfterPull", value);
-    }
-
-    public static bool? AutoPopStashAfterCheckoutBranch
-    {
-        get => GetBool("AutoPopStashAfterCheckoutBranch");
-        set => SetBool("AutoPopStashAfterCheckoutBranch", value);
     }
 
     public static GitPullAction? AutoPullOnPushRejectedAction
@@ -984,112 +794,16 @@ public static partial class AppSettings
         set => SetNullableEnum("AutoPullOnPushRejectedAction", value);
     }
 
-    public static bool IncludeUntrackedFilesInAutoStash
-    {
-        get => GetBool("includeUntrackedFilesInAutoStash", false);
-        set => SetBool("includeUntrackedFilesInAutoStash", value);
-    }
-
-    public static bool IncludeUntrackedFilesInManualStash
-    {
-        get => GetBool("includeUntrackedFilesInManualStash", false);
-        set => SetBool("includeUntrackedFilesInManualStash", value);
-    }
-
-    public static bool ShowRemoteBranches
-    {
-        get => GetBool("showRemoteBranches", true);
-        set => SetBool("showRemoteBranches", value);
-    }
-
-    public static bool ShowStashes
-    {
-        get => GetBool("showStashes", true);
-        set => SetBool("showStashes", value);
-    }
-
     // Currently not configurable in UI (Set manually in settings file)
     public static int MaxStashesWithUntrackedFiles
     {
         get => GetInt("maxStashesWithUntrackedFiles", 10);
     }
 
-    public static bool ShowSuperprojectTags
-    {
-        get => GetBool("showSuperprojectTags", false);
-        set => SetBool("showSuperprojectTags", value);
-    }
-
-    public static bool ShowSuperprojectBranches
-    {
-        get => GetBool("showSuperprojectBranches", true);
-        set => SetBool("showSuperprojectBranches", value);
-    }
-
-    public static bool ShowSuperprojectRemoteBranches
-    {
-        get => GetBool("showSuperprojectRemoteBranches", false);
-        set => SetBool("showSuperprojectRemoteBranches", value);
-    }
-
-    public static bool? UpdateSubmodulesOnCheckout
-    {
-        get => GetBool("updateSubmodulesOnCheckout");
-        set => SetBool("updateSubmodulesOnCheckout", value);
-    }
-
     public static string Dictionary
     {
         get => SettingsContainer.Detached().Dictionary;
         set => SettingsContainer.Detached().Dictionary = value;
-    }
-
-    public static bool ShowGitCommandLine
-    {
-        get => GetBool("showgitcommandline", false);
-        set => SetBool("showgitcommandline", value);
-    }
-
-    public static bool ShowStashCount
-    {
-        get => GetBool("showstashcount", false);
-        set => SetBool("showstashcount", value);
-    }
-
-    public static bool ShowAheadBehindData
-    {
-        get => GetBool("showaheadbehinddata", true);
-        set => SetBool("showaheadbehinddata", value);
-    }
-
-    public static bool ShowSubmoduleStatus
-    {
-        get => GetBool("showsubmodulestatus", false);
-        set => SetBool("showsubmodulestatus", value);
-    }
-
-    public static bool RelativeDate
-    {
-        get => GetBool("relativedate", true);
-        set => SetBool("relativedate", value);
-    }
-
-    public static bool ShowGitNotes
-    {
-        get => GetBool("showgitnotes", false);
-        set => SetBool("showgitnotes", value);
-    }
-
-    public static bool ShowSessionRefs
-    {
-        get => GetBool("showSessionRefs", false);
-        set => SetBool("showSessionRefs", value);
-    }
-
-    public static bool ShowAnnotatedTagsMessages
-    {
-        get => GetBool("showannotatedtagsmessages", true);
-        set => SetBool("showannotatedtagsmessages", value);
     }
 
     // History Compatibility: The meaning of this value is changed in the GUI, setting name is kept for compatibility
@@ -1099,55 +813,7 @@ public static partial class AppSettings
         set => SetBool("showmergecommits", !value);
     }
 
-    public static bool ShowTags
-    {
-        get => GetBool("showtags", true);
-        set => SetBool("showtags", value);
-    }
-
     #region Revision grid column visibilities
-
-    public static bool ShowRevisionGridGraphColumn
-    {
-        get => GetBool("showrevisiongridgraphcolumn", true);
-        set => SetBool("showrevisiongridgraphcolumn", value);
-    }
-
-    public static bool ShowAuthorAvatarColumn
-    {
-        get => GetBool("showrevisiongridauthoravatarcolumn", true);
-        set => SetBool("showrevisiongridauthoravatarcolumn", value);
-    }
-
-    public static bool ShowAuthorNameColumn
-    {
-        get => GetBool("showrevisiongridauthornamecolumn", true);
-        set => SetBool("showrevisiongridauthornamecolumn", value);
-    }
-
-    public static bool ShowDateColumn
-    {
-        get => GetBool("showrevisiongriddatecolumn", true);
-        set => SetBool("showrevisiongriddatecolumn", value);
-    }
-
-    public static bool ShowObjectIdColumn
-    {
-        get => GetBool("showids", true);
-        set => SetBool("showids", value);
-    }
-
-    public static bool ShowBuildStatusIconColumn
-    {
-        get => GetBool("showbuildstatusiconcolumn", true);
-        set => SetBool("showbuildstatusiconcolumn", value);
-    }
-
-    public static bool ShowBuildStatusTextColumn
-    {
-        get => GetBool("showbuildstatustextcolumn", false);
-        set => SetBool("showbuildstatustextcolumn", value);
-    }
 
     #endregion
 

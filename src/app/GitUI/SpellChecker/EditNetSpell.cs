@@ -571,7 +571,7 @@ public partial class EditNetSpell : GitModuleControl
         };
         mi.Click += (s, _) =>
         {
-            AppSettings.ProvideAutocompletion = !AppSettings.ProvideAutocompletion;
+            AppSettings.ProvideAutocompletion.Value = !AppSettings.ProvideAutocompletion;
             ToggleAutoCompletion();
         };
         SpellCheckContextMenu.Items.Add(mi);

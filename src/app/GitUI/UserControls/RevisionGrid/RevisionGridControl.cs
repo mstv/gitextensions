@@ -2663,7 +2663,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
     internal void ToggleShowRemoteBranches()
     {
-        AppSettings.ShowRemoteBranches = !AppSettings.ShowRemoteBranches;
+        AppSettings.ShowRemoteBranches.Value = !AppSettings.ShowRemoteBranches;
         MenuCommands.TriggerMenuChanged();
         _gridView.Invalidate();
     }
@@ -2694,25 +2694,25 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
     internal void ToggleShowStashes()
     {
-        AppSettings.ShowStashes = !AppSettings.ShowStashes;
+        AppSettings.ShowStashes.Value = !AppSettings.ShowStashes;
         PerformRefreshRevisions();
     }
 
     internal void ToggleShowSuperprojectTags()
     {
-        AppSettings.ShowSuperprojectTags = !AppSettings.ShowSuperprojectTags;
+        AppSettings.ShowSuperprojectTags.Value = !AppSettings.ShowSuperprojectTags;
         PerformRefreshRevisions();
     }
 
     internal void ShowSuperprojectBranches_ToolStripMenuItemClick()
     {
-        AppSettings.ShowSuperprojectBranches = !AppSettings.ShowSuperprojectBranches;
+        AppSettings.ShowSuperprojectBranches.Value = !AppSettings.ShowSuperprojectBranches;
         PerformRefreshRevisions();
     }
 
     internal void ShowSuperprojectRemoteBranches_ToolStripMenuItemClick()
     {
-        AppSettings.ShowSuperprojectRemoteBranches = !AppSettings.ShowSuperprojectRemoteBranches;
+        AppSettings.ShowSuperprojectRemoteBranches.Value = !AppSettings.ShowSuperprojectRemoteBranches;
         PerformRefreshRevisions();
     }
 
@@ -2869,7 +2869,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
     internal void ToggleShowRelativeDate()
     {
-        AppSettings.RelativeDate = !AppSettings.RelativeDate;
+        AppSettings.RelativeDate.Value = !AppSettings.RelativeDate;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
@@ -2959,13 +2959,13 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
     internal void ToggleShowGitNotes()
     {
-        AppSettings.ShowGitNotes = !AppSettings.ShowGitNotes;
+        AppSettings.ShowGitNotes.Value = !AppSettings.ShowGitNotes;
         PerformRefreshRevisions();
     }
 
     internal void ToggleShowSessionRefs()
     {
-        AppSettings.ShowSessionRefs = !AppSettings.ShowSessionRefs;
+        AppSettings.ShowSessionRefs.Value = !AppSettings.ShowSessionRefs;
         PerformRefreshRevisions();
     }
 
@@ -3053,35 +3053,35 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
     internal void ToggleRevisionGraphColumn()
     {
-        AppSettings.ShowRevisionGridGraphColumn = !AppSettings.ShowRevisionGridGraphColumn;
+        AppSettings.ShowRevisionGridGraphColumn.Value = !AppSettings.ShowRevisionGridGraphColumn;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
 
     internal void ToggleAuthorAvatarColumn()
     {
-        AppSettings.ShowAuthorAvatarColumn = !AppSettings.ShowAuthorAvatarColumn;
+        AppSettings.ShowAuthorAvatarColumn.Value = !AppSettings.ShowAuthorAvatarColumn;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
 
     internal void ToggleAuthorNameColumn()
     {
-        AppSettings.ShowAuthorNameColumn = !AppSettings.ShowAuthorNameColumn;
+        AppSettings.ShowAuthorNameColumn.Value = !AppSettings.ShowAuthorNameColumn;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
 
     internal void ToggleDateColumn()
     {
-        AppSettings.ShowDateColumn = !AppSettings.ShowDateColumn;
+        AppSettings.ShowDateColumn.Value = !AppSettings.ShowDateColumn;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
 
     internal void ToggleObjectIdColumn()
     {
-        AppSettings.ShowObjectIdColumn = !AppSettings.ShowObjectIdColumn;
+        AppSettings.ShowObjectIdColumn.Value = !AppSettings.ShowObjectIdColumn;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
@@ -3089,7 +3089,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
     internal void ToggleBuildStatusIconColumn()
     {
         ////Module.EffectiveSettings.BuildServer.ShowBuildIconInGrid.Value = !Module.EffectiveSettings.BuildServer.ShowBuildIconInGrid.Value;
-        AppSettings.ShowBuildStatusIconColumn = !AppSettings.ShowBuildStatusIconColumn;
+        AppSettings.ShowBuildStatusIconColumn.Value = !AppSettings.ShowBuildStatusIconColumn;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
@@ -3097,7 +3097,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
     internal void ToggleBuildStatusTextColumn()
     {
         ////Module.EffectiveSettings.BuildServer.ShowBuildSummaryInGrid.Value = !Module.EffectiveSettings.BuildServer.ShowBuildSummaryInGrid.Value;
-        AppSettings.ShowBuildStatusTextColumn = !AppSettings.ShowBuildStatusTextColumn;
+        AppSettings.ShowBuildStatusTextColumn.Value = !AppSettings.ShowBuildStatusTextColumn;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }
@@ -3106,7 +3106,7 @@ public sealed partial class RevisionGridControl : GitModuleControl, ICheckRefs, 
 
     internal void ToggleShowTags()
     {
-        AppSettings.ShowTags = !AppSettings.ShowTags;
+        AppSettings.ShowTags.Value = !AppSettings.ShowTags;
         MenuCommands.TriggerMenuChanged();
         Refresh();
     }

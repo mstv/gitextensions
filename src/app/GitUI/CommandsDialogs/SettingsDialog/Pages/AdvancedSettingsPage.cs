@@ -44,8 +44,8 @@ public partial class AdvancedSettingsPage : SettingsPageWithHeader
     {
         AppSettings.AlwaysShowCheckoutBranchDlg = chkAlwaysShowCheckoutDlg.Checked;
         AppSettings.UseDefaultCheckoutBranchAction = chkUseLocalChangesAction.Checked;
-        AppSettings.DontShowHelpImages = chkDontSHowHelpImages.Checked;
-        AppSettings.AlwaysShowAdvOpt = chkAlwaysShowAdvOpt.Checked;
+        AppSettings.DontShowHelpImages.Value = chkDontSHowHelpImages.Checked;
+        AppSettings.AlwaysShowAdvOpt.Value = chkAlwaysShowAdvOpt.Checked;
         AppSettings.CheckForUpdates = chkCheckForUpdates.Checked;
         AppSettings.CheckForReleaseCandidates = chkCheckForRCVersions.Checked;
         AppSettings.UseConsoleEmulatorForCommands.Value = chkConsoleEmulator.Checked;

@@ -21,7 +21,7 @@ public sealed class GitBlameParserTest
         _detectCopyInFileOnBlame = AppSettings.DetectCopyInFileOnBlame;
         _detectCopyInAllOnBlame = AppSettings.DetectCopyInAllOnBlame;
         _ignoreWhitespaceOnBlame = AppSettings.IgnoreWhitespaceOnBlame;
-        AppSettings.UseHistogramDiffAlgorithm = false;
+        AppSettings.UseHistogramDiffAlgorithm.Value = false;
         AppSettings.DetectCopyInFileOnBlame = false;
         AppSettings.DetectCopyInAllOnBlame = false;
         AppSettings.IgnoreWhitespaceOnBlame = true;
@@ -30,7 +30,7 @@ public sealed class GitBlameParserTest
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        AppSettings.UseHistogramDiffAlgorithm = _useHistogramDiffAlgorithm;
+        AppSettings.UseHistogramDiffAlgorithm.Value = _useHistogramDiffAlgorithm;
         AppSettings.DetectCopyInFileOnBlame = _detectCopyInFileOnBlame;
         AppSettings.DetectCopyInAllOnBlame = _detectCopyInAllOnBlame;
         AppSettings.IgnoreWhitespaceOnBlame = _ignoreWhitespaceOnBlame;

@@ -109,8 +109,8 @@ public sealed partial class FormStash : GitModuleForm
 
     private void FormStashFormClosing(object sender, FormClosingEventArgs e)
     {
-        AppSettings.StashKeepIndex = StashKeepIndex.Checked;
-        AppSettings.IncludeUntrackedFilesInManualStash = chkIncludeUntrackedFiles.Checked;
+        AppSettings.StashKeepIndex.Value = StashKeepIndex.Checked;
+        AppSettings.IncludeUntrackedFilesInManualStash.Value = chkIncludeUntrackedFiles.Checked;
     }
 
     private void FormStashLoad(object sender, EventArgs e)

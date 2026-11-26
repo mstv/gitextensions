@@ -36,7 +36,7 @@ public class CommitInfoTests
         serviceContainer.RemoveService<ILinkFactory>();
         serviceContainer.AddService<ILinkFactory>(_mockLinkFactory);
 
-        AppSettings.ShowGitNotes = false;
+        AppSettings.ShowGitNotes.Value = false;
         _referenceRepository = new ReferenceRepository();
         _commands = new GitUICommands(serviceContainer, _referenceRepository.Module);
 

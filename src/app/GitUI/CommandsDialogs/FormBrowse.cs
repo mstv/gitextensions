@@ -2827,7 +2827,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     {
         AppSettings.ShowSplitViewLayout.Value = !AppSettings.ShowSplitViewLayout;
         DiagnosticsClient.TrackEvent("Layout change",
-            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout), AppSettings.ShowSplitViewLayout.Value.ToString() } });
+            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout), AppSettings.ShowSplitViewLayout.ToString() } });
 
         RefreshSplitViewLayout();
     }
@@ -2877,7 +2877,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     {
         AppSettings.CommitInfoPosition.Value = position;
         DiagnosticsClient.TrackEvent("Layout change",
-            new Dictionary<string, string> { { nameof(AppSettings.CommitInfoPosition), AppSettings.CommitInfoPosition.Value.ToString() } });
+            new Dictionary<string, string> { { nameof(AppSettings.CommitInfoPosition), AppSettings.CommitInfoPosition.ToString() } });
 
         LayoutRevisionInfo();
         RefreshLayoutToggleButtonStates();
@@ -2887,7 +2887,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
     {
         RightSplitContainer.Panel2Collapsed = !AppSettings.ShowSplitViewLayout;
         DiagnosticsClient.TrackEvent("Layout change",
-            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout), AppSettings.ShowSplitViewLayout.Value.ToString() } });
+            new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout), AppSettings.ShowSplitViewLayout.ToString() } });
 
         RefreshLayoutToggleButtonStates();
     }

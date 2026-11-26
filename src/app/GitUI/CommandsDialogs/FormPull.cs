@@ -523,7 +523,7 @@ public sealed partial class FormPull : GitExtensionsDialog
                 // If the "Update submodules on checkout" option is `true`, initialize and update
                 // all submodules. If it's `false` don't initialize/update the submodules. If it's
                 // indeterminate, ask the user what they'd like to do.
-                if (AppSettings.UpdateSubmodulesOnCheckout ?? AppSettings.DontConfirmUpdateSubmodulesOnCheckout.Value ?? AskIfSubmodulesShouldBeInitialized())
+                if (AppSettings.UpdateSubmodulesOnCheckout.Value ?? AppSettings.DontConfirmUpdateSubmodulesOnCheckout.Value ?? AskIfSubmodulesShouldBeInitialized())
                 {
                     UICommands.StartUpdateSubmodulesDialog(this);
                 }
@@ -593,7 +593,7 @@ public sealed partial class FormPull : GitExtensionsDialog
                 // Dismissing the dialog is not an answer, so it must not be remembered as one
                 if (page.Verification.Checked && answer != TaskDialogButton.Cancel)
                 {
-                    AppSettings.AutoPopStashAfterPull = messageBoxResult;
+                    AppSettings.AutoPopStashAfterPull.Value = messageBoxResult;
                 }
             }
 
@@ -637,7 +637,7 @@ public sealed partial class FormPull : GitExtensionsDialog
             Rebase.Checked ? GitPullAction.Rebase :
             Fetch.Checked ? AppSettings.FormPullAction = GitPullAction.Fetch : GitPullAction.Default;
 
-        AppSettings.AutoStash = AutoStash.Checked;
+        AppSettings.AutoStash.Value = AutoStash.Checked;
     }
 
     private DialogResult ShouldRebaseMergeCommit()

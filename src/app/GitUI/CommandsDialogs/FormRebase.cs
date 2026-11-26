@@ -328,7 +328,7 @@ public partial class FormRebase : GitExtensionsDialog
                 return;
             }
 
-            AppSettings.RebaseAutoStash = chkStash.Checked;
+            AppSettings.RebaseAutoStash.Value = chkStash.Checked;
 
             Skipped.Clear();
 
@@ -412,7 +412,7 @@ public partial class FormRebase : GitExtensionsDialog
 
         try
         {
-            AppSettings.ShowStashes = false;
+            AppSettings.ShowStashes.Value = false;
             ObjectId firstParent = UICommands.Module.RevParse("HEAD~");
             string preSelectedCommit = !string.IsNullOrWhiteSpace(txtFrom.Text) ? txtFrom.Text : firstParent.IsZero ? string.Empty : firstParent.ToString();
 
@@ -441,7 +441,7 @@ public partial class FormRebase : GitExtensionsDialog
         }
         finally
         {
-            AppSettings.ShowStashes = previousValueShowStashes;
+            AppSettings.ShowStashes.Value = previousValueShowStashes;
             AppSettings.BranchFilterEnabled.Value = previousValueBranchFilterEnabled;
             AppSettings.ShowCurrentBranchOnly.Value = previousValueShowCurrentBranchOnly;
             AppSettings.ShowReflogReferences.Value = previousValueShowReflogReferences;
