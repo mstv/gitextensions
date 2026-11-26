@@ -1,4 +1,4 @@
-using GitCommands;
+﻿using GitCommands;
 using GitCommands.Settings;
 
 namespace GitExtensions.UITests;
@@ -38,12 +38,12 @@ internal sealed class CommitInfoPanelTestSettingsScope : IDisposable
             AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal = false;
             AppSettings.CommitInfoShowContainedInTags = false;
             AppSettings.CommitInfoShowTagThisCommitDerivesFrom = false;
-            AppSettings.ShowAnnotatedTagsMessages = false;
+            AppSettings.ShowAnnotatedTagsMessages.Value = false;
         }
 
         if (commitInfoPosition is not null)
         {
-            AppSettings.CommitInfoPosition = commitInfoPosition.Value;
+            AppSettings.CommitInfoPosition.Value = commitInfoPosition.Value;
         }
 
         if (revisionGraphShowArtificialCommits is not null)
@@ -68,8 +68,8 @@ internal sealed class CommitInfoPanelTestSettingsScope : IDisposable
         AppSettings.CommitInfoShowContainedInBranchesRemoteIfNoLocal = _commitInfoShowContainedInBranchesRemoteIfNoLocal;
         AppSettings.CommitInfoShowContainedInTags = _commitInfoShowContainedInTags;
         AppSettings.CommitInfoShowTagThisCommitDerivesFrom = _commitInfoShowTagThisCommitDerivesFrom;
-        AppSettings.ShowAnnotatedTagsMessages = _showAnnotatedTagsMessages;
-        AppSettings.CommitInfoPosition = _commitInfoPosition;
+        AppSettings.ShowAnnotatedTagsMessages.Value = _showAnnotatedTagsMessages;
+        AppSettings.CommitInfoPosition.Value = _commitInfoPosition;
         AppSettings.RevisionGraphShowArtificialCommits = _revisionGraphShowArtificialCommits;
     }
 }

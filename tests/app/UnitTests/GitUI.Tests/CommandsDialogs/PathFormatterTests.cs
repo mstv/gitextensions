@@ -22,7 +22,7 @@ public class PathFormatterTests
     [TearDown]
     public void TearDown()
     {
-        AppSettings.TruncatePathMethod = _originalTruncatePathMethod;
+        AppSettings.TruncatePathMethod.Value = _originalTruncatePathMethod;
         _graphics.Dispose();
         _bitmap.Dispose();
     }
@@ -46,7 +46,7 @@ public class PathFormatterTests
         string? expectedText,
         string? expectedSuffix)
     {
-        AppSettings.TruncatePathMethod = truncatePathMethod;
+        AppSettings.TruncatePathMethod.Value = truncatePathMethod;
         PathFormatter formatter = new(_graphics, _font);
 
         formatter.FormatTextForDrawing(maxWidth, name, oldName).Should().Be((expectedPrefix, expectedText, expectedSuffix));
@@ -58,7 +58,7 @@ public class PathFormatterTests
         // When name is empty and oldName differs, even a low maxWidth accommodates
         // the suffix-only result produced at step 0 of the binary search.
         const string oldName = "b";
-        AppSettings.TruncatePathMethod = TruncatePathMethod.TrimStart;
+        AppSettings.TruncatePathMethod.Value = TruncatePathMethod.TrimStart;
         PathFormatter formatter = new(_graphics, _font);
         int maxWidth = formatter.MeasureString(null, string.Empty, $" ({oldName})").Width;
 
@@ -70,7 +70,7 @@ public class PathFormatterTests
     {
         // Even with maxWidth so small that nothing fits, a non-empty name must still
         // produce at least "..." so the caller always has something to display.
-        AppSettings.TruncatePathMethod = TruncatePathMethod.TrimStart;
+        AppSettings.TruncatePathMethod.Value = TruncatePathMethod.TrimStart;
         PathFormatter formatter = new(_graphics, _font);
 
         (string? prefix, string? text, string? suffix) = formatter.FormatTextForDrawing(maxWidth: 0, name: "path/file.ext", oldName: null);
@@ -88,7 +88,7 @@ public class PathFormatterTests
         // and only beyond that does text start to shrink.
         const string name = "file.ext";
         const string oldName = "very_long_old_name.ext";
-        AppSettings.TruncatePathMethod = TruncatePathMethod.TrimStart;
+        AppSettings.TruncatePathMethod.Value = TruncatePathMethod.TrimStart;
 
         for (int step = 0; step <= oldName.Length; step++)
         {
@@ -113,7 +113,7 @@ public class PathFormatterTests
         // At step 0 both strings appear unmodified.
         const string name = "path/file.ext";
         const string oldName = "oldpath/oldfile.ext";
-        AppSettings.TruncatePathMethod = TruncatePathMethod.TrimStart;
+        AppSettings.TruncatePathMethod.Value = TruncatePathMethod.TrimStart;
         PathFormatter formatter = new(_graphics, _font);
         int maxWidth = formatter.MeasureString("path/", "file.ext", $" ({oldName})").Width;
 

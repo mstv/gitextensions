@@ -2050,7 +2050,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
         CommitInfoTabControl.SelectedTab = TreeTabPage;
 
-        AppSettings.ShowSplitViewLayout = true;
+        AppSettings.ShowSplitViewLayout.Value = true;
         RefreshSplitViewLayout();
 
         fileTree.ExecuteCommand(RevisionDiffControl.Command.FindFile);
@@ -2855,7 +2855,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void toggleSplitViewLayout_Click(object sender, EventArgs e)
     {
-        AppSettings.ShowSplitViewLayout = !AppSettings.ShowSplitViewLayout;
+        AppSettings.ShowSplitViewLayout.Value = !AppSettings.ShowSplitViewLayout;
         DiagnosticsClient.TrackEvent("Layout change",
             new Dictionary<string, string> { { nameof(AppSettings.ShowSplitViewLayout), AppSettings.ShowSplitViewLayout.ToString() } });
 
@@ -2889,7 +2889,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         if (!menuCommitInfoPosition.DropDownButtonPressed)
         {
             SetCommitInfoPosition((CommitInfoPosition)(
-                ((int)AppSettings.CommitInfoPosition + 1) %
+                ((int)AppSettings.CommitInfoPosition.Value + 1) %
                 Enum.GetValues<CommitInfoPosition>().Length));
         }
     }
@@ -2905,7 +2905,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
 
     private void SetCommitInfoPosition(CommitInfoPosition position)
     {
-        AppSettings.CommitInfoPosition = position;
+        AppSettings.CommitInfoPosition.Value = position;
         DiagnosticsClient.TrackEvent("Layout change",
             new Dictionary<string, string> { { nameof(AppSettings.CommitInfoPosition), AppSettings.CommitInfoPosition.ToString() } });
 
@@ -2927,7 +2927,7 @@ public sealed partial class FormBrowse : GitModuleForm, IBrowseRepo
         toggleLeftPanel.Checked = !MainSplitContainer.Panel1Collapsed;
         toggleSplitViewLayout.Checked = AppSettings.ShowSplitViewLayout;
 
-        int commitInfoPositionNumber = (int)AppSettings.CommitInfoPosition;
+        int commitInfoPositionNumber = (int)AppSettings.CommitInfoPosition.Value;
         ToolStripItem selectedMenuItem = menuCommitInfoPosition.DropDownItems[commitInfoPositionNumber];
         menuCommitInfoPosition.Image = selectedMenuItem.Image;
         menuCommitInfoPosition.ToolTipText = selectedMenuItem.Text?.Replace("&", string.Empty);

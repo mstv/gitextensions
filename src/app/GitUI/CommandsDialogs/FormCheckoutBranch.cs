@@ -323,7 +323,7 @@ public partial class FormCheckoutBranch : GitExtensionsDialog
         LocalChangesAction localChanges = ChangesMode;
         if (localChanges != LocalChangesAction.Reset && chkSetLocalChangesActionAsDefault.Checked)
         {
-            AppSettings.CheckoutBranchAction = localChanges;
+            AppSettings.CheckoutBranchAction.Value = localChanges;
         }
 
         if ((!Visible && !AppSettings.UseDefaultCheckoutBranchAction) || !HasUncommittedChanges)
@@ -381,7 +381,7 @@ public partial class FormCheckoutBranch : GitExtensionsDialog
                     // Dismissing the dialog is not an answer, so it must not be remembered as one
                     if (page.Verification.Checked && answer != TaskDialogButton.Cancel)
                     {
-                        AppSettings.AutoPopStashAfterCheckoutBranch = messageBoxResult;
+                        AppSettings.AutoPopStashAfterCheckoutBranch.Value = messageBoxResult;
                     }
                 }
 

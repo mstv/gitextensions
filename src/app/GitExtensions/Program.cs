@@ -125,7 +125,7 @@ internal static class Program
             formChoose.ShowDialog();
         }
 
-        AppSettings.TelemetryEnabled ??= MessageBoxes.Show(
+        AppSettings.TelemetryEnabled.Value ??= MessageBoxes.Show(
             null,
             ResourceManager.TranslatedStrings.TelemetryPermissionMessage,
             ResourceManager.TranslatedStrings.TelemetryPermissionCaption,

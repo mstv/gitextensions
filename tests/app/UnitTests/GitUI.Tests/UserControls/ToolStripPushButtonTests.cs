@@ -18,7 +18,7 @@ public class ToolStripPushButtonTests
     public void Setup()
     {
         _originalShowAheadBehindData = AppSettings.ShowAheadBehindData;
-        AppSettings.ShowAheadBehindData = true;
+        AppSettings.ShowAheadBehindData.Value = true;
 
         _aheadBehindDataProvider = Substitute.For<IAheadBehindDataProvider>();
 
@@ -30,7 +30,7 @@ public class ToolStripPushButtonTests
     public void TearDown()
     {
         _sut.Dispose();
-        AppSettings.ShowAheadBehindData = _originalShowAheadBehindData;
+        AppSettings.ShowAheadBehindData.Value = _originalShowAheadBehindData;
     }
 
     [Test]
@@ -143,7 +143,7 @@ public class ToolStripPushButtonTests
     [Test]
     public void DisplayAheadBehindInformation_should_display_nothing_when_disabled()
     {
-        AppSettings.ShowAheadBehindData = false;
+        AppSettings.ShowAheadBehindData.Value = false;
 
         string branchName = "my-branch";
 

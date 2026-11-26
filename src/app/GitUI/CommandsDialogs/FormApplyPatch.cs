@@ -305,11 +305,11 @@ public partial class FormApplyPatch : GitModuleForm
 
     private void IgnoreWhitespace_CheckedChanged(object sender, EventArgs e)
     {
-        AppSettings.ApplyPatchIgnoreWhitespace = IgnoreWhitespace.Checked;
+        AppSettings.ApplyPatchIgnoreWhitespace.Value = IgnoreWhitespace.Checked;
     }
 
     private void SignOff_CheckedChanged(object sender, EventArgs e)
     {
-        AppSettings.ApplyPatchSignOff = SignOff.Checked;
+        AppSettings.ApplyPatchSignOff.Value = SignOff.Checked;
     }
 }

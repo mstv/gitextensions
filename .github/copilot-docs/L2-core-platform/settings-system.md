@@ -32,9 +32,9 @@ storage and precedence rules; keeping them separate prevents accidental coupling
 
 - One XML file: **`GitExtensions.settings`** (path from `AppSettings.SettingsFilePath`).
   `ApplicationDataPath` / `IsPortable()` decide its location.
-- Strongly-typed `ISetting<T>` properties on `AppSettings` (partial class, several files).
+- Strongly-typed `ISetting<T>` properties on `AppSettings` (partial class, one file per `SettingsPath`).
   Keys organised via `AppSettingsPath` / `SettingsPath` (prefixes: `Appearance.`, `Confirmations.`,
-  `Detailed.`, …). Created with `Setting.Create(path, nameof(Key), defaultValue)`.
+  `Detailed.`, …). Created with `new(path, nameof(Key), defaultValue)`.
 - Backing store: `GitExtSettingsCache` / `FileSettingsCache`; root is a single-node `DistributedSettings` at `SettingLevel.Global`.
 - Read / write: `AppSettings.Foo` or `AppSettings.Foo.Value` / `AppSettings.Foo.Value = x`.
 - `AppSettings.Saved` fires on persist; `AppSettings.SaveSettings()` flushes the file.

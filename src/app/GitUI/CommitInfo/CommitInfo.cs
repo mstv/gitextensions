@@ -783,7 +783,7 @@ public partial class CommitInfo : GitModuleControl
 
     private void showMessagesOfAnnotatedTagsToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        AppSettings.ShowAnnotatedTagsMessages = !AppSettings.ShowAnnotatedTagsMessages;
+        AppSettings.ShowAnnotatedTagsMessages.Value = !AppSettings.ShowAnnotatedTagsMessages;
         ReloadCommitInfo();
     }
 

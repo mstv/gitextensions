@@ -255,7 +255,7 @@ public partial class FormClone : GitExtensionsDialog
             // currently open module which may live on a different subsystem.
             IGitUICommands destUICommands = UICommands.WithWorkingDirectory(dirTo);
 
-            AppSettings.CloneInitializeAllSubmodules = cbIntializeAllSubmodules.Checked;
+            AppSettings.CloneInitializeAllSubmodules.Value = cbIntializeAllSubmodules.Checked;
 
             ArgumentString cloneCmd = Commands.Clone(_NO_TRANSLATE_From.Text,
                 dirTo,

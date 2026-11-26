@@ -1,4 +1,4 @@
-// The original idea and the implementation are borrowed from  https://github.com/NuGetPackageExplorer/NuGetPackageExplorer
+﻿// The original idea and the implementation are borrowed from  https://github.com/NuGetPackageExplorer/NuGetPackageExplorer
 // Credits to https://github.com/clairernovotny
 
 using GitCommands;
@@ -13,7 +13,7 @@ public static class DiagnosticsClient
     private static TelemetryClient? _client;
     private static TelemetryConfiguration _telemetryConfiguration = TelemetryConfiguration.CreateDefault();
 
-    private static bool Enabled => _initialized && (AppSettings.TelemetryEnabled ?? false);
+    private static bool Enabled => _initialized && (AppSettings.TelemetryEnabled.Value ?? false);
 
     public static void Initialize(bool isDirty)
     {

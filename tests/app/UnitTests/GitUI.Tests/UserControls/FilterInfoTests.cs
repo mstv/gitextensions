@@ -14,7 +14,7 @@ public class FilterInfoTests
     [SetUp]
     public void SetUp()
     {
-        AppSettings.ShowGitNotes = false;
+        AppSettings.ShowGitNotes.Value = false;
         AppSettings.HideMergeCommits = false;
         AppSettings.ShowOnlyFirstParent = false;
         AppSettings.ShowSimplifyByDecoration = false;
@@ -1084,11 +1084,11 @@ public class FilterInfoTests
         [Values("branch1", "", null)] string? branchFilter)
     {
         bool originalShowGitNotes = AppSettings.ShowGitNotes;
-        AppSettings.ShowGitNotes = showGitNotes;
+        AppSettings.ShowGitNotes.Value = showGitNotes;
         bool originalShowStashes = AppSettings.ShowStashes;
-        AppSettings.ShowStashes = showStashes;
+        AppSettings.ShowStashes.Value = showStashes;
         bool originalShowSessionRefs = AppSettings.ShowSessionRefs;
-        AppSettings.ShowSessionRefs = showSessionRefs;
+        AppSettings.ShowSessionRefs.Value = showSessionRefs;
         bool originalShowReflogReferences = AppSettings.ShowReflogReferences;
         AppSettings.ShowReflogReferences.Value = showReflogReferences;
         bool originalShowCurrentBranchOnly = AppSettings.ShowCurrentBranchOnly;
@@ -1164,9 +1164,9 @@ public class FilterInfoTests
         }
         finally
         {
-            AppSettings.ShowGitNotes = originalShowGitNotes;
-            AppSettings.ShowStashes = originalShowStashes;
-            AppSettings.ShowSessionRefs = originalShowSessionRefs;
+            AppSettings.ShowGitNotes.Value = originalShowGitNotes;
+            AppSettings.ShowStashes.Value = originalShowStashes;
+            AppSettings.ShowSessionRefs.Value = originalShowSessionRefs;
             AppSettings.ShowReflogReferences.Value = originalShowReflogReferences;
             AppSettings.ShowCurrentBranchOnly.Value = originalShowCurrentBranchOnly;
             AppSettings.BranchFilterEnabled.Value = originalBranchFilterEnabled;

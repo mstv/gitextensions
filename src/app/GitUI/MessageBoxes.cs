@@ -187,7 +187,7 @@ public class MessageBoxes : Translate
         if (page.Verification.Checked)
         {
             AppSettings.DontConfirmUpdateSubmodulesOnCheckout.Value = result;
-            AppSettings.UpdateSubmodulesOnCheckout = result;
+            AppSettings.UpdateSubmodulesOnCheckout.Value = result;
         }
 
         return result;

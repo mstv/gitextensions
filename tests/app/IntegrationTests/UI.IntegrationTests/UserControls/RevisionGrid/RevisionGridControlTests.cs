@@ -27,7 +27,7 @@ public class RevisionGridControlTests
         // There is no need to restore the original AppSettings because AppSettings is routed to a temp folder.
 
         // We don't want avatars during tests, otherwise we will be attempting to download them from gravatar.
-        AppSettings.ShowAuthorAvatarColumn = false;
+        AppSettings.ShowAuthorAvatarColumn.Value = false;
     }
 
     [SetUp]
@@ -62,7 +62,7 @@ public class RevisionGridControlTests
         AppSettings.ShowReflogReferences.Value = false;
         AppSettings.BranchFilterEnabled.Value = false;
         AppSettings.ShowCurrentBranchOnly.Value = false;
-        AppSettings.ShowGitNotes = true;
+        AppSettings.ShowGitNotes.Value = true;
 
         RunSetAndApplyBranchFilterTest(
             initialFilter: "",
@@ -110,7 +110,7 @@ public class RevisionGridControlTests
         AppSettings.ShowReflogReferences.Value = false;
         AppSettings.BranchFilterEnabled.Value = false;
         AppSettings.ShowCurrentBranchOnly.Value = false;
-        AppSettings.ShowGitNotes = true;
+        AppSettings.ShowGitNotes.Value = true;
 
         RunSetAndApplyBranchFilterTest(
             initialFilter: "",
@@ -152,7 +152,7 @@ public class RevisionGridControlTests
         AppSettings.ShowReflogReferences.Value = false;
         AppSettings.BranchFilterEnabled.Value = false;
         AppSettings.ShowCurrentBranchOnly.Value = false;
-        AppSettings.ShowGitNotes = true;
+        AppSettings.ShowGitNotes.Value = true;
 
         RunSetAndApplyBranchFilterTest(
             initialFilter: "Branch1",

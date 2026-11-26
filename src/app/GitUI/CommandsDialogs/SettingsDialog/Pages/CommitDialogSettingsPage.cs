@@ -28,15 +28,15 @@ public partial class CommitDialogSettingsPage : SettingsPageWithHeader
 
     protected override void PageToSettings()
     {
-        AppSettings.ShowErrorsWhenStagingFiles = chkShowErrorsWhenStagingFiles.Checked;
-        AppSettings.EnsureCommitMessageSecondLineEmpty = chkEnsureCommitMessageSecondLineEmpty.Checked;
+        AppSettings.ShowErrorsWhenStagingFiles.Value = chkShowErrorsWhenStagingFiles.Checked;
+        AppSettings.EnsureCommitMessageSecondLineEmpty.Value = chkEnsureCommitMessageSecondLineEmpty.Checked;
         AppSettings.UseFormCommitMessage = chkWriteCommitMessageInCommitWindow.Checked;
-        AppSettings.CommitDialogNumberOfPreviousMessages = (int)_NO_TRANSLATE_CommitDialogNumberOfPreviousMessages.Value;
-        AppSettings.ShowCommitAndPush = chkShowCommitAndPush.Checked;
-        AppSettings.ShowResetWorkTreeChanges = chkShowResetWorkTreeChanges.Checked;
-        AppSettings.ShowResetAllChanges = chkShowResetAllChanges.Checked;
-        AppSettings.ProvideAutocompletion = chkAutocomplete.Checked;
-        AppSettings.RememberAmendCommitState = cbRememberAmendCommitState.Checked;
+        AppSettings.CommitDialogNumberOfPreviousMessages.Value = (int)_NO_TRANSLATE_CommitDialogNumberOfPreviousMessages.Value;
+        AppSettings.ShowCommitAndPush.Value = chkShowCommitAndPush.Checked;
+        AppSettings.ShowResetWorkTreeChanges.Value = chkShowResetWorkTreeChanges.Checked;
+        AppSettings.ShowResetAllChanges.Value = chkShowResetAllChanges.Checked;
+        AppSettings.ProvideAutocompletion.Value = chkAutocomplete.Checked;
+        AppSettings.RememberAmendCommitState.Value = cbRememberAmendCommitState.Checked;
 
         base.PageToSettings();
     }
