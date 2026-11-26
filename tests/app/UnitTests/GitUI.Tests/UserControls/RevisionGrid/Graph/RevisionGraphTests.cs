@@ -1043,7 +1043,7 @@ public class RevisionGraphTests
     private static async Task RenderGraph(RevisionGraph revisionGraph, string? title = null, bool showWindow = false)
     {
         // Disable rendering to avoid errors due to concurrent drawing on multiple threads.
-        AppSettings.ShowRevisionGridGraphColumn = false;
+        AppSettings.ShowRevisionGridGraphColumn.Value = false;
 
         RevisionDataGridView grid = new() { ColumnHeadersVisible = false };
         RevisionGraphColumnProvider graphColumn = new(revisionGraph, new GitRevisionSummaryBuilder());
@@ -1073,7 +1073,7 @@ public class RevisionGraphTests
             window.ClientSize = new((GraphRenderer.LaneWidth * (maxLaneCount + 1)) + subjectColumn.Column.Width,
                 grid.RowTemplate.Height * (rowCount + 1));
 
-            AppSettings.ShowRevisionGridGraphColumn = true;
+            AppSettings.ShowRevisionGridGraphColumn.Value = true;
             await window.ShowDialogAsync();
         }
     }
